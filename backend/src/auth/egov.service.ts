@@ -67,7 +67,7 @@ export class EgovService implements OnModuleDestroy {
     }));
   }
 
-  private async read(sql: string, params: unknown[]) {
+  private async read(sql: string, params: unknown[] = []) {
     try {
       const [rows] = await this.connection().query<RowDataPacket[]>(
         sql,
@@ -262,6 +262,162 @@ export class EgovService implements OnModuleDestroy {
       [DINKES_INSTANSI_ID],
     );
     return Number(rows[0]?.total || 0);
+  }
+
+  async getKecamatanKonsel() {
+    // 7405 adalah kode/id Kabupaten Konawe Selatan di egov.master_kecamatan
+    const rows = await this.read(
+      `SELECT 
+        kecamatan_id AS "kecamatanId",
+        kabupaten_id AS "kabupatenId",
+        kode_kecamatan AS "kodeKecamatan",
+        nama_kecamatan AS "namaKecamatan"
+       FROM egov.master_kecamatan
+       WHERE kabupaten_id = ?
+       ORDER BY nama_kecamatan ASC`,
+      [7405],
+    );
+
+    return rows.map((r: any) => {
+      const nama = String(r.namaKecamatan || "").trim();
+      const idStr = String(r.kecamatanId);
+      const kode = r.kodeKecamatan ? String(r.kodeKecamatan).trim() : idStr;
+      return {
+        kecamatanId: idStr,
+        kodeKecamatan: kode,
+        namaKecamatan: nama,
+      };
+    });
+  }
+
+  async getFaskesFromSimpeg() {
+    // Ambil semua sub unit kerja di bawah Dinas Kesehatan yang bukan dinas induk
+    const rows = await this.read(
+      `SELECT 
+        id,
+        unit_kerja AS "namaUnitKerja",
+        alamat
+       FROM simpeg.unit_kerja
+       WHERE instansi = ? AND unit_kerja != 'DINAS KESEHATAN'
+       ORDER BY unit_kerja ASC`,
+      [DINKES_INSTANSI_ID],
+    );
+
+    // Pemetaan nama puskesmas / rumah sakit yang menggunakan nama desa ke nama kecamatan di Konawe Selatan
+    const desaKecMap: Record<string, string> = {
+      "ATARI JAYA": "LALEMBUU",
+      "ANDOOLO UTAMA": "BUKE",
+      "BIMA MAROA": "ANDOOLO BARAT",
+      "AMONDO": "PALANGGA SELATAN",
+      "PAMANDATI": "LAINEA",
+      "PUNGGALUKU": "LAEYA",
+      "TUMBU-TUMBU JAYA": "KOLONO TIMUR",
+      "TAMBOLOSU": "LAONTI",
+      "LALOWARU": "MORAMO UTARA",
+      "LAMEURU": "RANOMEETO BARAT",
+      "MOTAHA": "ANGATA",
+      "BLUD RSU KONAWE SELATAN": "ANDOOLO",
+      "RUMAH SAKIT UMUM DAERAH": "ANDOOLO",
+    };
+
+    return rows.map((r: any) => {
+      const rawName = String(r.namaUnitKerja || "").trim();
+      const cleanName = rawName.replace(/^UPTD PUSKESMAS\s+/i, "").trim().toUpperCase();
+      const upperRaw = rawName.toUpperCase();
+
+      const targetKecamatan =
+        desaKecMap[cleanName] || desaKecMap[upperRaw] || cleanName;
+
+      const isRS =
+        upperRaw.includes("RUMAH SAKIT") ||
+        upperRaw.includes("RSUD") ||
+        upperRaw.includes("RSU");
+
+      return {
+        simpegId: String(r.id),
+        namaFaskes: rawName,
+        jenisFaskes: isRS ? "RUMAH_SAKIT" : "PUSKESMAS",
+        targetKecamatanNama: targetKecamatan,
+        alamat:
+          r.alamat && r.alamat.trim() !== "-" && r.alamat.trim() !== ""
+            ? String(r.alamat).trim()
+            : null,
+      };
+    });
+  }
+
+  async getBidangDanSekretariatDinkes() {
+    const rows = await this.read(
+      `SELECT 
+        j._id AS "jabatanId",
+        j.jabatan AS "namaJabatan",
+        b.nip,
+        b.nama,
+        b.gelar_depan AS "gelarDepan",
+        b.gelar_belakang AS "gelarBelakang",
+        k.unit_kerja AS "unitKerja"
+      FROM simpeg.biodata b
+      JOIN simpeg.jabatan j ON b.jabatan = j._id
+      JOIN simpeg.unit_kerja k ON b.unit_kerja = k.id
+      WHERE k.instansi = ? AND k.unit_kerja = 'DINAS KESEHATAN'
+        AND (
+          j.jabatan LIKE '%SEKRETARIS DINAS%'
+          OR j.jabatan LIKE '%KEPALA BIDANG%'
+        )
+      ORDER BY 
+        CASE 
+          WHEN j.jabatan LIKE '%SEKRETARIS%' THEN 0
+          WHEN j.jabatan LIKE '%KESEHATAN MASYARAKAT%' THEN 1
+          WHEN j.jabatan LIKE '%PENCEGAHAN%' THEN 2
+          WHEN j.jabatan LIKE '%PELAYANAN KESEHATAN%' THEN 3
+          WHEN j.jabatan LIKE '%FARMASI%' THEN 4
+          ELSE 9
+        END ASC`,
+      [DINKES_INSTANSI_ID],
+    );
+
+    return rows.map((r: any) => {
+      const jabatanStr = String(r.namaJabatan || "");
+      const { kode, nama } = this.formatNamaBidang(jabatanStr);
+      const namaLengkap = this.formatNamaLengkap(r);
+      const cleanNip = String(r.nip || "").replace(/\s+/g, "");
+
+      return {
+        jabatanId: String(r.jabatanId),
+        jabatanSimpeg: jabatanStr,
+        kodeBidang: kode,
+        namaBidang: nama,
+        kepalaBidang: cleanNip ? `${namaLengkap} (NIP: ${cleanNip})` : namaLengkap,
+        pejabatNama: namaLengkap,
+        pejabatNip: cleanNip,
+      };
+    });
+  }
+
+  private formatNamaBidang(jabatan: string): { kode: string; nama: string } {
+    const upper = jabatan.toUpperCase().trim();
+    if (upper.includes("SEKRETARIS")) {
+      return { kode: "SEKR", nama: "Sekretariat" };
+    }
+    if (upper.includes("KESEHATAN MASYARAKAT")) {
+      return { kode: "KESMAS", nama: "Bidang Kesehatan Masyarakat" };
+    }
+    if (upper.includes("PENCEGAHAN") || upper.includes("P2P")) {
+      return { kode: "P2P", nama: "Bidang Pencegahan dan Pengendalian Penyakit" };
+    }
+    if (upper.includes("PELAYANAN KESEHATAN") || upper.includes("YANKES")) {
+      return { kode: "YANKES", nama: "Bidang Pelayanan Kesehatan" };
+    }
+    if (upper.includes("FARMASI") || upper.includes("ALAT KESEHATAN")) {
+      return { kode: "FARMALKES", nama: "Bidang Farmasi dan Alat Kesehatan" };
+    }
+    const clean = upper
+      .replace(/^KEPALA\s+BIDANG\s+/, "Bidang ")
+      .toLowerCase()
+      .replace(/(?:^|\s)\S/g, (a) => a.toUpperCase());
+    const words = clean.split(/\s+/).slice(1);
+    const code = (words.map((w) => w[0]).join("") || "BDG").toUpperCase();
+    return { kode: code, nama: clean };
   }
 
   async lookup(q: string, instansiId = DINKES_INSTANSI_ID) {

@@ -10,6 +10,9 @@ import {
   LoaderCircle,
   ChevronLeft,
   ChevronRight,
+  Building2,
+  RefreshCw,
+  Database,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -88,6 +91,40 @@ export default function Master({
     },
     onError: (e) => toast.error(e.message),
   });
+  const syncBidang = useMutation({
+    mutationFn: () => write("/master/bidang/sync-simpeg", {}, "POST"),
+    onSuccess: (data: any) => {
+      invalidate();
+      toast.success(
+        data?.message || "Data bidang berhasil disinkronkan dari SIMPEG.",
+      );
+    },
+    onError: (e: any) =>
+      toast.error(e.message || "Gagal sinkronisasi data dari SIMPEG."),
+  });
+  const syncKecamatan = useMutation({
+    mutationFn: () => write("/master/kecamatan/sync-egov", {}, "POST"),
+    onSuccess: (data: any) => {
+      invalidate();
+      toast.success(
+        data?.message || "Data kecamatan berhasil disinkronkan dari E-Gov.",
+      );
+    },
+    onError: (e: any) =>
+      toast.error(e.message || "Gagal sinkronisasi data dari E-Gov."),
+  });
+  const syncFaskes = useMutation({
+    mutationFn: () => write("/master/faskes/sync-simpeg", {}, "POST"),
+    onSuccess: (data: any) => {
+      invalidate();
+      toast.success(
+        data?.message || "Data faskes berhasil disinkronkan dari SIMPEG.",
+      );
+    },
+    onError: (e: any) =>
+      toast.error(e.message || "Gagal sinkronisasi data dari SIMPEG."),
+  });
+
   if (!c) return <p>Master tidak ditemukan.</p>;
   const edit = (row: any) => {
     setForm(
@@ -108,71 +145,262 @@ export default function Master({
     );
     setEditing(row || {});
   };
-  const columns: ColumnDef<any, any>[] = [
-    {
-      accessorKey: c.name,
-      header: c.title,
-      cell: ({ row }) => (
-        <div>
-          <span className="font-medium">{row.original[c.name]}</span>
-          {row.original.tahun && (
-            <p className="text-[10px] text-muted-foreground mt-1">
-              Tahun anggaran {row.original.tahun}
-            </p>
-          )}
-        </div>
-      ),
-    },
-    ...c.fields
-      .filter(
-        (f) =>
-          f.key !== c.name &&
-          f.type !== "textarea" &&
-          f.type !== "multi" &&
-          !f.key.endsWith("Id") &&
-          f.key !== "tahun" &&
-          !f.key.startsWith("threshold"),
-      )
-      .slice(0, 3)
-      .map((f) => ({
-        accessorKey: f.key,
-        header: f.label,
-        cell: ({ getValue }: any) =>
-          typeof getValue() === "boolean" ? (
-            <Badge variant="outline">
-              {getValue() ? "Diizinkan" : "Tidak"}
-            </Badge>
-          ) : (
-            String(getValue() ?? "—")
-          ),
-      })),
-    {
-      id: "actions",
-      header: "Tindakan",
-      cell: ({ row }) => (
-        <div className="flex gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={`Edit ${row.original[c.name]}`}
-            onClick={() => edit(row.original)}
-          >
-            <Pencil className="size-3.5" />
-          </Button>
-          {user?.role === "ADMIN_DINKES" && (
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={`Hapus ${row.original[c.name]}`}
-              onClick={() => setDeleting(row.original)}
-            >
-              <Trash2 className="size-3.5 text-destructive" />
-            </Button>
-          )}
-        </div>
-      ),
-    },
-  ];
+
+  const columns: ColumnDef<any, any>[] =
+    kind === "bidang"
+      ? [
+          {
+            accessorKey: "kodeBidang",
+            header: "Kode Bidang",
+            cell: ({ getValue }) => (
+              <Badge variant="outline" className="font-mono text-xs px-2 py-0.5">
+                {String(getValue() || "—")}
+              </Badge>
+            ),
+          },
+          {
+            accessorKey: "namaBidang",
+            header: "Nama Bidang / Penanggung Jawab",
+            cell: ({ row }) => (
+              <div className="font-medium text-foreground">
+                {row.original.namaBidang}
+              </div>
+            ),
+          },
+          {
+            accessorKey: "kepalaBidang",
+            header: "Kepala Bidang / Pejabat SIMPEG",
+            cell: ({ getValue }) => (
+              <div className="text-xs text-muted-foreground font-medium">
+                {String(getValue() || "—")}
+              </div>
+            ),
+          },
+          {
+            id: "actions",
+            header: "Tindakan",
+            cell: ({ row }) => (
+              <div className="flex gap-1 justify-end">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={`Edit ${row.original[c.name]}`}
+                  onClick={() => edit(row.original)}
+                >
+                  <Pencil className="size-3.5" />
+                </Button>
+                {user?.role === "ADMIN_DINKES" && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={`Hapus ${row.original[c.name]}`}
+                    onClick={() => setDeleting(row.original)}
+                  >
+                    <Trash2 className="size-3.5 text-destructive" />
+                  </Button>
+                )}
+              </div>
+            ),
+          },
+        ]
+      : kind === "kecamatan"
+      ? [
+          {
+            accessorKey: "kodeKecamatan",
+            header: "Kode Wilayah",
+            cell: ({ getValue }) => (
+              <Badge variant="outline" className="font-mono text-xs px-2 py-0.5">
+                {String(getValue() || "—")}
+              </Badge>
+            ),
+          },
+          {
+            accessorKey: "namaKecamatan",
+            header: "Nama Kecamatan",
+            cell: ({ row }) => (
+              <div className="font-semibold text-foreground tracking-wide">
+                {row.original.namaKecamatan}
+              </div>
+            ),
+          },
+          {
+            id: "actions",
+            header: "Tindakan",
+            cell: ({ row }) => (
+              <div className="flex gap-1 justify-end">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={`Edit ${row.original[c.name]}`}
+                  onClick={() => edit(row.original)}
+                >
+                  <Pencil className="size-3.5" />
+                </Button>
+                {user?.role === "ADMIN_DINKES" && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={`Hapus ${row.original[c.name]}`}
+                    onClick={() => setDeleting(row.original)}
+                  >
+                    <Trash2 className="size-3.5 text-destructive" />
+                  </Button>
+                )}
+              </div>
+            ),
+          },
+        ]
+      : kind === "faskes"
+      ? [
+          {
+            accessorKey: "namaFaskes",
+            header: "Nama Fasilitas Kesehatan",
+            cell: ({ row }) => (
+              <div>
+                <div className="font-semibold text-foreground">
+                  {row.original.namaFaskes}
+                </div>
+                {row.original.alamat && (
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    {row.original.alamat}
+                  </p>
+                )}
+              </div>
+            ),
+          },
+          {
+            accessorKey: "jenisFaskes",
+            header: "Jenis Faskes",
+            cell: ({ getValue }) => {
+              const val = String(getValue() || "PUSKESMAS");
+              return (
+                <Badge
+                  variant="outline"
+                  className={
+                    val === "RUMAH_SAKIT"
+                      ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20"
+                      : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
+                  }
+                >
+                  {val === "RUMAH_SAKIT"
+                    ? "Rumah Sakit"
+                    : val === "PUSKESMAS"
+                      ? "Puskesmas"
+                      : val}
+                </Badge>
+              );
+            },
+          },
+          {
+            accessorKey: "kecamatan",
+            header: "Wilayah Kecamatan",
+            cell: ({ row }) => {
+              const kecName =
+                row.original.kecamatan?.namaKecamatan ||
+                opts.data?.kecamatan?.find(
+                  (k: any) => k.id === row.original.kecamatanId,
+                )?.namaKecamatan ||
+                "—";
+              return (
+                <div className="text-xs font-medium text-foreground">
+                  Kec. {kecName}
+                </div>
+              );
+            },
+          },
+          {
+            id: "actions",
+            header: "Tindakan",
+            cell: ({ row }) => (
+              <div className="flex gap-1 justify-end">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={`Edit ${row.original[c.name]}`}
+                  onClick={() => edit(row.original)}
+                >
+                  <Pencil className="size-3.5" />
+                </Button>
+                {user?.role === "ADMIN_DINKES" && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={`Hapus ${row.original[c.name]}`}
+                    onClick={() => setDeleting(row.original)}
+                  >
+                    <Trash2 className="size-3.5 text-destructive" />
+                  </Button>
+                )}
+              </div>
+            ),
+          },
+        ]
+      : [
+          {
+            accessorKey: c.name,
+            header: c.title,
+            cell: ({ row }) => (
+              <div>
+                <span className="font-medium">{row.original[c.name]}</span>
+                {row.original.tahun && (
+                  <p className="text-[10px] text-muted-foreground mt-1">
+                    Tahun anggaran {row.original.tahun}
+                  </p>
+                )}
+              </div>
+            ),
+          },
+          ...c.fields
+            .filter(
+              (f) =>
+                f.key !== c.name &&
+                f.type !== "textarea" &&
+                f.type !== "multi" &&
+                !f.key.endsWith("Id") &&
+                f.key !== "tahun" &&
+                !f.key.startsWith("threshold"),
+            )
+            .slice(0, 3)
+            .map((f) => ({
+              accessorKey: f.key,
+              header: f.label,
+              cell: ({ getValue }: any) =>
+                typeof getValue() === "boolean" ? (
+                  <Badge variant="outline">
+                    {getValue() ? "Diizinkan" : "Tidak"}
+                  </Badge>
+                ) : (
+                  String(getValue() ?? "—")
+                ),
+            })),
+          {
+            id: "actions",
+            header: "Tindakan",
+            cell: ({ row }) => (
+              <div className="flex gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={`Edit ${row.original[c.name]}`}
+                  onClick={() => edit(row.original)}
+                >
+                  <Pencil className="size-3.5" />
+                </Button>
+                {user?.role === "ADMIN_DINKES" && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={`Hapus ${row.original[c.name]}`}
+                    onClick={() => setDeleting(row.original)}
+                  >
+                    <Trash2 className="size-3.5 text-destructive" />
+                  </Button>
+                )}
+              </div>
+            ),
+          },
+        ];
+
   return (
     <>
       <div className="flex justify-between items-start mb-6 gap-4">
@@ -181,11 +409,127 @@ export default function Master({
           <h1 className="page-heading">{c.title}</h1>
           <p className="page-description">{c.description}</p>
         </div>
-        <Button onClick={() => edit(null)} size="sm">
-          <Plus className="size-4" />
-          Tambah data
-        </Button>
+        <div className="flex items-center gap-2">
+          {kind === "bidang" && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => syncBidang.mutate()}
+              disabled={syncBidang.isPending}
+              className="gap-1.5"
+            >
+              <RefreshCw
+                className={`size-3.5 ${
+                  syncBidang.isPending ? "animate-spin" : ""
+                }`}
+              />
+              <span>Sinkronkan dari SIMPEG</span>
+            </Button>
+          )}
+          {kind === "kecamatan" && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => syncKecamatan.mutate()}
+              disabled={syncKecamatan.isPending}
+              className="gap-1.5"
+            >
+              <RefreshCw
+                className={`size-3.5 ${
+                  syncKecamatan.isPending ? "animate-spin" : ""
+                }`}
+              />
+              <span>Sinkronkan dari E-Gov</span>
+            </Button>
+          )}
+          {kind === "faskes" && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => syncFaskes.mutate()}
+              disabled={syncFaskes.isPending}
+              className="gap-1.5"
+            >
+              <RefreshCw
+                className={`size-3.5 ${
+                  syncFaskes.isPending ? "animate-spin" : ""
+                }`}
+              />
+              <span>Sinkronkan dari SIMPEG</span>
+            </Button>
+          )}
+          <Button onClick={() => edit(null)} size="sm">
+            <Plus className="size-4" />
+            Tambah data
+          </Button>
+        </div>
       </div>
+
+      {kind === "bidang" && (
+        <div className="rounded-lg border border-blue-500/20 bg-blue-500/5 p-3.5 mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 shrink-0">
+              <Database className="size-4" />
+            </div>
+            <div>
+              <p className="font-semibold text-foreground">
+                Terintegrasi Langsung dengan SIMPEG Konawe Selatan
+              </p>
+              <p className="text-muted-foreground mt-0.5 leading-relaxed">
+                Data Bidang dan Sekretariat otomatis diambil dari struktur
+                jabatan Dinas Kesehatan di database SIMPEG beserta data pejabat
+                terkini.
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => syncBidang.mutate()}
+            disabled={syncBidang.isPending}
+            className="shrink-0 h-8 gap-1.5 text-xs bg-background"
+          >
+            <RefreshCw
+              className={`size-3.5 ${
+                syncBidang.isPending ? "animate-spin" : ""
+              }`}
+            />
+            <span>Perbarui dari SIMPEG</span>
+          </Button>
+        </div>
+      )}
+
+      {/* {kind === "kecamatan" && (
+        <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3.5 mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shrink-0">
+              <Database className="size-4" />
+            </div>
+            <div>
+              <p className="font-semibold text-foreground">
+                Terintegrasi Langsung dengan E-Gov Konawe Selatan
+              </p>
+              <p className="text-muted-foreground mt-0.5 leading-relaxed">
+                Data 25 wilayah kecamatan se-Kabupaten Konawe Selatan diambil langsung dari database E-Gov (tabel master_kecamatan).
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => syncKecamatan.mutate()}
+            disabled={syncKecamatan.isPending}
+            className="shrink-0 h-8 gap-1.5 text-xs bg-background"
+          >
+            <RefreshCw
+              className={`size-3.5 ${
+                syncKecamatan.isPending ? "animate-spin" : ""
+              }`}
+            />
+            <span>Perbarui dari E-Gov</span>
+          </Button>
+        </div>
+      )} */}
       <div className="flex items-center justify-between mb-4">
         <div className="relative max-w-sm w-full">
           <Search className="absolute left-3 top-2.5 size-4 text-muted-foreground" />

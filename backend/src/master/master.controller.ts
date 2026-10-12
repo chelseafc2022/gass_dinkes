@@ -17,6 +17,28 @@ export class MasterController {
   @Get("options") options(@CurrentUser() u: Actor) {
     return this.service.options(u);
   }
+  @Get("master/bidang/simpeg") simpegBidang() {
+    return this.service.getSimpegBidangList();
+  }
+  @Post("master/bidang/sync-simpeg") syncSimpegBidang(@CurrentUser() u: Actor) {
+    return this.service.syncSimpegBidang(u);
+  }
+  @Get("master/kecamatan/egov") egovKecamatan() {
+    return this.service.getEgovKecamatanList();
+  }
+  @Post("master/kecamatan/sync-egov") syncEgovKecamatan(
+    @CurrentUser() u: Actor,
+  ) {
+    return this.service.syncEgovKecamatan(u);
+  }
+  @Get("master/faskes/simpeg") simpegFaskes() {
+    return this.service.getSimpegFaskesList();
+  }
+  @Post("master/faskes/sync-simpeg") syncSimpegFaskes(
+    @CurrentUser() u: Actor,
+  ) {
+    return this.service.syncSimpegFaskes(u);
+  }
   @Get("master/:kind") list(
     @Param("kind") k: string,
     @CurrentUser() u: Actor,
