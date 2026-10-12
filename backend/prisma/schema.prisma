@@ -1,0 +1,270 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client"
+  output = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+// ==========================================
+// 1. DATA MASTER
+// ==========================================
+
+model Satuan {
+  id          String      @id @default(cuid())
+  namaSatuan  String      @unique
+  simbol      String?
+  keterangan  String?
+  indikator   Indikator[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Program {
+  id            String           @id @default(cuid())
+  kodeProgram   String
+  namaProgram   String
+  tahun         Int
+  isAksesFaskes Boolean          @default(false) // True jika faskes boleh kelola keuangan program ini (misal Program 1, 2, 5)
+  bidangId      String?                          // Relasi ke bidang pengelola jika diinput oleh akun bidang
+  kegiatan      Kegiatan[]
+  bidang        PenanggungJawab? @relation(fields: [bidangId], references: [id])
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@unique([kodeProgram, tahun])
+}
+
+model Kegiatan {
+  id             String        @id @default(cuid())
+  programId      String
+  kodeKegiatan   String
+  namaKegiatan   String
+  program        Program       @relation(fields: [programId], references: [id], onDelete: Restrict)
+  subKegiatan    SubKegiatan[]
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+}
+
+model SubKegiatan {
+  id                String            @id @default(cuid())
+  kegiatanId        String
+  kodeSubKegiatan   String
+  namaSubKegiatan   String
+  kegiatan          Kegiatan          @relation(fields: [kegiatanId], references: [id], onDelete: Restrict)
+  indikator         Indikator[]
+  capaianKeuangan   CapaianKeuangan[]
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+}
+
+model Indikator {
+  id                 String             @id @default(cuid())
+  subKegiatanId      String
+  namaIndikator      String
+  satuanId           String
+  kategoriIndikator  String             @default("INDIKATOR_PROGRAM") // IKK, IKU, SPM, INDIKATOR_PROGRAM
+
+  // Konfigurasi Threshold
+  jenisThreshold     String             @default("PERSENTASE_TARGET") // PERSENTASE_TARGET, NILAI_ABSOLUT
+  thresholdHijauMin  Float              @default(80.0)
+  thresholdKuningMin Float              @default(50.0)
+  thresholdMerahMax  Float              @default(49.9)
+
+  subKegiatan        SubKegiatan        @relation(fields: [subKegiatanId], references: [id], onDelete: Restrict)
+  satuan             Satuan             @relation(fields: [satuanId], references: [id])
+  bidang             IndikatorBidang[]
+  capaianKinerja     CapaianKinerja[]
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+}
+
+model IndikatorBidang {
+  id                String          @id @default(cuid())
+  indikatorId       String
+  bidangId          String
+  indikator         Indikator       @relation(fields: [indikatorId], references: [id], onDelete: Restrict)
+  bidang            PenanggungJawab @relation(fields: [bidangId], references: [id], onDelete: Restrict)
+
+  @@unique([indikatorId, bidangId])
+}
+
+model PenanggungJawab {
+  id              String            @id @default(cuid())
+  kodeBidang      String?
+  namaBidang      String
+  kepalaBidang    String?
+  indikator       IndikatorBidang[]
+  programs        Program[]
+  users           User[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+model Kecamatan {
+  id            String   @id @default(cuid())
+  kodeKecamatan String   @unique
+  namaKecamatan String
+  faskes        Faskes[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Faskes {
+  id              String            @id @default(cuid())
+  kecamatanId     String
+  namaFaskes      String
+  jenisFaskes     String            @default("PUSKESMAS") // PUSKESMAS, KLINIK, RUMAH_SAKIT, LABORATORIUM
+  alamat          String?
+  kecamatan       Kecamatan         @relation(fields: [kecamatanId], references: [id])
+  users           User[]
+  capaianKinerja  CapaianKinerja[]
+  capaianKeuangan CapaianKeuangan[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+// ==========================================
+// 2. PENGATURAN BATAS WAKTU & PRA-LAUNCHING
+// ==========================================
+
+model PengaturanSistem {
+  id                   String   @id @default("default")
+  batasTanggalInput    Int      @default(5)     // Default batas tanggal 5 di bulan berikutnya
+  isOtomatisAktif      Boolean  @default(false) // False saat fase pra-launching (semua bulan terbuka untuk backfill), True saat aturan tanggal 5 mulai aktif
+  mulaiOtomatisPeriode String?                  // Keterangan periode mulai berlakunya aturan tanggal 5 (misal: "Desember 2026" atau "Januari 2027")
+  updatedAt            DateTime @updatedAt
+}
+
+model PeriodeOverride {
+  id             String    @id @default(cuid())
+  tahun          Int
+  bulan          Int       // 1 - 12 (Januari s/d Desember)
+  statusOverride String    // BUKA, TUTUP
+  batasKhusus    DateTime? // Deadline khusus jika diperpanjang
+  keterangan     String?   // Alasan perpanjangan/penutupan
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([tahun, bulan])
+}
+
+// ==========================================
+// 3. MODUL TRANSAKSIONAL / CAPAIAN
+// ==========================================
+
+model CapaianKinerja {
+  id            String     @id @default(cuid())
+  indikatorId   String
+  faskesId      String
+  tahun         Int
+  targetKinerja Float      @default(0)
+
+  // Realisasi Tiap Bulan (Januari s/d Desember)
+  capaianJan    Float      @default(0)
+  capaianFeb    Float      @default(0)
+  capaianMar    Float      @default(0)
+  capaianApr    Float      @default(0)
+  capaianMei    Float      @default(0)
+  capaianJun    Float      @default(0)
+  capaianJul    Float      @default(0)
+  capaianAgs    Float      @default(0)
+  capaianSep    Float      @default(0)
+  capaianOkt    Float      @default(0)
+  capaianNov    Float      @default(0)
+  capaianDes    Float      @default(0)
+
+  isValidated   Boolean    @default(false)
+  indikator     Indikator  @relation(fields: [indikatorId], references: [id], onDelete: Restrict)
+  faskes        Faskes     @relation(fields: [faskesId], references: [id], onDelete: Restrict)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@unique([indikatorId, faskesId, tahun])
+}
+
+model CapaianKeuangan {
+  id             String      @id @default(cuid())
+  subKegiatanId  String
+  faskesId       String
+  tahun          Int
+  targetKeuangan Decimal       @default(0) @db.Decimal(18, 2) // Pagu Anggaran (Rp)
+
+  // Realisasi Belanja Tiap Bulan (Januari s/d Desember)
+  capaianJan     Decimal       @default(0) @db.Decimal(18, 2)
+  capaianFeb     Decimal       @default(0) @db.Decimal(18, 2)
+  capaianMar     Decimal       @default(0) @db.Decimal(18, 2)
+  capaianApr     Decimal       @default(0) @db.Decimal(18, 2)
+  capaianMei     Decimal       @default(0) @db.Decimal(18, 2)
+  capaianJun     Decimal       @default(0) @db.Decimal(18, 2)
+  capaianJul     Decimal       @default(0) @db.Decimal(18, 2)
+  capaianAgs     Decimal       @default(0) @db.Decimal(18, 2)
+  capaianSep     Decimal       @default(0) @db.Decimal(18, 2)
+  capaianOkt     Decimal       @default(0) @db.Decimal(18, 2)
+  capaianNov     Decimal       @default(0) @db.Decimal(18, 2)
+  capaianDes     Decimal       @default(0) @db.Decimal(18, 2)
+
+  isValidated    Boolean     @default(false)
+  subKegiatan    SubKegiatan @relation(fields: [subKegiatanId], references: [id], onDelete: Restrict)
+  faskes         Faskes      @relation(fields: [faskesId], references: [id], onDelete: Restrict)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@unique([subKegiatanId, faskesId, tahun])
+}
+
+// ==========================================
+// 4. PENGGUNA, OTORISASI & MATRIKS MENU
+// ==========================================
+
+model User {
+  id String @id @default(cuid())
+  nip String @unique
+  egovId String? @unique
+  email String?
+  name String
+  jabatan String?
+  role String @default("OPERATOR_PUSKESMAS")
+  isActive Boolean @default(true)
+  faskesId String?
+  bidangId String?
+  faskes Faskes? @relation(fields: [faskesId], references: [id])
+  bidang PenanggungJawab? @relation(fields: [bidangId], references: [id])
+  sessions Session[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Session {
+  id String @id @default(cuid())
+  userId String
+  tokenHash String @unique
+  expiresAt DateTime
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  @@index([userId])
+}
+
+// Matriks Otoritas Menu Dinamis
+model MenuPermission {
+  id         String   @id @default(cuid())
+  role       String   // ADMIN_DINKES, AKUN_BIDANG, OPERATOR_PUSKESMAS, KEPALA_DINAS
+  menuKey    String   // dashboard, master_satuan, master_program, master_indikator, capaian_kinerja, dll
+  canAccess  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([role, menuKey])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  entity    String
+  entityId  String
+  details   String?
+  createdAt DateTime @default(now())
+}
