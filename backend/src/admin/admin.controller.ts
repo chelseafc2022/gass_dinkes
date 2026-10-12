@@ -198,15 +198,286 @@ export class AdminController {
       return r;
     });
   }
-  @Menu("pengguna") @Get("pegawai") lookup(@Query("q") q = "") {
-    return this.egov.lookup(q);
+  @Menu("pengguna") @Get("pegawai/instansi") async instansiList() {
+    return this.egov.getInstansiList();
   }
-  @Menu("pengguna") @Get("users") users() {
+
+  @Menu("pengguna") @Get("pegawai/unit-kerja") async unitKerjaList(
+    @Query("instansiId") instansiId?: string,
+  ) {
+    return this.egov.getUnitKerjaList(instansiId);
+  }
+
+  @Menu("pengguna") @Get("pegawai/directory") async directory(
+    @Query("page") page = "1",
+    @Query("limit") limit = "10",
+    @Query("search") search = "",
+    @Query("instansiId") instansiId?: string,
+    @Query("unitKerjaId") unitKerjaId?: string,
+  ) {
+    const dir = await this.egov.getDirectory({
+      page: Number(page) || 1,
+      limit: Number(limit) || 10,
+      search,
+      instansiId,
+      unitKerjaId,
+    });
+
+    if (dir.data.length === 0) {
+      return { data: [], meta: dir.meta };
+    }
+
+    const nips = dir.data.map((d) => d.nip);
+    const localUsers = await this.db.user.findMany({
+      where: { nip: { in: nips } },
+      include: { faskes: true, bidang: true },
+    });
+    const userMap = new Map(localUsers.map((u) => [u.nip, u]));
+
+    const enriched = dir.data.map((p) => {
+      const local = userMap.get(p.nip);
+      return {
+        ...p,
+        hasGassAccess: !!local && local.isActive,
+        gassRole: local?.role || null,
+        gassStatus: local
+          ? local.isActive
+            ? "AKTIF"
+            : "NONAKTIF"
+          : "BELUM_DIBERI_AKSES",
+        gassUserId: local?.id || null,
+        faskesId: local?.faskesId || null,
+        bidangId: local?.bidangId || null,
+        faskes: local?.faskes || null,
+        bidang: local?.bidang || null,
+        email: local?.email || null,
+      };
+    });
+
+    return { data: enriched, meta: dir.meta };
+  }
+
+  @Menu("pengguna") @Get("users/stats") async stats() {
+    const [totalPegawai, totalActiveUsers, totalUsersInDb, unitKerjaList] =
+      await Promise.all([
+        this.egov.countPegawaiDinkes(),
+        this.db.user.count({ where: { isActive: true } }),
+        this.db.user.count(),
+        this.egov.getUnitKerjaList(),
+      ]);
+
+    return {
+      totalPegawai,
+      totalActiveUsers,
+      totalUsersInDb,
+      totalWithoutAccess: Math.max(0, totalPegawai - totalActiveUsers),
+      totalUnitKerja: unitKerjaList.length,
+    };
+  }
+
+  @Menu("pengguna") @Get("pegawai") lookup(
+    @Query("q") q = "",
+    @Query("instansiId") instansiId?: string,
+  ) {
+    return this.egov.lookup(q, instansiId);
+  }
+
+  @Menu("pengguna") @Get("users") async users(
+    @Query("search") search?: string,
+    @Query("role") role?: string,
+    @Query("status") status?: string,
+    @Query("page") pageRaw?: string,
+    @Query("limit") limitRaw?: string,
+  ) {
+    const where: any = {};
+    if (search && search.trim() !== "") {
+      const s = search.trim();
+      where.OR = [
+        { name: { contains: s, mode: "insensitive" } },
+        { nip: { contains: s, mode: "insensitive" } },
+        { jabatan: { contains: s, mode: "insensitive" } },
+      ];
+    }
+    if (role && role !== "ALL" && (ROLES as readonly string[]).includes(role)) {
+      where.role = role;
+    }
+    if (status === "AKTIF") {
+      where.isActive = true;
+    } else if (status === "NONAKTIF") {
+      where.isActive = false;
+    }
+
+    if (pageRaw) {
+      const page = Math.max(1, Number(pageRaw) || 1);
+      const limit = Math.min(100, Math.max(1, Number(limitRaw) || 10));
+      const [total, data] = await Promise.all([
+        this.db.user.count({ where }),
+        this.db.user.findMany({
+          where,
+          include: { faskes: true, bidang: true },
+          orderBy: { name: "asc" },
+          skip: (page - 1) * limit,
+          take: limit,
+        }),
+      ]);
+      return {
+        data,
+        meta: { page, limit, total, totalPages: Math.ceil(total / limit) || 1 },
+      };
+    }
+
     return this.db.user.findMany({
+      where,
       include: { faskes: true, bidang: true },
       orderBy: { name: "asc" },
     });
   }
+
+  @Menu("pengguna") @Post("users/set-role") async setRole(
+    @CurrentUser() u: Actor,
+    @Body() body: unknown,
+  ) {
+    this.admin(u);
+    const b = z
+      .object({
+        nip: z.string().trim().min(1),
+        role: z.enum(ROLES),
+        faskesId: z.string().nullable().optional(),
+        bidangId: z.string().nullable().optional(),
+        email: z.string().email().nullable().optional().or(z.literal("")),
+      })
+      .parse(body);
+
+    if (b.role === "OPERATOR_PUSKESMAS" && !b.faskesId) {
+      throw new BadRequestException("Penugasan fasilitas kesehatan wajib dipilih.");
+    }
+    if (b.role === "AKUN_BIDANG" && !b.bidangId) {
+      throw new BadRequestException("Penugasan bidang Dinkes wajib dipilih.");
+    }
+
+    const cleanNip = b.nip.trim().replace(/\s+/g, "");
+    let user = await this.db.user.findUnique({ where: { nip: cleanNip } });
+
+    if (!user) {
+      // Ambil profil dari E-Gov / SIMPEG
+      const p = await this.egov.profile(cleanNip);
+      user = await this.db.user.create({
+        data: {
+          nip: cleanNip,
+          name: p.name,
+          jabatan: p.jabatan,
+          egovId: p.egovId,
+          email: b.email ? b.email : null,
+          role: b.role,
+          isActive: true,
+          faskesId: b.role === "OPERATOR_PUSKESMAS" ? b.faskesId : null,
+          bidangId: b.role === "AKUN_BIDANG" ? b.bidangId : null,
+        },
+        include: { faskes: true, bidang: true },
+      });
+    } else {
+      user = await this.db.user.update({
+        where: { id: user.id },
+        data: {
+          role: b.role,
+          isActive: true,
+          email: b.email ? b.email : user.email,
+          faskesId: b.role === "OPERATOR_PUSKESMAS" ? b.faskesId : null,
+          bidangId: b.role === "AKUN_BIDANG" ? b.bidangId : null,
+        },
+        include: { faskes: true, bidang: true },
+      });
+      await this.db.session.deleteMany({ where: { userId: user.id } });
+    }
+
+    await this.db.auditLog.create({
+      data: {
+        userId: u.id,
+        action: "SET_ROLE",
+        entity: "user",
+        entityId: user.id,
+        details: JSON.stringify(b),
+      },
+    });
+
+    return {
+      message: `Peran ${b.role} berhasil ditetapkan untuk ${user.name}`,
+      user,
+    };
+  }
+
+  @Menu("pengguna") @Post("users/revoke-role") async revokeRole(
+    @CurrentUser() u: Actor,
+    @Body() body: unknown,
+  ) {
+    this.admin(u);
+    const b = z.object({ nip: z.string().trim().min(1) }).parse(body);
+    const cleanNip = b.nip.trim().replace(/\s+/g, "");
+
+    const user = await this.db.user.findUnique({ where: { nip: cleanNip } });
+    if (!user) {
+      throw new BadRequestException("Pengguna tidak ditemukan dalam sistem GASS.");
+    }
+    if (user.id === u.id) {
+      throw new BadRequestException("Anda tidak dapat mencabut hak akses akun sendiri.");
+    }
+
+    const updated = await this.db.user.update({
+      where: { id: user.id },
+      data: { isActive: false },
+    });
+    await this.db.session.deleteMany({ where: { userId: user.id } });
+
+    await this.db.auditLog.create({
+      data: {
+        userId: u.id,
+        action: "REVOKE_ROLE",
+        entity: "user",
+        entityId: user.id,
+        details: JSON.stringify({ nip: cleanNip }),
+      },
+    });
+
+    return {
+      message: `Hak akses untuk ${user.name} berhasil dicabut (Non-aktif).`,
+      user: updated,
+    };
+  }
+
+  @Menu("pengguna") @Post("users/reset-to-default") async resetToDefault(
+    @CurrentUser() u: Actor,
+    @Body() body: unknown,
+  ) {
+    this.admin(u);
+    const b = z.object({ nip: z.string().trim().min(1) }).parse(body);
+    const cleanNip = b.nip.trim().replace(/\s+/g, "");
+
+    const user = await this.db.user.findUnique({ where: { nip: cleanNip } });
+    if (!user) {
+      return { message: "Pegawai memang belum memiliki peran di sistem GASS." };
+    }
+    if (user.id === u.id) {
+      throw new BadRequestException("Anda tidak dapat menghapus akun admin sendiri.");
+    }
+
+    await this.db.session.deleteMany({ where: { userId: user.id } });
+    await this.db.user.delete({ where: { id: user.id } });
+
+    await this.db.auditLog.create({
+      data: {
+        userId: u.id,
+        action: "RESET_TO_DEFAULT",
+        entity: "user",
+        entityId: user.id,
+        details: JSON.stringify({ nip: cleanNip, name: user.name }),
+      },
+    });
+
+    return {
+      message: `Peran untuk ${user.name} berhasil dikembalikan ke default (Belum Diberi Akses).`,
+    };
+  }
+
   @Menu("pengguna") @Post("users") createUser(
     @CurrentUser() u: Actor,
     @Body() body: unknown,
