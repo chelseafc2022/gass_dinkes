@@ -150,7 +150,13 @@ export default function Dashboard() {
   const spm = d?.indicators.filter((i: any) => i.kategori === "SPM") ?? [],
     detail = spm.find((i: any) => i.id === selected) ?? spm[0];
   const rankingList = (detail?.ranking || [])
-    .filter((r: any) => !r.namaFaskes.includes("BLUD RSU KONAWE SELATAN"))
+    .filter(
+      (r: any) =>
+        !r.namaFaskes.includes("BLUD RSU KONAWE SELATAN") &&
+        !r.namaFaskes.toUpperCase().includes("RUMAH SAKIT") &&
+        !r.namaFaskes.toUpperCase().includes("RSUD") &&
+        shortFaskes(r.namaFaskes) !== "RSUD",
+    )
     .map((r: any) => ({
       ...r,
       namaRingkas: shortFaskes(r.namaFaskes),

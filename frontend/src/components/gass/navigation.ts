@@ -18,7 +18,7 @@ import {
 export const navigation = [
   {
     key: "dashboard",
-    title: "Ringkasan",
+    title: "Dashboard",
     href: "/dashboard",
     icon: LayoutDashboard,
     group: "MONITORING",

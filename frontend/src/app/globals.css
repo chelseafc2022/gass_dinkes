@@ -171,16 +171,16 @@ html {
   animation-play-state: paused;
 }
 
-:root {
- --font-inter: Arial, Helvetica, sans-serif;
- --background: #f6f8fa; --foreground: #1a2934; --card: #ffffff;
- --primary: #087f73; --primary-foreground: #ffffff; --ring: #0c9586;
- --sidebar: #ffffff; --sidebar-primary: #087f73; --sidebar-accent: #eaf6f3;
- --muted: #f0f4f6; --muted-foreground: #74818c; --border: #e5eaf0; --input: #dfe6eb;
- --chart-1: #087f73; --chart-2: #71c4b6; --chart-3: #e9b464; --chart-4: #7484ca; --chart-5: #df8a86;
- --radius: .75rem;
-}
-.dark {--background:#101b23;--card:#17252f;--sidebar:#14222b;--foreground:#e5edf2;--primary:#5dd2bb;--primary-foreground:#092d28;--border:#2b3b46;--muted:#1f303c;--muted-foreground:#97a7b4;--input:#354956;--sidebar-accent:#223b3c;--ring:#5dd2bb;}
+ :root {
+  --font-inter: Arial, Helvetica, sans-serif;
+  --background: #f6f8fa; --foreground: #1a2934; --card: #ffffff;
+  --primary: #087f73; --primary-foreground: #ffffff; --ring: #0c9586;
+  --sidebar: #edf4f2; --sidebar-foreground: #182e2b; --sidebar-primary: #087f73; --sidebar-primary-foreground: #ffffff; --sidebar-accent: #dbe8e4; --sidebar-accent-foreground: #087f73; --sidebar-border: #d2e2de; --sidebar-ring: #087f73;
+  --muted: #f0f4f6; --muted-foreground: #74818c; --border: #e5eaf0; --input: #dfe6eb;
+  --chart-1: #087f73; --chart-2: #71c4b6; --chart-3: #e9b464; --chart-4: #7484ca; --chart-5: #df8a86;
+  --radius: .75rem;
+ }
+ .dark {--background:#101b23;--card:#17252f;--sidebar:#12201d;--sidebar-foreground:#e2edea;--sidebar-primary:#34d399;--sidebar-primary-foreground:#092d28;--sidebar-accent:#1a2e29;--sidebar-accent-foreground:#34d399;--sidebar-border:#203833;--sidebar-ring:#34d399;--foreground:#e5edf2;--primary:#5dd2bb;--primary-foreground:#092d28;--border:#2b3b46;--muted:#1f303c;--muted-foreground:#97a7b4;--input:#354956;--ring:#5dd2bb;}
 body {font-family:Arial,Helvetica,sans-serif;}
 .brand-icon {@apply flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground;}
 .eyebrow {@apply text-[10px] font-semibold uppercase tracking-[.18em] text-primary;}

@@ -70,7 +70,7 @@ function SidebarPeriodAlert() {
   const allOpen = openCount === 12;
 
   return (
-    <div className="mx-2 mt-2.5 mb-2 rounded-xl border border-primary/20 bg-primary/5 p-3 text-xs shadow-xs">
+    <div className="mx-2 mt-2.5 mb-2 rounded-xl border border-primary/20 bg-primary/10 p-3 text-xs shadow-xs">
       <div className="flex items-center justify-between gap-1 mb-1.5">
         <div className="flex items-center gap-1.5">
           <span className="flex h-2 w-2 relative shrink-0">
@@ -81,7 +81,7 @@ function SidebarPeriodAlert() {
             Pengingat Input
           </span>
         </div>
-        <span className="text-[9px] font-medium text-muted-foreground px-1.5 py-0.5 rounded bg-background/80 border">
+        <span className="text-[9px] font-medium text-muted-foreground px-1.5 py-0.5 rounded bg-background border border-primary/20">
           {allOpen ? "12 Bln Buka" : `${openCount} Bln Buka`}
         </span>
       </div>
@@ -95,7 +95,7 @@ function SidebarPeriodAlert() {
           ? `Penginputan capaian sebelum tanggal ${settings.batasTanggalInput} tiap bulan berikutnya.`
           : "Semua bulan dibuka untuk melengkapi data capaian awal faskes."}
       </p>
-      <div className="mt-2.5 pt-2 border-t border-primary/10 flex items-center justify-between text-[10px]">
+      <div className="mt-2.5 pt-2 border-t border-primary/15 flex items-center justify-between text-[10px]">
         <span className="text-muted-foreground">Admin Faskes</span>
         <Link
           href="/capaian/kinerja"
@@ -168,16 +168,16 @@ export function Shell({ children }: { children: React.ReactNode }) {
         side={config.side}
         collapsible={config.collapsible}
       >
-        <SidebarHeader className="px-5 py-6">
+        <SidebarHeader className="px-5 py-6 border-b border-sidebar-border">
           <Link href="/dashboard" className="flex items-center gap-3">
-            <div className="brand-icon">
+            <div className="brand-icon shadow-xs bg-sidebar-primary text-sidebar-primary-foreground">
               <Activity className="size-6" />
             </div>
             <div>
-              <span className="text-2xl font-extrabold tracking-tight">
-                GASS<span className="text-primary">.</span>
+              <span className="text-2xl font-extrabold tracking-tight text-sidebar-foreground">
+                GASS<span className="text-sidebar-primary">.</span>
               </span>
-              <p className="text-[10px] font-semibold uppercase tracking-[.16em] text-muted-foreground">
+              <p className="text-[10px] font-semibold uppercase tracking-[.16em] text-sidebar-foreground/60">
                 Dinas Kesehatan
               </p>
             </div>
@@ -189,7 +189,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
             return (
               items.length > 0 && (
                 <SidebarGroup key={group}>
-                  <SidebarGroupLabel className="text-[10px] tracking-widest text-muted-foreground/80">
+                  <SidebarGroupLabel className="text-[10px] font-bold tracking-widest text-sidebar-foreground/60 uppercase">
                     {group}
                   </SidebarGroupLabel>
                   <SidebarGroupContent>
@@ -200,13 +200,13 @@ export function Shell({ children }: { children: React.ReactNode }) {
                             asChild
                             isActive={path === n.href}
                             tooltip={n.title}
-                            className="h-10 px-3 data-[active=true]:bg-primary/10 data-[active=true]:text-primary data-[active=true]:font-semibold"
+                            className="h-10 px-3 text-sidebar-foreground/80 hover:text-sidebar-foreground hover:bg-sidebar-accent data-[active=true]:bg-white data-[active=true]:dark:bg-emerald-950/40 data-[active=true]:text-sidebar-primary data-[active=true]:font-bold data-[active=true]:shadow-xs data-[active=true]:border-l-2 data-[active=true]:border-sidebar-primary transition-colors"
                           >
                             <Link href={n.href}>
                               <n.icon className="size-4" />
                               <span>{n.title}</span>
                               {path === n.href && (
-                                <span className="ml-auto size-1.5 rounded-full bg-primary" />
+                                <span className="ml-auto size-1.5 rounded-full bg-sidebar-primary shadow-[0_0_8px_var(--sidebar-primary)]" />
                               )}
                             </Link>
                           </SidebarMenuButton>
@@ -214,29 +214,32 @@ export function Shell({ children }: { children: React.ReactNode }) {
                       ))}
                     </SidebarMenu>
                   </SidebarGroupContent>
-                  {group === "MONITORING" && <SidebarPeriodAlert />}
+                  {group === "MONITORING" &&
+                    user.role === "OPERATOR_PUSKESMAS" && (
+                      <SidebarPeriodAlert />
+                    )}
                 </SidebarGroup>
               )
             );
           })}
         </SidebarContent>
-        <SidebarFooter className="p-4">
+        <SidebarFooter className="p-3 border-t border-sidebar-border">
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex w-full items-center gap-3 p-2 rounded-lg hover:bg-accent">
-              <Avatar className="size-9">
-                <AvatarFallback className="bg-primary/10 text-primary">
+            <DropdownMenuTrigger className="flex w-full items-center gap-3 p-2 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground transition-colors">
+              <Avatar className="size-9 border border-sidebar-primary/25">
+                <AvatarFallback className="bg-sidebar-primary/15 text-sidebar-primary font-bold">
                   {user.name.slice(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <span className="min-w-0 text-left flex-1">
-                <span className="block truncate text-xs font-semibold">
+                <span className="block truncate text-xs font-semibold text-sidebar-foreground">
                   {user.name}
                 </span>
-                <span className="text-[10px] text-muted-foreground">
+                <span className="text-[10px] text-sidebar-foreground/60">
                   {roleNames[user.role]}
                 </span>
               </span>
-              <ChevronsUpDown className="size-4" />
+              <ChevronsUpDown className="size-4 text-sidebar-foreground/60" />
             </DropdownMenuTrigger>
             <DropdownMenuContent side="top" align="start">
               <DropdownMenuLabel>{user.nip}</DropdownMenuLabel>
