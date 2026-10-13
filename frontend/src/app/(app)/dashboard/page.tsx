@@ -43,7 +43,7 @@ import {
   Loading,
   StatusBadge,
 } from "@/components/gass/shared";
-import { api, exportCsv, number, queryString, rupiah } from "@/lib/api";
+import { api, exportCsv, number, queryString, rupiah, shortFaskes } from "@/lib/api";
 const colors: Record<string, string> = {
   HIJAU: "#0c9586",
   KUNING: "#e4af54",
@@ -149,6 +149,12 @@ export default function Dashboard() {
   const d = q.data;
   const spm = d?.indicators.filter((i: any) => i.kategori === "SPM") ?? [],
     detail = spm.find((i: any) => i.id === selected) ?? spm[0];
+  const rankingList = (detail?.ranking || [])
+    .filter((r: any) => !r.namaFaskes.includes("BLUD RSU KONAWE SELATAN"))
+    .map((r: any) => ({
+      ...r,
+      namaRingkas: shortFaskes(r.namaFaskes),
+    }));
   return (
     <div>
       <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
@@ -368,109 +374,115 @@ export default function Dashboard() {
                     </div>
                     {detail && (
                       <div className="grid xl:grid-cols-[1.3fr_1fr] gap-5">
-                        <Card>
-                          <CardHeader>
-                            <CardTitle className="text-sm">
-                              Capaian per fasilitas kesehatan
-                            </CardTitle>
-                            <CardDescription className="text-xs">
-                              {detail.nama}
-                            </CardDescription>
-                          </CardHeader>
-                          <CardContent>
-                            <ResponsiveContainer width="100%" height={320}>
-                              <BarChart
-                                data={detail.ranking}
-                                margin={{ bottom: 45 }}
-                              >
-                                <CartesianGrid
-                                  vertical={false}
-                                  strokeDasharray="3 4"
-                                  stroke="var(--border)"
-                                />
-                                <XAxis
-                                  dataKey="namaFaskes"
-                                  angle={-25}
-                                  textAnchor="end"
-                                  fontSize={9}
-                                  interval={0}
-                                  axisLine={false}
-                                  tickLine={false}
-                                />
-                                <YAxis
-                                  unit="%"
-                                  fontSize={10}
-                                  axisLine={false}
-                                  tickLine={false}
-                                />
-                                <Tooltip
-                                  formatter={(v: any) =>
-                                    `${number(Number(v))}%`
-                                  }
-                                  contentStyle={{
-                                    background: "var(--card)",
-                                    borderRadius: 12,
-                                    fontSize: 11,
-                                  }}
-                                />
-                                <Bar
-                                  isAnimationActive={false}
-                                  dataKey="persentase"
-                                  name="Capaian"
-                                  radius={[5, 5, 0, 0]}
-                                  maxBarSize={36}
-                                >
-                                  {detail.ranking.map((r: any) => (
-                                    <Cell
-                                      key={r.faskesId}
-                                      fill={colors[r.status]}
+                            <Card>
+                              <CardHeader>
+                                <CardTitle className="text-sm">
+                                  Capaian per fasilitas kesehatan
+                                </CardTitle>
+                                <CardDescription className="text-xs">
+                                  {detail.nama}
+                                </CardDescription>
+                              </CardHeader>
+                              <CardContent>
+                                <ResponsiveContainer width="100%" height={320}>
+                                  <BarChart
+                                    data={rankingList}
+                                    margin={{ bottom: 35 }}
+                                  >
+                                    <CartesianGrid
+                                      vertical={false}
+                                      strokeDasharray="3 4"
+                                      stroke="var(--border)"
                                     />
-                                  ))}
-                                </Bar>
-                              </BarChart>
-                            </ResponsiveContainer>
-                          </CardContent>
-                        </Card>
-                        <Card>
-                          <CardHeader>
-                            <CardTitle className="text-sm">
-                              Prioritas pembinaan
-                            </CardTitle>
-                            <CardDescription className="text-xs">
-                              Urutan capaian terendah hingga tertinggi
-                            </CardDescription>
-                          </CardHeader>
-                          <CardContent className="max-h-90 overflow-auto">
-                            {detail.ranking.map((r: any, n: number) => (
-                              <div
-                                className="flex items-center gap-3 py-3 border-b last:border-0"
-                                key={r.faskesId}
-                              >
-                                <span className="size-7 grid place-content-center rounded-lg bg-muted text-[10px] text-muted-foreground">
-                                  {n + 1}
-                                </span>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-xs font-medium truncate">
-                                    {r.namaFaskes}
-                                  </p>
-                                  <p className="text-[10px] text-muted-foreground mt-1">
-                                    {r.reported
-                                      ? `${number(r.realisasi)} dari ${number(r.target)}`
-                                      : "Belum melaporkan"}
-                                  </p>
-                                </div>
-                                <span
-                                  className="text-sm font-semibold"
-                                  style={{ color: colors[r.status] }}
-                                >
-                                  {number(r.persentase)}%
-                                </span>
-                              </div>
-                            ))}
-                          </CardContent>
-                        </Card>
-                      </div>
-                    )}
+                                    <XAxis
+                                      dataKey="namaRingkas"
+                                      angle={-35}
+                                      textAnchor="end"
+                                      fontSize={9}
+                                      interval={0}
+                                      height={55}
+                                      axisLine={false}
+                                      tickLine={false}
+                                    />
+                                    <YAxis
+                                      unit="%"
+                                      fontSize={10}
+                                      axisLine={false}
+                                      tickLine={false}
+                                    />
+                                    <Tooltip
+                                      formatter={(v: any, _n: any, item: any) => [
+                                        `${number(Number(v))}%`,
+                                        item?.payload?.namaFaskes || "Capaian",
+                                      ]}
+                                      contentStyle={{
+                                        background: "var(--card)",
+                                        borderRadius: 12,
+                                        border: "1px solid var(--border)",
+                                        fontSize: 11,
+                                      }}
+                                    />
+                                    <Bar
+                                      isAnimationActive={false}
+                                      dataKey="persentase"
+                                      name="Capaian"
+                                      radius={[5, 5, 0, 0]}
+                                      maxBarSize={36}
+                                    >
+                                      {rankingList.map((r: any) => (
+                                        <Cell
+                                          key={r.faskesId}
+                                          fill={colors[r.status]}
+                                        />
+                                      ))}
+                                    </Bar>
+                                  </BarChart>
+                                </ResponsiveContainer>
+                              </CardContent>
+                            </Card>
+                            <Card>
+                              <CardHeader>
+                                <CardTitle className="text-sm">
+                                  Prioritas pembinaan
+                                </CardTitle>
+                                <CardDescription className="text-xs">
+                                  Urutan capaian terendah hingga tertinggi
+                                </CardDescription>
+                              </CardHeader>
+                              <CardContent className="max-h-90 overflow-auto">
+                                {rankingList.map((r: any, n: number) => (
+                                  <div
+                                    className="flex items-center gap-3 py-3 border-b last:border-0"
+                                    key={r.faskesId}
+                                  >
+                                    <span className="size-7 grid place-content-center rounded-lg bg-muted text-[10px] text-muted-foreground font-semibold">
+                                      {n + 1}
+                                    </span>
+                                    <div className="flex-1 min-w-0">
+                                      <p
+                                        className="text-xs font-semibold truncate"
+                                        title={r.namaFaskes}
+                                      >
+                                        {r.namaRingkas}
+                                      </p>
+                                      <p className="text-[10px] text-muted-foreground mt-0.5">
+                                        {r.reported
+                                          ? `${number(r.realisasi)} dari ${number(r.target)}`
+                                          : "Belum melaporkan"}
+                                      </p>
+                                    </div>
+                                    <span
+                                      className="text-sm font-semibold"
+                                      style={{ color: colors[r.status] }}
+                                    >
+                                      {number(r.persentase)}%
+                                    </span>
+                                  </div>
+                                ))}
+                              </CardContent>
+                            </Card>
+                          </div>
+                        )}
                   </>
                 )}
                 <Trend indicators={d.indicators} category="SPM" />

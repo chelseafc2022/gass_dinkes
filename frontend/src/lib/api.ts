@@ -83,3 +83,42 @@ export function exportCsv(name: string, headers: string[], rows: unknown[][]) {
   a.click();
   URL.revokeObjectURL(url);
 }
+
+export function shortFaskes(name: string): string {
+  if (!name) return "";
+  const clean = name.trim();
+  if (
+    /^(BLUD\s+RSU\s+KONAWE\s+SELATAN|RUMAH\s+SAKIT\s+UMUM\s+DAERAH|RSUD\s+KONAWE\s+SELATAN|RSU\s+KONAWE\s+SELATAN)/i.test(
+      clean,
+    )
+  ) {
+    return "RSUD";
+  }
+  if (/^UPTD\s+PUSKESMAS\s+/i.test(clean)) {
+    const pkm = clean.replace(/^UPTD\s+PUSKESMAS\s+/i, "");
+    return (
+      "PKM " +
+      pkm
+        .toLowerCase()
+        .split(" ")
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(" ")
+    );
+  }
+  if (/^PUSKESMAS\s+/i.test(clean)) {
+    const pkm = clean.replace(/^PUSKESMAS\s+/i, "");
+    return (
+      "PKM " +
+      pkm
+        .toLowerCase()
+        .split(" ")
+        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(" ")
+    );
+  }
+  if (/^RUMAH\s+SAKIT/i.test(clean)) {
+    return "RSUD";
+  }
+  return clean;
+}
+

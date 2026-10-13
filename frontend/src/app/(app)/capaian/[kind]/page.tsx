@@ -1,5 +1,5 @@
 "use client";
-import { use, useState } from "react";
+import { use, useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Plus,
@@ -9,6 +9,7 @@ import {
   CheckCheck,
   Search,
   Trash2,
+  CalendarDays,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -40,8 +41,84 @@ import {
 } from "@/components/gass/shared";
 import { useAuth } from "@/components/gass/providers";
 import { monthKeys, monthNames } from "@/components/gass/navigation";
-import { api, write, queryString, number, rupiah, exportCsv } from "@/lib/api";
+import { api, write, queryString, number, rupiah, exportCsv, shortFaskes } from "@/lib/api";
 import { useDebounced } from "@/hooks/use-debounced";
+
+function InlineCell({
+  value,
+  disabled,
+  onSave,
+  className = "",
+  placeholder = "0",
+  max = 999999999,
+}: {
+  value: number;
+  disabled?: boolean;
+  onSave: (val: number) => Promise<void> | void;
+  className?: string;
+  placeholder?: string;
+  max?: number;
+}) {
+  const [val, setVal] = useState<string>(String(value ?? 0));
+  const [saving, setSaving] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  useEffect(() => {
+    setVal(String(value ?? 0));
+  }, [value]);
+
+  const commit = async () => {
+    const parsed = Number(val);
+    const num = isNaN(parsed) ? 0 : Math.max(0, parsed);
+    if (num === (value ?? 0)) return;
+    try {
+      setSaving(true);
+      await onSave(num);
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 900);
+    } catch {
+      setVal(String(value ?? 0));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (disabled) {
+    return (
+      <span className="block text-center text-xs font-mono font-medium text-muted-foreground select-none">
+        {value ?? 0}
+      </span>
+    );
+  }
+
+  return (
+    <input
+      type="number"
+      min={0}
+      max={max}
+      value={val}
+      onChange={(e) => setVal(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          e.currentTarget.blur();
+        }
+      }}
+      disabled={saving}
+      placeholder={placeholder}
+      className={`w-full h-7 text-center text-xs font-mono font-semibold rounded transition-all select-all
+        [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
+        border ${
+          success
+            ? "border-emerald-500 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold"
+            : saving
+            ? "border-primary/40 bg-primary/10 animate-pulse text-muted-foreground"
+            : "border-transparent bg-muted/30 hover:border-border hover:bg-muted/60 focus:border-primary focus:bg-background focus:ring-1 focus:ring-primary focus:outline-none"
+        } ${className}`}
+    />
+  );
+}
+
 export default function Capaian({
   params,
 }: {
@@ -111,6 +188,23 @@ export default function Capaian({
     },
     onError: (e) => toast.error(e.message),
   });
+
+  const saveInline = async (payload: {
+    entityId: string;
+    faskesId: string;
+    tahun: number;
+    bulan?: number;
+    nilai?: number;
+    target?: number;
+  }) => {
+    try {
+      await write(`/capaian/${kind}`, payload);
+      changed();
+    } catch (e: any) {
+      toast.error(e.message || "Gagal menyimpan capaian");
+      throw e;
+    }
+  };
   if (!valid) return <p>Halaman tidak ditemukan.</p>;
   const readOnly = user?.role === "KEPALA_DINAS";
   const fmt = money ? rupiah : number;
@@ -176,6 +270,48 @@ export default function Capaian({
         </div>
       </div>
       <GlobalFilters value={filters} onChange={setFilters} period={false} />
+      {q.data?.settings && (
+        <div className="flex flex-wrap items-center justify-between gap-3 text-xs rounded-xl border border-primary/20 bg-primary/5 px-4 py-2.5 mb-4 mt-2 shadow-xs">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="flex h-2 w-2 relative shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+            </span>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+              <strong className="text-foreground">
+                {q.data.settings.isOtomatisAktif
+                  ? `Periode Penginputan Otomatis (Tgl. ${q.data.settings.batasTanggalInput})`
+                  : "Mode Pra-Launching (Semua Bulan Buka)"}
+              </strong>
+              <span className="hidden sm:inline text-muted-foreground/60">·</span>
+              <span className="text-muted-foreground text-[11px]">
+                {q.data.settings.isOtomatisAktif
+                  ? `Batas akhir input tanggal ${q.data.settings.batasTanggalInput} bulan berikutnya. Bulan lewat terkunci otomatis.`
+                  : "Administrator membuka seluruh bulan untuk pengisian data awal & pelaporan historis."}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            {(() => {
+              const openMonths = q.data.months?.filter((m: any) => m.open) ?? [];
+              const allOpen = openMonths.length === 12;
+              return (
+                <Badge
+                  variant={allOpen ? "secondary" : "outline"}
+                  className="text-[10px] font-medium h-5 px-2 bg-background/80 flex items-center gap-1"
+                >
+                  <CalendarDays className="size-3 text-primary" />
+                  <span>
+                    {allOpen
+                      ? "12 Bulan Terbuka"
+                      : `${openMonths.length} Bulan Buka · ${12 - openMonths.length} Terkunci`}
+                  </span>
+                </Badge>
+              );
+            })()}
+          </div>
+        </div>
+      )}
       <div className="flex flex-wrap justify-between gap-3 items-center mb-4">
         <div className="relative max-w-sm w-full">
           <Search className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
@@ -190,7 +326,7 @@ export default function Capaian({
         <span className="text-[11px] text-muted-foreground">
           {readOnly
             ? "Mode pemantauan · hanya baca"
-            : "Klik angka bulanan untuk mengisi atau memperbarui realisasi."}
+            : "Input angka langsung pada tabel (otomatis tersimpan saat tekan Enter atau pindah sel)."}
         </span>
       </div>
       {q.isPending ? (
@@ -199,38 +335,39 @@ export default function Capaian({
         <ErrorState error={q.error} retry={() => q.refetch()} />
       ) : (
         <>
-          <div className="rounded-xl border bg-card overflow-hidden">
-            <Table className="min-w-[1800px]">
+          <div className="rounded-xl border bg-card overflow-hidden w-full">
+            <Table className="w-full table-fixed text-xs">
               <TableHeader>
-                <TableRow className="bg-muted/50">
-                  <TableHead className="sticky left-0 z-10 bg-card min-w-72 px-4 text-xs">
+                <TableRow className="bg-muted/50 border-b">
+                  <TableHead className="w-[21%] px-3 py-2 text-xs text-left">
                     {money
                       ? "Sub kegiatan & kegiatan"
                       : "Indikator & sub kegiatan"}
                   </TableHead>
-                  <TableHead className="min-w-36 text-xs">
-                    Target {money ? "pagu" : "kinerja"}
+                  <TableHead className="w-[6%] px-0.5 py-2 text-center text-xs bg-sky-500/10 dark:bg-sky-500/15 text-sky-950 dark:text-sky-200 border-x border-sky-200/50 dark:border-sky-800/40 font-semibold">
+                    Target
                   </TableHead>
                   {monthNames.map((m, i) => (
-                    <TableHead key={m} className="min-w-28 text-xs">
-                      <div>{m.slice(0, 3)}</div>
+                    <TableHead key={m} className="w-[4.2%] px-0.5 py-1.5 text-center text-xs">
+                      <div className="font-semibold text-[11px] leading-none">{m.slice(0, 3)}</div>
                       <span
-                        className={`inline-flex items-center gap-1 text-[9px] mt-1 ${q.data.months[i].open ? "text-primary" : "text-muted-foreground"}`}
+                        className={`inline-flex items-center justify-center text-[8px] font-medium mt-0.5 leading-none ${
+                          q.data.months[i].open ? "text-primary" : "text-muted-foreground"
+                        }`}
                       >
-                        {!q.data.months[i].open && (
-                          <LockKeyhole className="size-2.5" />
-                        )}
-                        {q.data.months[i].open
-                          ? "BUKA"
-                          : readOnly
-                            ? "BACA"
-                            : "TUTUP"}
+                        {q.data.months[i].open ? "BUKA" : "TUTUP"}
                       </span>
                     </TableHead>
                   ))}
-                  <TableHead className="min-w-36 text-xs">Realisasi</TableHead>
-                  <TableHead className="min-w-44 text-xs">Capaian</TableHead>
-                  <TableHead className="text-xs min-w-28">Verifikasi</TableHead>
+                  <TableHead className="w-[6.2%] px-0.5 py-2 text-center text-xs bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-950 dark:text-emerald-200 border-x border-emerald-200/50 dark:border-emerald-800/40 font-semibold">
+                    Realisasi
+                  </TableHead>
+                  <TableHead className="w-[10.4%] px-1 py-2 text-center text-xs font-semibold">
+                    Threshold & %
+                  </TableHead>
+                  <TableHead className="w-[6%] px-1 py-2 text-center text-xs">
+                    Verif
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -246,86 +383,123 @@ export default function Capaian({
                   </TableRow>
                 ) : (
                   q.data.data.map((r: any) => (
-                    <TableRow key={r.id}>
-                      <TableCell className="sticky left-0 z-10 bg-card max-w-80 px-4 py-5 whitespace-normal">
-                        <p className="text-xs font-semibold leading-5">
+                    <TableRow key={r.id} className="hover:bg-muted/20">
+                      <TableCell className="px-3 py-2 align-middle">
+                        <p className="text-xs font-semibold leading-snug line-clamp-2" title={r.label}>
                           {r.label}
                         </p>
-                        <p className="text-[10px] text-muted-foreground mt-1">
+                        <p className="text-[10px] text-muted-foreground line-clamp-1 mt-0.5" title={r.indikator?.subKegiatan.namaSubKegiatan ?? r.subKegiatan.kegiatan.namaKegiatan}>
                           {r.indikator?.subKegiatan.namaSubKegiatan ??
                             r.subKegiatan.kegiatan.namaKegiatan}
                         </p>
-                        <Badge variant="outline" className="text-[9px] mt-2">
-                          {r.faskes.namaFaskes}
+                        <Badge variant="outline" className="text-[9px] mt-1 px-1.5 py-0 h-4 font-normal" title={r.faskes.namaFaskes}>
+                          {shortFaskes(r.faskes.namaFaskes)}
                         </Badge>
                       </TableCell>
-                      <TableCell>
-                        <button
-                          disabled={
-                            readOnly ||
-                            (user?.role === "OPERATOR_PUSKESMAS" &&
-                              q.data.months.some((p: any) => !p.open))
-                          }
-                          onClick={() => open(r)}
-                          className="flex items-center gap-2 text-xs disabled:cursor-default"
-                        >
-                          {fmt(r.target)}
-                          {!readOnly && (
-                            <Pencil className="size-3 text-muted-foreground" />
-                          )}
-                        </button>
+                      <TableCell className="px-0.5 py-2 text-center align-middle bg-sky-500/[0.035] dark:bg-sky-500/[0.06] border-x border-sky-100/60 dark:border-sky-900/30">
+                        {money ? (
+                          <button
+                            disabled={
+                              readOnly ||
+                              (user?.role === "OPERATOR_PUSKESMAS" &&
+                                q.data.months.some((p: any) => !p.open))
+                            }
+                            onClick={() => open(r)}
+                            className="text-xs font-mono font-medium hover:underline disabled:cursor-default"
+                          >
+                            {fmt(r.target)}
+                          </button>
+                        ) : (
+                          <InlineCell
+                            value={r.target}
+                            disabled={
+                              readOnly ||
+                              (user?.role === "OPERATOR_PUSKESMAS" &&
+                                q.data.months.some((p: any) => !p.open))
+                            }
+                            max={999}
+                            className="bg-transparent hover:bg-sky-500/10"
+                            onSave={(val) =>
+                              saveInline({
+                                entityId: r.indikatorId ?? r.subKegiatanId,
+                                faskesId: r.faskesId,
+                                tahun: filters.tahun,
+                                target: val,
+                              })
+                            }
+                          />
+                        )}
                       </TableCell>
                       {monthKeys.map((key, i) => (
-                        <TableCell key={key}>
-                          <button
-                            className="text-xs text-left w-full rounded-md border border-transparent px-2 py-2 hover:border-primary/30 hover:bg-primary/5 disabled:text-muted-foreground disabled:hover:bg-transparent disabled:hover:border-transparent"
-                            aria-label={`Edit ${monthNames[i]} ${r.label}`}
-                            disabled={readOnly || !q.data.months[i].open}
-                            onClick={() => open(r, i + 1)}
-                          >
-                            {fmt(r[key])}
-                          </button>
+                        <TableCell key={key} className="px-0.5 py-2 text-center align-middle">
+                          {money ? (
+                            <button
+                              className="text-xs text-center w-full rounded px-1 py-1 hover:bg-primary/5 disabled:text-muted-foreground disabled:hover:bg-transparent"
+                              aria-label={`Edit ${monthNames[i]} ${r.label}`}
+                              disabled={readOnly || !q.data.months[i].open}
+                              onClick={() => open(r, i + 1)}
+                            >
+                              {fmt(r[key])}
+                            </button>
+                          ) : (
+                            <InlineCell
+                              value={r[key]}
+                              disabled={readOnly || !q.data.months[i].open}
+                              max={999}
+                              onSave={(val) =>
+                                saveInline({
+                                  entityId: r.indikatorId ?? r.subKegiatanId,
+                                  faskesId: r.faskesId,
+                                  tahun: filters.tahun,
+                                  bulan: i + 1,
+                                  nilai: val,
+                                })
+                              }
+                            />
+                          )}
                         </TableCell>
                       ))}
-                      <TableCell className="text-xs font-semibold">
+                      <TableCell className="px-0.5 py-2 text-center align-middle font-mono font-bold text-xs bg-emerald-500/[0.035] dark:bg-emerald-500/[0.06] border-x border-emerald-100/60 dark:border-emerald-900/30 text-emerald-950 dark:text-emerald-100">
                         {fmt(r.realisasi)}
                       </TableCell>
-                      <TableCell>
-                        <p className="text-sm font-semibold mb-2">
-                          {number(r.persentase)}%
-                        </p>
-                        <StatusBadge status={r.status} />
+                      <TableCell className="px-1 py-1.5 text-center align-middle">
+                        <div className="flex flex-col items-center justify-center gap-0.5">
+                          <span className="font-mono text-xs font-bold leading-tight">
+                            {number(r.persentase)}%
+                          </span>
+                          <StatusBadge status={r.status} compact />
+                        </div>
                       </TableCell>
-                      <TableCell>
-                        <div className="flex gap-1 items-center">
+                      <TableCell className="px-1 py-2 text-center align-middle">
+                        <div className="flex gap-1 items-center justify-center">
                           {["ADMIN_DINKES", "AKUN_BIDANG"].includes(
                             user?.role || "",
                           ) ? (
                             <Button
                               title={
                                 r.isValidated
-                                  ? "Batalkan verifikasi"
+                                    ? "Batalkan verifikasi"
                                   : "Verifikasi laporan"
                               }
                               variant={r.isValidated ? "secondary" : "outline"}
                               size="sm"
+                              className="h-6 px-1.5 text-[10px]"
                               disabled={verify.isPending}
                               onClick={() => verify.mutate(r)}
                             >
                               <CheckCheck className="size-3" />
-                              {r.isValidated ? "Terverifikasi" : "Verifikasi"}
+                              <span className="hidden xl:inline">{r.isValidated ? "Batal" : "Verif"}</span>
                             </Button>
                           ) : (
-                            <Badge variant="outline">
-                              {r.isValidated
-                                ? "Terverifikasi"
-                                : "Belum diperiksa"}
+                            <Badge variant={r.isValidated ? "default" : "outline"} className="text-[9px] px-1 py-0 h-4">
+                              {r.isValidated ? "Valid" : "Belum"}
                             </Badge>
                           )}
                           {user?.role === "ADMIN_DINKES" && (
                             <Button
                               variant="ghost"
                               size="icon"
+                              className="h-6 w-6"
                               aria-label="Hapus laporan"
                               onClick={() => setDeleting(r)}
                             >
@@ -340,9 +514,8 @@ export default function Capaian({
               </TableBody>
             </Table>
           </div>
-          <p className="text-[10px] text-muted-foreground mt-3">
-            Geser tabel ke kanan untuk melihat seluruh bulan. Perubahan
-            realisasi membatalkan verifikasi sebelumnya.
+          <p className="text-[10px] text-muted-foreground mt-2">
+            * Angka realisasi otomatis disimpan saat berpindah sel atau menekan tombol Enter. Perubahan realisasi membatalkan status verifikasi.
           </p>
         </>
       )}

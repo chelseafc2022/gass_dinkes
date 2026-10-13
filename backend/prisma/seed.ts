@@ -42,8 +42,17 @@ async function main() {
       },
       update: {},
     });
+
+  // Import data awal Program, Kegiatan, Sub Kegiatan, Indikator, dan Capaian Kinerja Faskes
+  try {
+    const { seedDataAwal } = await import("./seed-data-awal.js");
+    await seedDataAwal();
+  } catch (err: any) {
+    console.warn("Peringatan import data awal Excel:", err?.message);
+  }
+
   console.log(
-    "Seed GASS selesai. Program, indikator, dan capaian diisi dari data resmi Dinas Kesehatan.",
+    "Seed GASS selesai. Program, kegiatan, sub kegiatan, indikator, dan capaian diisi dari data resmi Dinas Kesehatan.",
   );
 }
 main()

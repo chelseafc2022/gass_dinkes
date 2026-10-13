@@ -81,4 +81,12 @@ export class ReportsController {
   ) {
     return this.service.dashboard(u, filters.parse(q));
   }
+  @Get("periode-status")
+  periodeStatus(
+    @CurrentUser() u: Actor,
+    @Query("tahun") tahun?: string,
+  ) {
+    const year = tahun ? Number(tahun) : new Date().getFullYear();
+    return this.service.periods(u, year);
+  }
 }

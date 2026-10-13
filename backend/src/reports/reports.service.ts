@@ -314,9 +314,17 @@ export class ReportsService {
       this.list("keuangan", u, q),
     ]);
     const facilities = await this.db.faskes.findMany({
-      where: facilityScope(u, q.faskesId)
-        ? { id: facilityScope(u, q.faskesId) }
-        : {},
+      where: {
+        ...(facilityScope(u, q.faskesId)
+          ? { id: facilityScope(u, q.faskesId) }
+          : {}),
+        NOT: {
+          namaFaskes: {
+            contains: "BLUD RSU KONAWE SELATAN",
+            mode: "insensitive",
+          },
+        },
+      },
       select: { id: true, namaFaskes: true },
     });
     const indicators = k.available.map((ind: any) => {

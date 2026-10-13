@@ -12,24 +12,36 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "./providers";
 import { monthNames } from "./navigation";
 import { api } from "@/lib/api";
-export function StatusBadge({ status }: { status: string }) {
+export function StatusBadge({
+  status,
+  compact = false,
+}: {
+  status: string;
+  compact?: boolean;
+}) {
   return (
     <Badge
       variant="outline"
-      className={
+      className={`text-[9px] px-1.5 py-0 h-4.5 font-medium whitespace-nowrap inline-flex items-center gap-1 ${
         status === "HIJAU"
-          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+          ? "border-emerald-300/80 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
           : status === "KUNING"
-            ? "border-amber-200 bg-amber-50 text-amber-700"
-            : "border-rose-200 bg-rose-50 text-rose-700"
-      }
+            ? "border-amber-300/80 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
+            : "border-rose-300/80 bg-rose-50 text-rose-700 dark:border-rose-800 dark:bg-rose-950/60 dark:text-rose-300"
+      }`}
     >
-      <span className="size-1.5 rounded-full bg-current" />
-      {status === "HIJAU"
-        ? "Tercapai"
-        : status === "KUNING"
-          ? "Perhatian"
-          : "Perlu ditingkatkan"}
+      <span className="size-1.5 rounded-full bg-current shrink-0" />
+      {compact
+        ? status === "HIJAU"
+          ? "Tercapai"
+          : status === "KUNING"
+            ? "Perhatian"
+            : "Kurang"
+        : status === "HIJAU"
+          ? "Tercapai"
+          : status === "KUNING"
+            ? "Perhatian"
+            : "Perlu ditingkatkan"}
     </Badge>
   );
 }

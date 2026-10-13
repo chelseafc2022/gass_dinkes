@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Activity,
   Search,
@@ -56,6 +56,57 @@ import { useAuth } from "./providers";
 import { navigation, roleNames } from "./navigation";
 import { api, ApiError } from "@/lib/api";
 import { toast } from "sonner";
+
+function SidebarPeriodAlert() {
+  const { data } = useQuery({
+    queryKey: ["periode-status"],
+    queryFn: () => api("/periode-status"),
+    staleTime: 60_000,
+  });
+
+  if (!data?.settings) return null;
+  const { settings, months } = data;
+  const openCount = months?.filter((m: any) => m.open).length ?? 0;
+  const allOpen = openCount === 12;
+
+  return (
+    <div className="mx-2 mt-2.5 mb-2 rounded-xl border border-primary/20 bg-primary/5 p-3 text-xs shadow-xs">
+      <div className="flex items-center justify-between gap-1 mb-1.5">
+        <div className="flex items-center gap-1.5">
+          <span className="flex h-2 w-2 relative shrink-0">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+          </span>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
+            Pengingat Input
+          </span>
+        </div>
+        <span className="text-[9px] font-medium text-muted-foreground px-1.5 py-0.5 rounded bg-background/80 border">
+          {allOpen ? "12 Bln Buka" : `${openCount} Bln Buka`}
+        </span>
+      </div>
+      <p className="font-semibold text-[11px] leading-tight text-foreground">
+        {settings.isOtomatisAktif
+          ? `Batas Input: Tgl ${settings.batasTanggalInput}`
+          : "Mode Pra-Launching"}
+      </p>
+      <p className="text-[10px] text-muted-foreground leading-snug mt-1">
+        {settings.isOtomatisAktif
+          ? `Penginputan capaian sebelum tanggal ${settings.batasTanggalInput} tiap bulan berikutnya.`
+          : "Semua bulan dibuka untuk melengkapi data capaian awal faskes."}
+      </p>
+      <div className="mt-2.5 pt-2 border-t border-primary/10 flex items-center justify-between text-[10px]">
+        <span className="text-muted-foreground">Admin Faskes</span>
+        <Link
+          href="/capaian/kinerja"
+          className="font-medium text-primary hover:underline inline-flex items-center gap-0.5"
+        >
+          Isi Capaian <ArrowUpRight className="size-2.5" />
+        </Link>
+      </div>
+    </div>
+  );
+}
 export function Shell({ children }: { children: React.ReactNode }) {
   const { config } = useSidebarConfig();
   const { user, isPending, error } = useAuth(),
@@ -163,21 +214,13 @@ export function Shell({ children }: { children: React.ReactNode }) {
                       ))}
                     </SidebarMenu>
                   </SidebarGroupContent>
+                  {group === "MONITORING" && <SidebarPeriodAlert />}
                 </SidebarGroup>
               )
             );
           })}
         </SidebarContent>
         <SidebarFooter className="p-4">
-          <div className="rounded-xl border border-primary/15 bg-primary/5 p-3 mb-2">
-            <ShieldCheck className="size-5 text-primary mb-2" />
-            <p className="text-xs font-semibold">
-              Kinerja terukur, layanan setara.
-            </p>
-            <p className="text-[11px] text-muted-foreground mt-1">
-              Gerakan Aksi Sehat Setara
-            </p>
-          </div>
           <DropdownMenu>
             <DropdownMenuTrigger className="flex w-full items-center gap-3 p-2 rounded-lg hover:bg-accent">
               <Avatar className="size-9">
