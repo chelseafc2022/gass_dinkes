@@ -318,12 +318,26 @@ export class ReportsService {
         ...(facilityScope(u, q.faskesId)
           ? { id: facilityScope(u, q.faskesId) }
           : {}),
-        NOT: {
-          namaFaskes: {
-            contains: "BLUD RSU KONAWE SELATAN",
-            mode: "insensitive",
+        NOT: [
+          {
+            namaFaskes: {
+              contains: "BLUD RSU KONAWE SELATAN",
+              mode: "insensitive",
+            },
           },
-        },
+          {
+            namaFaskes: {
+              contains: "RUMAH SAKIT",
+              mode: "insensitive",
+            },
+          },
+          {
+            namaFaskes: {
+              contains: "RSUD",
+              mode: "insensitive",
+            },
+          },
+        ],
       },
       select: { id: true, namaFaskes: true },
     });
