@@ -54,8 +54,7 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "./providers";
 import { navigation, roleNames } from "./navigation";
-import { api, ApiError } from "@/lib/api";
-import { toast } from "sonner";
+import { api } from "@/lib/api";
 
 function SidebarPeriodAlert() {
   const { data } = useQuery({
@@ -109,7 +108,7 @@ function SidebarPeriodAlert() {
 }
 export function Shell({ children }: { children: React.ReactNode }) {
   const { config } = useSidebarConfig();
-  const { user, isPending, error } = useAuth(),
+  const { user, status, isPending, error } = useAuth(),
     path = usePathname(),
     router = useRouter(),
     client = useQueryClient();
@@ -118,12 +117,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const nav = navigation.filter((n) => user?.permissions.includes(n.key));
   const active = navigation.find((n) => path === n.href);
   useEffect(() => {
-    if (
-      error instanceof ApiError &&
-      (error.status === 401 || error.status === 403)
-    )
-      router.replace("/login");
-  }, [error, router]);
+    if (status === "unauthenticated") router.replace("/login");
+  }, [status, router]);
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -134,14 +129,14 @@ export function Shell({ children }: { children: React.ReactNode }) {
     document.addEventListener("keydown", key);
     return () => document.removeEventListener("keydown", key);
   }, []);
-  if (isPending)
+  if (isPending || status === "unauthenticated")
     return (
       <div className="p-8 space-y-5">
         <Skeleton className="h-14 w-60" />
         <Skeleton className="h-80 w-full" />
       </div>
     );
-  if (!user)
+  if (status === "error" || !user)
     return (
       <div className="grid min-h-screen place-content-center gap-4 text-center">
         <HeartPulse className="mx-auto size-10 text-primary" />
@@ -155,10 +150,14 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       await api("/auth/logout", { method: "POST" });
-      client.clear();
-      router.replace("/login");
     } catch (e) {
-      toast.error((e as Error).message);
+      console.error("Logout error:", e);
+    } finally {
+      client.setQueryData(["me"], null);
+      client.removeQueries({
+        predicate: (query) => query.queryKey[0] !== "me",
+      });
+      router.replace("/login");
     }
   };
   return (
@@ -244,7 +243,12 @@ export function Shell({ children }: { children: React.ReactNode }) {
             <DropdownMenuContent side="top" align="start">
               <DropdownMenuLabel>{user.nip}</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={logout}>
+              <DropdownMenuItem
+                onSelect={(e) => {
+                  e.preventDefault();
+                  logout();
+                }}
+              >
                 <LogOut />
                 Keluar
               </DropdownMenuItem>

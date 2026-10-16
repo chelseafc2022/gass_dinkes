@@ -6,7 +6,8 @@ export class ApiError extends Error {
     super(message);
   }
 }
-let refresh: Promise<Response> | null = null;
+let refresh: Promise<boolean> | null = null;
+let authGeneration = 0;
 export async function api<T = any>(
   path: string,
   options: RequestInit = {},
@@ -21,16 +22,29 @@ export async function api<T = any>(
         ...options.headers,
       },
     });
+  const requestGeneration = authGeneration;
   let response = await run();
-  if (response.status === 401 && !path.startsWith("/auth/")) {
-    refresh ??= fetch("/api/auth/refresh", {
-      method: "POST",
-      credentials: "include",
-      headers: { "X-Gass-Client": "web" },
-    }).finally(() => {
-      refresh = null;
-    });
-    if ((await refresh).ok) response = await run();
+  const canRefresh = !["/auth/login", "/auth/logout", "/auth/refresh"].includes(
+    path,
+  );
+  if (response.status === 401 && canRefresh) {
+    if (requestGeneration !== authGeneration) {
+      response = await run();
+    } else {
+      refresh ??= fetch("/api/auth/refresh", {
+        method: "POST",
+        credentials: "include",
+        headers: { "X-Gass-Client": "web" },
+      })
+        .then((result) => {
+          if (result.ok) authGeneration += 1;
+          return result.ok;
+        })
+        .finally(() => {
+          refresh = null;
+        });
+      if (await refresh) response = await run();
+    }
   }
   if (!response.ok) {
     const body = await response
@@ -121,4 +135,3 @@ export function shortFaskes(name: string): string {
   }
   return clean;
 }
-

@@ -21,18 +21,17 @@ import { write } from "@/lib/api";
 export default function Login() {
   const router = useRouter(),
     client = useQueryClient(),
-    { user } = useAuth();
+    { status } = useAuth();
   const [show, setShow] = useState(false);
   const login = useMutation({
     mutationFn: (b: any) => write("/auth/login", b, "POST"),
     onSuccess: (r) => {
       client.setQueryData(["me"], r.user);
-      router.replace("/dashboard");
     },
   });
   useEffect(() => {
-    if (user) router.replace("/dashboard");
-  }, [user, router]);
+    if (status === "authenticated") router.replace("/dashboard");
+  }, [status, router]);
   return (
     <div className="min-h-screen grid lg:grid-cols-[1.05fr_1fr]">
       <section className="login-story hidden lg:flex flex-col justify-between p-14 text-white relative overflow-hidden">
@@ -94,10 +93,7 @@ export default function Login() {
           <h2 className="text-3xl font-semibold tracking-tight mt-2">
             Masuk ke GASS
           </h2>
-          <p className="text-sm text-muted-foreground leading-6 mt-3 mb-8">
-            Gunakan akun eGov / Simpeg Anda untuk mengakses ruang kerja Dinas
-            Kesehatan.
-          </p>
+
           <form
             className="space-y-5"
             onSubmit={(e) => {

@@ -26,6 +26,9 @@ export const filters = z.object({
   bidangId: z.string().optional(),
   bulan: z.coerce.number().int().min(1).max(12).optional(),
   triwulan: z.coerce.number().int().min(1).max(4).optional(),
+  kategori: z
+    .enum(["SPM", "IKU", "IKK", "INDIKATOR_PROGRAM"])
+    .optional(),
   search: z.string().optional(),
 });
 export type Filter = z.infer<typeof filters>;
@@ -37,6 +40,7 @@ export class ReportsService {
     if (u.role === "AKUN_BIDANG" && !b)
       throw new ForbiddenException("Bidang belum ditetapkan.");
     return {
+      ...(q.kategori ? { kategoriIndikator: q.kategori } : {}),
       ...(b ? { bidang: { some: { bidangId: b } } } : {}),
       subKegiatan: { kegiatan: { program: { tahun: q.tahun } } },
     };
@@ -229,6 +233,10 @@ export class ReportsService {
             },
           },
         });
+        if (before?.isValidated && u.role === "OPERATOR_PUSKESMAS")
+          throw new ForbiddenException(
+            "Laporan sudah diverifikasi dan dikunci. Hubungi bidang atau Admin Dinkes untuk membuka kembali atau melakukan koreksi.",
+          );
         const item = await (tx as any)[model].upsert({
           where: {
             [composite]: {

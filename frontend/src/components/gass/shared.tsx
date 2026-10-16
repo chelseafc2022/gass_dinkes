@@ -95,10 +95,12 @@ export function GlobalFilters({
   value,
   onChange,
   period = true,
+  excludeRumahSakit = false,
 }: {
   value: Filters;
   onChange: (f: Filters) => void;
   period?: boolean;
+  excludeRumahSakit?: boolean;
 }) {
   const { user } = useAuth();
   const { data } = useQuery({
@@ -116,6 +118,12 @@ export function GlobalFilters({
           : {}),
     });
   const year = new Date().getFullYear();
+  const faskesOptions = (data?.faskes ?? []).filter(
+    (f: any) =>
+      !excludeRumahSakit ||
+      (f.jenisFaskes !== "RUMAH_SAKIT" &&
+        !/(RUMAH\s+SAKIT|RSUD|BLUD\s+RSU)/i.test(f.namaFaskes)),
+  );
   return (
     <div className="rounded-xl border bg-card p-3 mb-6">
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:flex lg:items-center gap-2.5 w-full">
@@ -142,7 +150,7 @@ export function GlobalFilters({
             onChange={(e) => set("faskesId", e.target.value)}
           >
             <option value="">Semua fasilitas kesehatan</option>
-            {data?.faskes.map((f: any) => (
+            {faskesOptions.map((f: any) => (
               <option key={f.id} value={f.id}>
                 {f.namaFaskes}
               </option>

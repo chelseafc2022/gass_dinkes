@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowDownToLine,
@@ -22,6 +22,8 @@ import {
   ResponsiveContainer,
   Cell,
   Legend,
+  LabelList,
+  ReferenceLine,
 } from "recharts";
 import Link from "next/link";
 import {
@@ -35,6 +37,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/components/gass/providers";
 import {
   ErrorState,
@@ -49,12 +52,26 @@ const colors: Record<string, string> = {
   KUNING: "#e4af54",
   MERAH: "#dd7775",
 };
+const trendPalette = [
+  "#0c9586",
+  "#2563eb",
+  "#d97706",
+  "#7c3aed",
+  "#db2777",
+  "#059669",
+  "#0891b2",
+  "#ea580c",
+  "#4f46e5",
+  "#0d9488",
+];
 function Trend({
   indicators,
   category,
+  faskesName,
 }: {
   indicators: any[];
   category: string;
+  faskesName?: string;
 }) {
   const [selected, setSelected] = useState("all");
   const items = indicators.filter((i) => i.kategori === category);
@@ -66,11 +83,32 @@ function Trend({
   }));
   return (
     <Card>
-      <CardHeader className="flex flex-row flex-wrap justify-between items-start">
+      <CardHeader className="flex flex-row flex-wrap justify-between items-start gap-4">
         <div>
-          <CardTitle className="text-sm">Tren triwulanan {category}</CardTitle>
+          <div className="flex flex-wrap items-center gap-2">
+            <CardTitle className="text-sm font-semibold">
+              {category === "IKU"
+                ? "Tren triwulanan IKU (Indikator Kinerja Utama)"
+                : `Tren triwulanan ${category}`}
+            </CardTitle>
+            {faskesName ? (
+              <Badge
+                variant="outline"
+                className="text-[10px] font-normal border-primary/30 bg-primary/5 text-primary inline-flex items-center gap-1"
+              >
+                <Building2 className="size-3" />
+                {shortFaskes(faskesName)}
+              </Badge>
+            ) : (
+              <span className="text-[10px] text-muted-foreground font-normal">
+                (Seluruh Faskes)
+              </span>
+            )}
+          </div>
           <CardDescription className="text-xs mt-1.5">
-            Realisasi per triwulan terhadap target tahunan
+            {faskesName
+              ? `Realisasi capaian ${category} per triwulan pada ${faskesName} terhadap target tahunan`
+              : `Realisasi per triwulan terhadap target tahunan (agregat seluruh faskes)`}
           </CardDescription>
         </div>
         <select
@@ -79,7 +117,7 @@ function Trend({
           value={selected}
           onChange={(e) => setSelected(e.target.value)}
         >
-          <option value="all">Seluruh indikator</option>
+          <option value="all">Seluruh {category}</option>
           {items.map((i) => (
             <option key={i.id} value={i.id}>
               {i.nama}
@@ -93,8 +131,11 @@ function Trend({
             Belum ada indikator {category} untuk periode ini.
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={280}>
-            <BarChart data={data}>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart
+              data={data}
+              margin={{ top: 12, right: 12, left: -10, bottom: 4 }}
+            >
               <CartesianGrid
                 vertical={false}
                 strokeDasharray="3 4"
@@ -113,22 +154,30 @@ function Trend({
                   borderRadius: 12,
                   border: "1px solid var(--border)",
                   fontSize: 11,
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
                 }}
-                formatter={(v: any) => `${number(Number(v))}%`}
+                formatter={(v: any, name: any) => [
+                  `${number(Number(v))}%`,
+                  items.find((x) => x.id === name || x.nama === name)?.nama ||
+                    name,
+                ]}
               />
+              {chosen.length > 1 && (
+                <Legend
+                  wrapperStyle={{ fontSize: 11, paddingTop: 12 }}
+                  iconType="circle"
+                  iconSize={8}
+                />
+              )}
               {chosen.map((i, n) => (
                 <Bar
                   isAnimationActive={false}
                   key={i.id}
                   dataKey={i.id}
                   name={i.nama}
-                  fill={
-                    ["#087f73", "#69baaa", "#e0b568", "#7b92bc", "#9a86b5"][
-                      n % 5
-                    ]
-                  }
+                  fill={trendPalette[n % trendPalette.length]}
                   radius={[4, 4, 0, 0]}
-                  maxBarSize={36}
+                  maxBarSize={chosen.length > 3 ? 24 : 40}
                 />
               ))}
             </BarChart>
@@ -138,13 +187,200 @@ function Trend({
     </Card>
   );
 }
+
+const quarterBars = [
+  { key: "tw1", label: "TW 1", color: "#0c9586" },
+  { key: "tw2", label: "TW 2", color: "#2563eb" },
+  { key: "tw3", label: "TW 3", color: "#d97706" },
+  { key: "tw4", label: "TW 4", color: "#7c3aed" },
+];
+
+function AllIndicatorQuarterlyTrend({
+  filters,
+  facilities,
+  lockedFaskesId,
+  category,
+}: {
+  filters: ReturnType<typeof initialFilters>;
+  facilities: any[];
+  lockedFaskesId?: string;
+  category: "SPM" | "IKU";
+}) {
+  const [faskesId, setFaskesId] = useState(
+    lockedFaskesId || filters.faskesId || "",
+  );
+
+  useEffect(() => {
+    setFaskesId(lockedFaskesId || filters.faskesId || "");
+  }, [filters.faskesId, lockedFaskesId]);
+
+  const chartQuery = useQuery({
+    queryKey: [
+      "dashboard-indicator-quarterly",
+      filters.tahun,
+      filters.bidangId,
+      faskesId,
+    ],
+    queryFn: () =>
+      api(
+        `/dashboard?${queryString({
+          tahun: filters.tahun,
+          bidangId: filters.bidangId,
+          faskesId,
+        })}`,
+      ),
+  });
+  const selectedFaskes = facilities.find((f: any) => f.id === faskesId);
+  const indicators =
+    chartQuery.data?.indicators.filter(
+      (i: any) => i.kategori === category,
+    ) ?? [];
+  const data = indicators.map((indicator: any, index: number) => ({
+    label: `${category} ${String(index + 1).padStart(2, "0")}`,
+    nama: indicator.nama,
+    ...Object.fromEntries(
+      quarterBars.map((quarter, quarterIndex) => [
+        quarter.key,
+        indicator.trend[quarterIndex]?.value ?? 0,
+      ]),
+    ),
+  }));
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row flex-wrap justify-between items-start gap-4">
+        <div>
+          <CardTitle className="text-sm font-semibold">
+            Perbandingan triwulan seluruh {category}
+          </CardTitle>
+          <CardDescription className="text-xs mt-1.5">
+            Empat batang pada setiap {category} menunjukkan capaian TW 1 sampai
+            TW 4
+            {selectedFaskes
+              ? ` di ${selectedFaskes.namaFaskes}`
+              : " pada seluruh fasilitas kesehatan"}
+            .
+          </CardDescription>
+        </div>
+        <select
+          aria-label={`Filter fasilitas kesehatan tren seluruh ${category}`}
+          className="filter-select w-full sm:w-64"
+          value={lockedFaskesId || faskesId}
+          disabled={!!lockedFaskesId}
+          onChange={(event) => setFaskesId(event.target.value)}
+        >
+          <option value="">Semua fasilitas kesehatan</option>
+          {facilities.map((facility: any) => (
+            <option key={facility.id} value={facility.id}>
+              {facility.namaFaskes}
+            </option>
+          ))}
+        </select>
+      </CardHeader>
+      <CardContent>
+        {chartQuery.isPending ? (
+          <Skeleton className="h-80 w-full" />
+        ) : chartQuery.error ? (
+          <ErrorState
+            error={chartQuery.error as Error}
+            retry={() => chartQuery.refetch()}
+          />
+        ) : data.length === 0 ? (
+          <div className="h-60 grid place-content-center text-xs text-muted-foreground">
+            Belum ada indikator {category} untuk periode ini.
+          </div>
+        ) : (
+          <div className="overflow-x-auto pb-2">
+            <div style={{ minWidth: Math.max(760, data.length * 130) }}>
+              <ResponsiveContainer width="100%" height={340}>
+                <BarChart
+                  data={data}
+                  margin={{ top: 12, right: 12, left: -10, bottom: 8 }}
+                >
+                  <CartesianGrid
+                    vertical={false}
+                    strokeDasharray="3 4"
+                    stroke="var(--border)"
+                  />
+                  <XAxis
+                    dataKey="label"
+                    fontSize={10}
+                    axisLine={false}
+                    tickLine={false}
+                    interval={0}
+                  />
+                  <YAxis
+                    unit="%"
+                    fontSize={10}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    labelFormatter={(_label, payload) =>
+                      payload?.[0]?.payload?.nama || _label
+                    }
+                    formatter={(value: any, name: any) => [
+                      `${number(Number(value))}%`,
+                      name,
+                    ]}
+                    contentStyle={{
+                      background: "var(--card)",
+                      borderRadius: 12,
+                      border: "1px solid var(--border)",
+                      fontSize: 11,
+                      maxWidth: 320,
+                    }}
+                  />
+                  <Legend
+                    wrapperStyle={{ fontSize: 11, paddingTop: 12 }}
+                    iconType="circle"
+                    iconSize={8}
+                  />
+                  {quarterBars.map((quarter) => (
+                    <Bar
+                      isAnimationActive={false}
+                      key={quarter.key}
+                      dataKey={quarter.key}
+                      name={quarter.label}
+                      fill={quarter.color}
+                      radius={[4, 4, 0, 0]}
+                      maxBarSize={24}
+                    />
+                  ))}
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 export default function Dashboard() {
   const { user } = useAuth();
   const [filters, setFilters] = useState(initialFilters),
     [selected, setSelected] = useState("");
+  const optionsQuery = useQuery({
+    queryKey: ["options"],
+    queryFn: () => api("/options"),
+  });
+  const dashboardFacilities = (optionsQuery.data?.faskes ?? []).filter(
+    (f: any) =>
+      f.jenisFaskes !== "RUMAH_SAKIT" &&
+      !/(RUMAH\s+SAKIT|RSUD|BLUD\s+RSU)/i.test(f.namaFaskes),
+  );
+  const effectiveFaskesId =
+    user?.role === "OPERATOR_PUSKESMAS"
+      ? user.faskesId || ""
+      : filters.faskesId;
+  const activeFaskes = dashboardFacilities.find(
+    (f: any) => f.id === effectiveFaskesId,
+  );
+  const activeFaskesName = activeFaskes?.namaFaskes;
+  const effectiveFilters = { ...filters, faskesId: effectiveFaskesId };
   const q = useQuery({
-    queryKey: ["dashboard", filters],
-    queryFn: () => api(`/dashboard?${queryString(filters as any)}`),
+    queryKey: ["dashboard", effectiveFilters],
+    queryFn: () => api(`/dashboard?${queryString(effectiveFilters as any)}`),
   });
   const d = q.data;
   const spm = d?.indicators.filter((i: any) => i.kategori === "SPM") ?? [],
@@ -196,7 +432,11 @@ export default function Dashboard() {
           Unduh rekap
         </Button>
       </div>
-      <GlobalFilters value={filters} onChange={setFilters} />
+      <GlobalFilters
+        value={filters}
+        onChange={setFilters}
+        excludeRumahSakit
+      />
       {q.isPending ? (
         <Loading />
       ) : q.error ? (
@@ -285,16 +525,143 @@ export default function Dashboard() {
                 </Card>
               ))}
             </div>
+            <Card className="mb-7 overflow-hidden">
+              <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-4 border-b bg-muted/20">
+                <div>
+                  <CardTitle className="text-base">
+                    Perbandingan capaian global
+                  </CardTitle>
+                  <CardDescription className="mt-1.5 text-xs">
+                    Rata-rata capaian kinerja dibandingkan dengan persentase
+                    serapan keuangan tahun {filters.tahun}
+                    {activeFaskesName ? ` · ${activeFaskesName}` : ""}.
+                  </CardDescription>
+                </div>
+                <div className="flex flex-wrap gap-2 text-[10px]">
+                  <Badge
+                    variant="outline"
+                    className="border-primary/25 bg-primary/5 text-primary"
+                  >
+                    Kinerja {number(d.summary.capaian)}%
+                  </Badge>
+                  <Badge
+                    variant="outline"
+                    className="border-blue-500/25 bg-blue-500/5 text-blue-700 dark:text-blue-300"
+                  >
+                    Keuangan {number(d.summary.serapan)}%
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-5">
+                <ResponsiveContainer width="100%" height={270}>
+                  <BarChart
+                    data={[
+                      {
+                        name: "Capaian kinerja",
+                        value: d.summary.capaian,
+                        fill: "#0c9586",
+                      },
+                      {
+                        name: "Serapan keuangan",
+                        value: d.summary.serapan,
+                        fill: "#2563eb",
+                      },
+                    ]}
+                    margin={{ top: 22, right: 16, left: -8, bottom: 4 }}
+                  >
+                    <CartesianGrid
+                      vertical={false}
+                      strokeDasharray="3 4"
+                      stroke="var(--border)"
+                    />
+                    <XAxis
+                      dataKey="name"
+                      fontSize={11}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      unit="%"
+                      fontSize={10}
+                      axisLine={false}
+                      tickLine={false}
+                      domain={[
+                        0,
+                        (dataMax: number) =>
+                          Math.max(100, Math.ceil(dataMax / 10) * 10),
+                      ]}
+                    />
+                    <Tooltip
+                      formatter={(value: any) => [
+                        `${number(Number(value))}%`,
+                        "Capaian",
+                      ]}
+                      contentStyle={{
+                        background: "var(--card)",
+                        borderRadius: 12,
+                        border: "1px solid var(--border)",
+                        fontSize: 11,
+                      }}
+                    />
+                    <ReferenceLine
+                      y={100}
+                      stroke="var(--muted-foreground)"
+                      strokeDasharray="4 4"
+                      opacity={0.55}
+                      label={{
+                        value: "Target 100%",
+                        position: "insideTopRight",
+                        fontSize: 10,
+                        fill: "var(--muted-foreground)",
+                      }}
+                    />
+                    <Bar
+                      isAnimationActive={false}
+                      dataKey="value"
+                      radius={[7, 7, 0, 0]}
+                      maxBarSize={92}
+                    >
+                      <LabelList
+                        dataKey="value"
+                        position="top"
+                        formatter={(value: any) =>
+                          `${number(Number(value))}%`
+                        }
+                        className="fill-foreground text-xs font-semibold"
+                      />
+                      {[
+                        { fill: "#0c9586" },
+                        { fill: "#2563eb" },
+                      ].map((item, index) => (
+                        <Cell key={index} fill={item.fill} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
             <Tabs defaultValue="spm">
-              <div className="flex justify-between items-center gap-3 mb-6">
-                <TabsList className="bg-muted/80">
-                  <TabsTrigger value="spm" className="text-xs">
+              <div className="mb-6 flex flex-col items-stretch justify-between gap-3 lg:flex-row lg:items-center">
+                <TabsList className="grid h-auto w-full grid-cols-1 gap-2 bg-transparent p-0 sm:grid-cols-3 lg:w-auto">
+                  <TabsTrigger
+                    value="spm"
+                    className="h-11 border bg-card px-4 text-xs font-semibold text-muted-foreground shadow-xs hover:border-primary/40 hover:bg-primary/5 hover:text-primary data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md dark:data-[state=active]:bg-primary dark:data-[state=active]:text-primary-foreground"
+                  >
+                    <Target className="size-4" />
                     Standar pelayanan minimal
                   </TabsTrigger>
-                  <TabsTrigger value="iku" className="text-xs">
+                  <TabsTrigger
+                    value="iku"
+                    className="h-11 border bg-card px-4 text-xs font-semibold text-muted-foreground shadow-xs hover:border-primary/40 hover:bg-primary/5 hover:text-primary data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md dark:data-[state=active]:bg-primary dark:data-[state=active]:text-primary-foreground"
+                  >
+                    <Activity className="size-4" />
                     Kinerja utama
                   </TabsTrigger>
-                  <TabsTrigger value="keuangan" className="text-xs">
+                  <TabsTrigger
+                    value="keuangan"
+                    className="h-11 border bg-card px-4 text-xs font-semibold text-muted-foreground shadow-xs hover:border-primary/40 hover:bg-primary/5 hover:text-primary data-[state=active]:border-primary data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-md dark:data-[state=active]:bg-primary dark:data-[state=active]:text-primary-foreground"
+                  >
+                    <Wallet className="size-4" />
                     Keuangan
                   </TabsTrigger>
                 </TabsList>
@@ -491,10 +858,38 @@ export default function Dashboard() {
                         )}
                   </>
                 )}
-                <Trend indicators={d.indicators} category="SPM" />
+                <Trend
+                  indicators={d.indicators}
+                  category="SPM"
+                  faskesName={activeFaskesName}
+                />
+                <AllIndicatorQuarterlyTrend
+                  filters={filters}
+                  facilities={dashboardFacilities}
+                  category="SPM"
+                  lockedFaskesId={
+                    user?.role === "OPERATOR_PUSKESMAS"
+                      ? user.faskesId || undefined
+                      : undefined
+                  }
+                />
               </TabsContent>
               <TabsContent value="iku" className="space-y-5">
-                <Trend indicators={d.indicators} category="IKU" />
+                <Trend
+                  indicators={d.indicators}
+                  category="IKU"
+                  faskesName={activeFaskesName}
+                />
+                <AllIndicatorQuarterlyTrend
+                  filters={filters}
+                  facilities={dashboardFacilities}
+                  category="IKU"
+                  lockedFaskesId={
+                    user?.role === "OPERATOR_PUSKESMAS"
+                      ? user.faskesId || undefined
+                      : undefined
+                  }
+                />
                 <Card>
                   <CardHeader>
                     <CardTitle>Indikator kinerja utama</CardTitle>

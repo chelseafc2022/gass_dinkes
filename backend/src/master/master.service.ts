@@ -509,7 +509,7 @@ export class MasterService {
           u.role === "OPERATOR_PUSKESMAS"
             ? { id: u.faskesId || "__none__" }
             : {},
-        select: { id: true, namaFaskes: true },
+        select: { id: true, namaFaskes: true, jenisFaskes: true },
       }),
       this.db.penanggungJawab.findMany({
         where: bidang ? { id: bidang } : {},

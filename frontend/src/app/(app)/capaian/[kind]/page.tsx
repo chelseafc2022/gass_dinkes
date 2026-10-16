@@ -5,7 +5,6 @@ import {
   Plus,
   Download,
   LockKeyhole,
-  Pencil,
   CheckCheck,
   Search,
   Trash2,
@@ -131,13 +130,21 @@ export default function Capaian({
     client = useQueryClient();
   const [filters, setFilters] = useState(initialFilters),
     [search, setSearch] = useState(""),
+    [category, setCategory] = useState(""),
     [form, setForm] = useState<any>(null),
     [deleting, setDeleting] = useState<any>(null);
   const debounced = useDebounced(search);
+  const categoryFilter = money ? "" : category;
   const q = useQuery({
-    queryKey: ["capaian", kind, filters, debounced],
+    queryKey: ["capaian", kind, filters, debounced, categoryFilter],
     queryFn: () =>
-      api(`/capaian/${kind}?${queryString({ ...filters, search: debounced })}`),
+      api(
+        `/capaian/${kind}?${queryString({
+          ...filters,
+          search: debounced,
+          kategori: categoryFilter,
+        })}`,
+      ),
     enabled: valid && !!user?.permissions.includes(`capaian_${kind}`),
   });
   const opts = useQuery({
@@ -313,15 +320,31 @@ export default function Capaian({
         </div>
       )}
       <div className="flex flex-wrap justify-between gap-3 items-center mb-4">
-        <div className="relative max-w-sm w-full">
-          <Search className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
-          <Input
-            aria-label="Cari laporan"
-            className="pl-9 bg-card"
-            placeholder="Cari indikator atau fasilitas kesehatan…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+        <div className="flex w-full max-w-2xl flex-col gap-2 sm:flex-row">
+          <div className="relative min-w-0 flex-1">
+            <Search className="absolute left-3 top-2.5 size-4 text-muted-foreground" />
+            <Input
+              aria-label="Cari laporan"
+              className="pl-9 bg-card"
+              placeholder="Cari indikator atau fasilitas kesehatan…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          {!money && (
+            <select
+              aria-label="Kategori indikator"
+              className="filter-select w-full sm:w-64"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            >
+              <option value="">Semua kategori indikator</option>
+              <option value="SPM">Standar Pelayanan Minimal (SPM)</option>
+              <option value="IKU">Kinerja Utama (IKU)</option>
+              <option value="IKK">Kinerja Kunci (IKK)</option>
+              <option value="INDIKATOR_PROGRAM">Indikator Program</option>
+            </select>
+          )}
         </div>
         <span className="text-[11px] text-muted-foreground">
           {readOnly
@@ -402,7 +425,8 @@ export default function Capaian({
                             disabled={
                               readOnly ||
                               (user?.role === "OPERATOR_PUSKESMAS" &&
-                                q.data.months.some((p: any) => !p.open))
+                                (r.isValidated ||
+                                  q.data.months.some((p: any) => !p.open)))
                             }
                             onClick={() => open(r)}
                             className="text-xs font-mono font-medium hover:underline disabled:cursor-default"
@@ -415,7 +439,8 @@ export default function Capaian({
                             disabled={
                               readOnly ||
                               (user?.role === "OPERATOR_PUSKESMAS" &&
-                                q.data.months.some((p: any) => !p.open))
+                                (r.isValidated ||
+                                  q.data.months.some((p: any) => !p.open)))
                             }
                             max={999}
                             className="bg-transparent hover:bg-sky-500/10"
@@ -436,7 +461,12 @@ export default function Capaian({
                             <button
                               className="text-xs text-center w-full rounded px-1 py-1 hover:bg-primary/5 disabled:text-muted-foreground disabled:hover:bg-transparent"
                               aria-label={`Edit ${monthNames[i]} ${r.label}`}
-                              disabled={readOnly || !q.data.months[i].open}
+                              disabled={
+                                readOnly ||
+                                !q.data.months[i].open ||
+                                (user?.role === "OPERATOR_PUSKESMAS" &&
+                                  r.isValidated)
+                              }
                               onClick={() => open(r, i + 1)}
                             >
                               {fmt(r[key])}
@@ -444,7 +474,12 @@ export default function Capaian({
                           ) : (
                             <InlineCell
                               value={r[key]}
-                              disabled={readOnly || !q.data.months[i].open}
+                              disabled={
+                                readOnly ||
+                                !q.data.months[i].open ||
+                                (user?.role === "OPERATOR_PUSKESMAS" &&
+                                  r.isValidated)
+                              }
                               max={999}
                               onSave={(val) =>
                                 saveInline({
@@ -491,8 +526,9 @@ export default function Capaian({
                               <span className="hidden xl:inline">{r.isValidated ? "Batal" : "Verif"}</span>
                             </Button>
                           ) : (
-                            <Badge variant={r.isValidated ? "default" : "outline"} className="text-[9px] px-1 py-0 h-4">
-                              {r.isValidated ? "Valid" : "Belum"}
+                            <Badge variant={r.isValidated ? "default" : "outline"} className="text-[9px] px-1 py-0 h-4 gap-1">
+                              {r.isValidated && <LockKeyhole className="size-2.5" />}
+                              {r.isValidated ? "Terkunci" : "Belum"}
                             </Badge>
                           )}
                           {user?.role === "ADMIN_DINKES" && (

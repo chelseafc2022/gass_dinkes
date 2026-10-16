@@ -340,7 +340,7 @@ integration("GASS API with isolated PostgreSQL", () => {
     ).expect(200);
     expect(r.body.data[0].realisasi).toBe(125.25);
   });
-  test("verification is cleared after a correction", async () => {
+  test("verified reports are locked for operators and corrections reopen them", async () => {
     let row = await db.capaianKinerja.findFirstOrThrow({
       where: { indikatorId: indicator.id },
     });
@@ -348,6 +348,17 @@ integration("GASS API with isolated PostgreSQL", () => {
       .send({ validated: true })
       .expect(201);
     await call("put", "/capaian/kinerja", "operator")
+      .send({
+        entityId: indicator.id,
+        faskesId: facility.id,
+        tahun: year,
+        bulan: 2,
+        nilai: 10,
+      })
+      .expect(403);
+    row = await db.capaianKinerja.findUniqueOrThrow({ where: { id: row.id } });
+    expect(row.isValidated).toBe(true);
+    await call("put", "/capaian/kinerja", "bidang")
       .send({
         entityId: indicator.id,
         faskesId: facility.id,
