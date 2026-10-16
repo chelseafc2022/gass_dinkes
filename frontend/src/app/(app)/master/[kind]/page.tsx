@@ -582,7 +582,7 @@ export default function Master({
         open={editing !== null}
         onOpenChange={(v) => !v && setEditing(null)}
       >
-        <DialogContent className="max-h-[90vh] overflow-auto sm:max-w-xl">
+        <DialogContent className="max-h-[90vh] min-w-0 overflow-x-hidden overflow-y-auto sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>
               {editing?.id ? "Edit" : "Tambah"} {c.title.toLowerCase()}
@@ -594,21 +594,42 @@ export default function Master({
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              if (kind === "indikator" && !form.subKegiatanId) {
-                toast.error("Pilih sub kegiatan terlebih dahulu.");
+              const missingField = c.fields.find(
+                (field) =>
+                  field.required &&
+                  (form[field.key] === null ||
+                    form[field.key] === undefined ||
+                    form[field.key] === "" ||
+                    (Array.isArray(form[field.key]) &&
+                      form[field.key].length === 0)),
+              );
+              if (missingField) {
+                toast.error(
+                  `${missingField.type === "select" || missingField.type === "multi" ? "Pilih" : "Isi"} ${missingField.label.toLowerCase()} terlebih dahulu.`,
+                );
                 return;
               }
               save.mutate();
             }}
-            className="space-y-4"
+            className="min-w-0 space-y-4"
           >
-            {c.fields.map((f) => (
-              <div className="field" key={f.key}>
-                <Label htmlFor={f.key}>
-                  {f.label}
-                  {f.required ? " *" : ""}
-                </Label>
-                {f.type === "boolean" ? (
+            {c.fields.map((f) => {
+              const usesSearchableRelation =
+                (kind === "indikator" && f.key === "subKegiatanId") ||
+                (kind === "sub_kegiatan" && f.key === "kegiatanId") ||
+                (kind === "kegiatan" && f.key === "programId");
+              const selectLabel = f.label.toLowerCase();
+
+              return (
+                <div
+                  className="field grid min-w-0 max-w-full gap-2"
+                  key={f.key}
+                >
+                  <Label htmlFor={f.key}>
+                    {f.label}
+                    {f.required ? " *" : ""}
+                  </Label>
+                  {f.type === "boolean" ? (
                   <Switch
                     id={f.key}
                     checked={!!form[f.key]}
@@ -643,8 +664,7 @@ export default function Master({
                       </p>
                     )}
                   </div>
-                ) :
-                  kind === "indikator" && f.key === "subKegiatanId" ? (
+                ) : usesSearchableRelation ? (
                   <SearchableCombobox
                     id={f.key}
                     value={form[f.key] || "all"}
@@ -654,14 +674,14 @@ export default function Master({
                         [f.key]: value === "all" ? null : value,
                       })
                     }
-                    items={(opts.data?.sub_kegiatan ?? []).map((o: any) => ({
+                    items={(opts.data?.[f.source!] ?? []).map((o: any) => ({
                       id: o.id,
                       label: optionLabel(o),
                     }))}
-                    placeholder="Pilih sub kegiatan"
-                    allLabel="Pilih sub kegiatan"
-                    searchPlaceholder="Cari kode atau nama sub kegiatan..."
-                    emptyText="Sub kegiatan tidak ditemukan."
+                    placeholder={`Pilih ${selectLabel}`}
+                    allLabel={`Pilih ${selectLabel}`}
+                    searchPlaceholder={`Cari kode atau nama ${selectLabel}...`}
+                    emptyText={`${f.label} tidak ditemukan.`}
                     className="h-10"
                   />
                 ) : f.type === "select" ? (
@@ -714,9 +734,10 @@ export default function Master({
                       })
                     }
                   />
-                )}
-              </div>
-            ))}
+                  )}
+                </div>
+              );
+            })}
             {save.error && (
               <p className="text-xs text-destructive" role="alert">
                 {save.error.message}
