@@ -10,7 +10,6 @@ import {
   LoaderCircle,
   ChevronLeft,
   ChevronRight,
-  Building2,
   RefreshCw,
   Database,
 } from "lucide-react";
@@ -32,6 +31,7 @@ import {
 } from "@/components/ui/dialog";
 import { masterConfig, optionLabel } from "@/components/gass/master-config";
 import { DataTable } from "@/components/gass/data-table";
+import { SearchableCombobox } from "@/components/gass/users/searchable-combobox";
 import { ErrorState, Loading } from "@/components/gass/shared";
 import { useAuth } from "@/components/gass/providers";
 import { useDebounced } from "@/hooks/use-debounced";
@@ -594,6 +594,10 @@ export default function Master({
           <form
             onSubmit={(e) => {
               e.preventDefault();
+              if (kind === "indikator" && !form.subKegiatanId) {
+                toast.error("Pilih sub kegiatan terlebih dahulu.");
+                return;
+              }
               save.mutate();
             }}
             className="space-y-4"
@@ -639,6 +643,27 @@ export default function Master({
                       </p>
                     )}
                   </div>
+                ) :
+                  kind === "indikator" && f.key === "subKegiatanId" ? (
+                  <SearchableCombobox
+                    id={f.key}
+                    value={form[f.key] || "all"}
+                    onValueChange={(value) =>
+                      setForm({
+                        ...form,
+                        [f.key]: value === "all" ? null : value,
+                      })
+                    }
+                    items={(opts.data?.sub_kegiatan ?? []).map((o: any) => ({
+                      id: o.id,
+                      label: optionLabel(o),
+                    }))}
+                    placeholder="Pilih sub kegiatan"
+                    allLabel="Pilih sub kegiatan"
+                    searchPlaceholder="Cari kode atau nama sub kegiatan..."
+                    emptyText="Sub kegiatan tidak ditemukan."
+                    className="h-10"
+                  />
                 ) : f.type === "select" ? (
                   <select
                     id={f.key}
