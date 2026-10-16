@@ -139,8 +139,8 @@ export class EgovService implements OnModuleDestroy {
 
   async getInstansiList() {
     const rows = await this.read(
-      `SELECT id, instansi FROM simpeg.instansi ORDER BY CASE WHEN id = ? THEN 0 ELSE 1 END, instansi ASC`,
-      [DINKES_INSTANSI_ID],
+      `SELECT id, instansi FROM simpeg.instansi WHERE id = ? OR instansi LIKE '%KESEHATAN%' ORDER BY CASE WHEN id = ? THEN 0 ELSE 1 END, instansi ASC`,
+      [DINKES_INSTANSI_ID, DINKES_INSTANSI_ID],
     );
     return rows.map((r) => ({
       id: String(r.id),
@@ -254,6 +254,40 @@ export class EgovService implements OnModuleDestroy {
         totalPages,
       },
     };
+  }
+
+  async getUsernamesByNips(nips: string[]): Promise<Map<string, string>> {
+    if (!nips || nips.length === 0) return new Map();
+    const cleanNips = Array.from(
+      new Set(nips.map((n) => String(n).trim().replace(/\s+/g, "")).filter(Boolean)),
+    );
+    if (cleanNips.length === 0) return new Map();
+
+    const placeholders = cleanNips.map(() => "?").join(",");
+    try {
+      const rows = await this.read(
+        `SELECT 
+          TRIM(REPLACE(u.nama_nip, ' ', '')) AS uNip,
+          TRIM(REPLACE(b.nip, ' ', '')) AS bNip,
+          u.username
+         FROM egov.users u
+         LEFT JOIN simpeg.biodata b ON u.nama_nip = b.nip
+         WHERE TRIM(REPLACE(u.nama_nip, ' ', '')) IN (${placeholders})
+            OR TRIM(REPLACE(b.nip, ' ', '')) IN (${placeholders})`,
+        [...cleanNips, ...cleanNips],
+      );
+
+      const map = new Map<string, string>();
+      for (const r of rows) {
+        if (r.username) {
+          if (r.uNip) map.set(String(r.uNip), String(r.username));
+          if (r.bNip) map.set(String(r.bNip), String(r.username));
+        }
+      }
+      return map;
+    } catch {
+      return new Map();
+    }
   }
 
   async countPegawaiDinkes(): Promise<number> {

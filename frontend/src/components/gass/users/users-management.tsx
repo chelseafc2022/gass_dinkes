@@ -47,7 +47,10 @@ import {
   Database,
   CheckCircle2,
   XCircle,
+  Lock,
 } from "lucide-react";
+
+const DINKES_INSTANSI_ID = "tuwRgWDzmfad28n8Z";
 
 export function UsersManagement() {
   // Tab aktif
@@ -58,7 +61,7 @@ export function UsersManagement() {
   const debouncedSearch = useDebounced(search, 350);
   const [roleFilter, setRoleFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
-  const [selectedInstansi, setSelectedInstansi] = useState("tuwRgWDzmfad28n8Z"); // Default: DINAS KESEHATAN
+  const selectedInstansi = DINKES_INSTANSI_ID; // Terkunci khusus DINAS KESEHATAN
   const [selectedUnitKerja, setSelectedUnitKerja] = useState("all");
 
   // Pagination states
@@ -171,13 +174,24 @@ export function UsersManagement() {
     total: 0,
   };
 
-  // Options untuk SearchableCombobox
-  const instansiOptions = useMemo(() => {
-    return instansiList.map((ins: any) => ({
-      id: String(ins.id),
-      label: ins.instansi,
-    }));
+  // Options untuk SearchableCombobox (Hanya Dinas Kesehatan, instansi lain tidak dimunculkan)
+  const dinkesLabel = useMemo(() => {
+    const dinkes = instansiList.find(
+      (ins: any) =>
+        String(ins.id) === DINKES_INSTANSI_ID ||
+        ins.instansi?.toUpperCase().includes("KESEHATAN"),
+    );
+    return dinkes?.instansi || "DINAS KESEHATAN";
   }, [instansiList]);
+
+  const instansiOptions = useMemo(() => {
+    return [
+      {
+        id: DINKES_INSTANSI_ID,
+        label: dinkesLabel,
+      },
+    ];
+  }, [dinkesLabel]);
 
   const unitKerjaOptions = useMemo(() => {
     return unitKerjaList.map((uk: any) => ({
@@ -257,7 +271,7 @@ export function UsersManagement() {
                 className="gap-1.5 text-xs whitespace-nowrap"
               >
                 <Database className="h-3.5 w-3.5 text-blue-600 shrink-0" />
-                <span>Direktori ASN Dinkes & Puskesmas</span>
+                <span>Registrasi User GASS</span>
                 <Badge
                   variant="secondary"
                   className="text-[10px] px-1.5 py-0 ml-1 font-mono"
@@ -354,7 +368,7 @@ export function UsersManagement() {
                   />
                 </div>
 
-                <div>
+                <div className="w-full">
                   <Select
                     value={roleFilter}
                     onValueChange={(val) => {
@@ -362,7 +376,7 @@ export function UsersManagement() {
                       setPageUsers(1);
                     }}
                   >
-                    <SelectTrigger className="text-xs h-9 bg-background">
+                    <SelectTrigger className="w-full text-xs h-9 bg-background">
                       <SelectValue placeholder="Filter Peran" />
                     </SelectTrigger>
                     <SelectContent>
@@ -382,7 +396,7 @@ export function UsersManagement() {
                   </Select>
                 </div>
 
-                <div>
+                <div className="w-full">
                   <Select
                     value={statusFilter}
                     onValueChange={(val) => {
@@ -390,7 +404,7 @@ export function UsersManagement() {
                       setPageUsers(1);
                     }}
                   >
-                    <SelectTrigger className="text-xs h-9 bg-background">
+                    <SelectTrigger className="w-full text-xs h-9 bg-background">
                       <SelectValue placeholder="Status Akun" />
                     </SelectTrigger>
                     <SelectContent>
@@ -417,7 +431,8 @@ export function UsersManagement() {
                       <TableHead className="w-[40px] text-center text-xs">
                         No
                       </TableHead>
-                      <TableHead className="text-xs">Identitas Pegawai</TableHead>
+                      <TableHead className="text-xs w-[160px] whitespace-nowrap">NIP ASN</TableHead>
+                      <TableHead className="text-xs min-w-[170px] max-w-[240px]">Nama Lengkap & Gelar</TableHead>
                       <TableHead className="text-xs">Peran / Otoritas</TableHead>
                       <TableHead className="text-xs">Penugasan Wilayah</TableHead>
                       <TableHead className="text-xs text-center">
@@ -432,7 +447,7 @@ export function UsersManagement() {
                     {isLoadingUsers ? (
                       <TableRow>
                         <TableCell
-                          colSpan={6}
+                          colSpan={7}
                           className="h-32 text-center text-xs text-muted-foreground"
                         >
                           Memuat data pengguna...
@@ -441,7 +456,7 @@ export function UsersManagement() {
                     ) : usersList.length === 0 ? (
                       <TableRow>
                         <TableCell
-                          colSpan={6}
+                          colSpan={7}
                           className="h-32 text-center text-xs text-muted-foreground"
                         >
                           Tidak ada pengguna yang sesuai kriteria pencarian.
@@ -463,25 +478,31 @@ export function UsersManagement() {
                             <TableCell className="text-center font-mono text-muted-foreground">
                               {rowNumber}
                             </TableCell>
-                            <TableCell className="max-w-[280px]">
-                              <div>
-                                <span className="font-semibold text-foreground block">
-                                  {user.name}
-                                </span>
-                                <div className="flex items-center gap-2 flex-wrap text-muted-foreground text-[11px] mt-0.5">
-                                  <span className="font-mono">
-                                    NIP: {user.nip}
-                                  </span>
-                                  {user.jabatan && (
-                                    <>
-                                      <span>•</span>
-                                      <span className="truncate max-w-[180px]">
-                                        {user.jabatan}
-                                      </span>
-                                    </>
-                                  )}
-                                </div>
+                            <TableCell>
+                              <div className="font-mono text-foreground font-medium">
+                                {user.nip}
                               </div>
+                              {user.username && (
+                                <div className="text-[10px] text-muted-foreground font-mono">
+                                  @{user.username}
+                                </div>
+                              )}
+                            </TableCell>
+                            <TableCell className="max-w-[240px]">
+                              <span
+                                className="font-semibold text-foreground block line-clamp-2 leading-snug break-words"
+                                title={user.name}
+                              >
+                                {user.name}
+                              </span>
+                              {user.jabatan && (
+                                <span
+                                  className="text-muted-foreground block text-[11px] line-clamp-1 truncate mt-0.5"
+                                  title={user.jabatan}
+                                >
+                                  {user.jabatan}
+                                </span>
+                              )}
                             </TableCell>
                             <TableCell>{getRoleBadge(user.role)}</TableCell>
                             <TableCell>
@@ -518,6 +539,7 @@ export function UsersManagement() {
                                     handleOpenSetRole({
                                       nip: user.nip,
                                       namaLengkap: user.name,
+                                      username: user.username,
                                       jabatan: user.jabatan,
                                       currentRole: user.role,
                                       currentStatus: user.isActive
@@ -541,6 +563,7 @@ export function UsersManagement() {
                                       handleOpenRevokeRole({
                                         nip: user.nip,
                                         namaLengkap: user.name,
+                                        username: user.username,
                                         currentRole: user.role,
                                       })
                                     }
@@ -607,24 +630,20 @@ export function UsersManagement() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
                   <CardTitle className="text-base font-semibold">
-                    Direktori Pegawai ASN E-Gov & SIMPEG
+                    Registrasi User GASS
                   </CardTitle>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Data riil langsung dari database E-Gov & SIMPEG Konawe
-                    Selatan. Pilih pegawai untuk menetapkan peran di sistem
+                    Pilih pegawai untuk menetapkan peran di sistem
                     GASS.
                   </p>
                 </div>
 
-                {(search ||
-                  selectedInstansi !== "tuwRgWDzmfad28n8Z" ||
-                  selectedUnitKerja !== "all") && (
+                {(search || selectedUnitKerja !== "all") && (
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
                     onClick={() => {
-                      setSelectedInstansi("tuwRgWDzmfad28n8Z");
                       setSelectedUnitKerja("all");
                       setSearch("");
                       setPageDirectory(1);
@@ -638,7 +657,7 @@ export function UsersManagement() {
                 )}
               </div>
 
-              {/* Toolbar Filter Direktori ASN */}
+              {/* Toolbar Filter Registrasi User GASS */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
                 {/* Search box */}
                 <div className="relative">
@@ -654,24 +673,19 @@ export function UsersManagement() {
                   />
                 </div>
 
-                {/* Combobox Instansi */}
+                {/* Filter Instansi: DINAS KESEHATAN */}
                 <div>
-                  <SearchableCombobox
-                    value={selectedInstansi}
-                    onValueChange={(val) => {
-                      setSelectedInstansi(val);
-                      setSelectedUnitKerja("all");
-                      setPageDirectory(1);
-                    }}
-                    items={instansiOptions}
-                    placeholder="Pilih Instansi / OPD..."
-                    searchPlaceholder="Cari instansi..."
-                    emptyText="Instansi tidak ditemukan."
-                    allLabel="-- Semua Instansi --"
-                    icon={
+                  <div
+                    className="h-9 w-full flex items-center rounded-md border border-input bg-muted/40 px-2.5 text-xs text-foreground select-none transition-colors"
+                    title="Instansi DINAS KESEHATAN"
+                  >
+                    <div className="flex items-center gap-1.5 truncate">
                       <Building2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                    }
-                  />
+                      <span className="font-medium truncate text-foreground">
+                        {dinkesLabel}
+                      </span>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Combobox Sub Unit Kerja / Puskesmas */}
@@ -703,14 +717,14 @@ export function UsersManagement() {
                       <TableHead className="w-[40px] text-center text-xs">
                         No
                       </TableHead>
-                      <TableHead className="text-xs">NIP / Akun E-Gov</TableHead>
-                      <TableHead className="text-xs">Nama Lengkap & Gelar</TableHead>
-                      <TableHead className="text-xs">Jabatan SIMPEG</TableHead>
-                      <TableHead className="text-xs">
+                      <TableHead className="text-xs w-[160px] whitespace-nowrap">NIP ASN</TableHead>
+                      <TableHead className="text-xs min-w-[170px] max-w-[220px]">Nama Lengkap & Gelar</TableHead>
+                      <TableHead className="text-xs min-w-[170px] max-w-[220px]">Jabatan</TableHead>
+                      <TableHead className="text-xs min-w-[180px] max-w-[240px]">
                         Sub Unit / Puskesmas
                       </TableHead>
-                      <TableHead className="text-xs">Status Hak Akses</TableHead>
-                      <TableHead className="text-xs text-right pr-4">
+                      <TableHead className="text-xs w-[130px] whitespace-nowrap">Status Hak Akses</TableHead>
+                      <TableHead className="text-xs text-right pr-4 w-[130px] whitespace-nowrap">
                         Otorisasi
                       </TableHead>
                     </TableRow>
@@ -722,7 +736,7 @@ export function UsersManagement() {
                           colSpan={7}
                           className="h-32 text-center text-xs text-muted-foreground"
                         >
-                          Menarik data dari database E-Gov & SIMPEG...
+                          Menarik data dari database User Simpeg...
                         </TableCell>
                       </TableRow>
                     ) : directoryList.length === 0 ? (
@@ -758,20 +772,31 @@ export function UsersManagement() {
                                 </div>
                               )}
                             </TableCell>
-                            <TableCell className="max-w-[240px]">
-                              <span className="font-semibold text-foreground block">
+                            <TableCell className="max-w-[220px]">
+                              <span
+                                className="font-semibold text-foreground block line-clamp-2 leading-snug break-words"
+                                title={pegawai.namaLengkap}
+                              >
                                 {pegawai.namaLengkap}
                               </span>
                             </TableCell>
-                            <TableCell className="max-w-[200px]">
-                              <span className="text-muted-foreground">
-                                {pegawai.jabatan}
+                            <TableCell className="max-w-[220px]">
+                              <span
+                                className="text-muted-foreground block line-clamp-2 leading-snug break-words"
+                                title={pegawai.jabatan}
+                              >
+                                {pegawai.jabatan || "-"}
                               </span>
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="max-w-[240px]">
                               <div className="flex items-center gap-1.5 text-foreground font-medium">
                                 <Building2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                                <span>{pegawai.unitKerja}</span>
+                                <span
+                                  className="line-clamp-2 leading-snug break-words"
+                                  title={pegawai.unitKerja}
+                                >
+                                  {pegawai.unitKerja}
+                                </span>
                               </div>
                             </TableCell>
                             <TableCell>

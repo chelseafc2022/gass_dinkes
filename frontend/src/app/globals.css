@@ -190,8 +190,16 @@ body {font-family:Arial,Helvetica,sans-serif;}
 .empty-state>svg {@apply size-9 text-primary/60;}
 .empty-state h2 {@apply text-lg font-semibold;}
 .empty-state p {@apply text-sm text-muted-foreground max-w-md;}
-.field {@apply grid gap-2;}
-.filter-select {@apply h-9 rounded-lg border bg-card px-3 text-xs shadow-xs outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-60;}
+.filter-select {
+  @apply h-9 rounded-lg border bg-card pl-3 pr-8 text-xs shadow-xs outline-none focus:ring-2 focus:ring-ring/30 disabled:opacity-60 cursor-pointer appearance-none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-position: right 0.75rem center;
+  background-repeat: no-repeat;
+  background-size: 0.95rem 0.95rem;
+}
+.dark .filter-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
 .login-story {background:radial-gradient(ellipse at 0% 100%,#20695d 0%,transparent 55%),linear-gradient(135deg,#073d3b,#087f73);}
 .login-orbit {position:absolute;border:1px solid #ffffff12;width:700px;height:700px;border-radius:50%;right:-420px;top:-250px;}
 .login-orbit.second {width:900px;height:900px;right:-420px;top:-220px;}

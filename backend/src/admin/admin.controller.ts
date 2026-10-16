@@ -320,17 +320,31 @@ export class AdminController {
           take: limit,
         }),
       ]);
+
+      const nips = data.map((u) => u.nip).filter(Boolean);
+      const usernameMap = await this.egov.getUsernamesByNips(nips);
+      const enriched = data.map((u) => ({
+        ...u,
+        username: usernameMap.get(u.nip.replace(/\s+/g, "")) || null,
+      }));
+
       return {
-        data,
+        data: enriched,
         meta: { page, limit, total, totalPages: Math.ceil(total / limit) || 1 },
       };
     }
 
-    return this.db.user.findMany({
+    const allUsers = await this.db.user.findMany({
       where,
       include: { faskes: true, bidang: true },
       orderBy: { name: "asc" },
     });
+    const nips = allUsers.map((u) => u.nip).filter(Boolean);
+    const usernameMap = await this.egov.getUsernamesByNips(nips);
+    return allUsers.map((u) => ({
+      ...u,
+      username: usernameMap.get(u.nip.replace(/\s+/g, "")) || null,
+    }));
   }
 
   @Menu("pengguna") @Post("users/set-role") async setRole(
