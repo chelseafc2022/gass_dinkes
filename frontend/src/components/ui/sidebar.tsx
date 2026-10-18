@@ -89,8 +89,16 @@ function SidebarProvider({
 
   // Helper to toggle the sidebar.
   const toggleSidebar = React.useCallback(() => {
-    return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open);
-  }, [isMobile, setOpen, setOpenMobile]);
+    // Read the viewport at interaction time as well. This keeps the trigger
+    // reliable during the brief hydration/breakpoint transition on phones.
+    const isMobileViewport =
+      typeof window !== "undefined" &&
+      window.matchMedia(`(max-width: 767px)`).matches;
+
+    return isMobileViewport
+      ? setOpenMobile((open) => !open)
+      : setOpen((open) => !open);
+  }, [setOpen, setOpenMobile]);
 
   // Adds a keyboard shortcut to toggle the sidebar.
   React.useEffect(() => {
@@ -192,7 +200,10 @@ function Sidebar({
           data-sidebar="sidebar"
           data-slot="sidebar"
           data-mobile="true"
-          className="bg-sidebar text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden"
+          className={cn(
+            "bg-sidebar text-sidebar-foreground w-(--sidebar-width) max-w-[calc(100vw-1rem)] p-0 [&>button]:hidden",
+            side === "left" ? "rounded-r-3xl" : "rounded-l-3xl",
+          )}
           style={
             {
               "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
@@ -263,12 +274,17 @@ function SidebarTrigger({
   onClick,
   ...props
 }: React.ComponentProps<typeof Button>) {
-  const { toggleSidebar } = useSidebar();
+  const { isMobile, open, openMobile, toggleSidebar } = useSidebar();
 
   return (
     <Button
       data-sidebar="trigger"
       data-slot="sidebar-trigger"
+      type="button"
+      aria-label={
+        isMobile ? "Buka atau tutup navigasi" : "Buka atau tutup sidebar"
+      }
+      aria-expanded={isMobile ? openMobile : open}
       variant="ghost"
       size="icon"
       className={cn("size-7", className)}

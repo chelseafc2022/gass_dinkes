@@ -1,10 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  Activity,
   Search,
   LogOut,
   ChevronsUpDown,
@@ -26,6 +26,7 @@ import {
   SidebarFooter,
   SidebarInset,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -69,36 +70,36 @@ function SidebarPeriodAlert() {
   const allOpen = openCount === 12;
 
   return (
-    <div className="mx-2 mt-2.5 mb-2 rounded-xl border border-primary/20 bg-primary/10 p-3 text-xs shadow-xs">
+    <div className="mx-2 mt-2.5 mb-2 rounded-xl border border-emerald-200/15 bg-white/8 p-3 text-xs text-emerald-50 shadow-xs group-data-[collapsible=icon]:hidden">
       <div className="flex items-center justify-between gap-1 mb-1.5">
         <div className="flex items-center gap-1.5">
           <span className="flex h-2 w-2 relative shrink-0">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#F472B6] opacity-75" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-[#F472B6]" />
           </span>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-primary">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-100">
             Pengingat Input
           </span>
         </div>
-        <span className="text-[9px] font-medium text-muted-foreground px-1.5 py-0.5 rounded bg-background border border-primary/20">
+        <span className="text-[9px] font-medium text-emerald-50/75 px-1.5 py-0.5 rounded bg-white/8 border border-white/10">
           {allOpen ? "12 Bln Buka" : `${openCount} Bln Buka`}
         </span>
       </div>
-      <p className="font-semibold text-[11px] leading-tight text-foreground">
+      <p className="font-semibold text-[11px] leading-tight text-white">
         {settings.isOtomatisAktif
           ? `Batas Input: Tgl ${settings.batasTanggalInput}`
           : "Mode Pra-Launching"}
       </p>
-      <p className="text-[10px] text-muted-foreground leading-snug mt-1">
+      <p className="text-[10px] text-emerald-100/65 leading-snug mt-1">
         {settings.isOtomatisAktif
           ? `Penginputan capaian sebelum tanggal ${settings.batasTanggalInput} tiap bulan berikutnya.`
           : "Semua bulan dibuka untuk melengkapi data capaian awal faskes."}
       </p>
-      <div className="mt-2.5 pt-2 border-t border-primary/15 flex items-center justify-between text-[10px]">
-        <span className="text-muted-foreground">Admin Faskes</span>
+      <div className="mt-2.5 pt-2 border-t border-white/10 flex items-center justify-between text-[10px]">
+        <span className="text-emerald-100/65">Admin Faskes</span>
         <Link
           href="/capaian/kinerja"
-          className="font-medium text-primary hover:underline inline-flex items-center gap-0.5"
+          className="font-medium text-emerald-200 hover:text-white hover:underline inline-flex items-center gap-0.5"
         >
           Isi Capaian <ArrowUpRight className="size-2.5" />
         </Link>
@@ -106,6 +107,17 @@ function SidebarPeriodAlert() {
     </div>
   );
 }
+
+function MobileSidebarRouteSync({ path }: { path: string }) {
+  const { setOpenMobile } = useSidebar();
+
+  useEffect(() => {
+    setOpenMobile(false);
+  }, [path, setOpenMobile]);
+
+  return null;
+}
+
 export function Shell({ children }: { children: React.ReactNode }) {
   const { config } = useSidebarConfig();
   const { user, status, isPending, error } = useAuth(),
@@ -161,24 +173,29 @@ export function Shell({ children }: { children: React.ReactNode }) {
     }
   };
   return (
-    <SidebarProvider>
+    <SidebarProvider className="gass-app-shell">
+      <MobileSidebarRouteSync path={path} />
       <Sidebar
         variant={config.variant}
         side={config.side}
         collapsible={config.collapsible}
+        className="gass-main-sidebar"
       >
-        <SidebarHeader className="px-5 py-6 border-b border-sidebar-border">
-          <Link href="/dashboard" className="flex items-center gap-3">
-            <div className="brand-icon shadow-xs bg-sidebar-primary text-sidebar-primary-foreground">
-              <Activity className="size-6" />
-            </div>
-            <div>
-              <span className="text-2xl font-extrabold tracking-tight text-sidebar-foreground">
-                GASS<span className="text-sidebar-primary">.</span>
-              </span>
-              <p className="text-[10px] font-semibold uppercase tracking-[.16em] text-sidebar-foreground/60">
-                Dinas Kesehatan
-              </p>
+        <SidebarHeader className="gass-sidebar-header border-b border-sidebar-border px-3 py-4 group-data-[collapsible=icon]:px-2">
+          <Link
+            href="/dashboard"
+            aria-label="Ke dashboard GASS"
+            className="flex w-full items-center justify-center overflow-hidden"
+          >
+            <div className="gass-sidebar-logo-wrap">
+              <Image
+                src="/branding/logo-gass.png"
+                alt="Logo GASS"
+                width={1312}
+                height={1199}
+                className="gass-sidebar-logo"
+                priority
+              />
             </div>
           </Link>
         </SidebarHeader>
@@ -188,7 +205,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
             return (
               items.length > 0 && (
                 <SidebarGroup key={group}>
-                  <SidebarGroupLabel className="text-[10px] font-bold tracking-widest text-sidebar-foreground/60 uppercase">
+                  <SidebarGroupLabel className="text-[9px] font-bold tracking-[.18em] text-emerald-100/55 uppercase">
                     {group}
                   </SidebarGroupLabel>
                   <SidebarGroupContent>
@@ -199,13 +216,13 @@ export function Shell({ children }: { children: React.ReactNode }) {
                             asChild
                             isActive={path === n.href}
                             tooltip={n.title}
-                            className="h-10 px-3 text-sidebar-foreground/80 hover:text-sidebar-foreground hover:bg-sidebar-accent data-[active=true]:bg-white data-[active=true]:dark:bg-emerald-950/40 data-[active=true]:text-sidebar-primary data-[active=true]:font-bold data-[active=true]:shadow-xs data-[active=true]:border-l-2 data-[active=true]:border-sidebar-primary transition-colors"
+                            className="h-10 rounded-lg border-l-2 border-transparent px-3 text-emerald-50/75 hover:bg-white/8 hover:text-white data-[active=true]:border-[#F472B6] data-[active=true]:bg-white/12 data-[active=true]:font-bold data-[active=true]:text-white data-[active=true]:shadow-sm transition-all"
                           >
                             <Link href={n.href}>
                               <n.icon className="size-4" />
                               <span>{n.title}</span>
                               {path === n.href && (
-                                <span className="ml-auto size-1.5 rounded-full bg-sidebar-primary shadow-[0_0_8px_var(--sidebar-primary)]" />
+                                <span className="ml-auto size-1.5 rounded-full bg-[#F472B6] shadow-[0_0_9px_#DB2777] group-data-[collapsible=icon]:hidden" />
                               )}
                             </Link>
                           </SidebarMenuButton>
@@ -222,15 +239,15 @@ export function Shell({ children }: { children: React.ReactNode }) {
             );
           })}
         </SidebarContent>
-        <SidebarFooter className="p-3 border-t border-sidebar-border">
+        <SidebarFooter className="gass-sidebar-footer p-3 border-t border-sidebar-border">
           <DropdownMenu>
-            <DropdownMenuTrigger className="flex w-full items-center gap-3 p-2 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground transition-colors">
-              <Avatar className="size-9 border border-sidebar-primary/25">
-                <AvatarFallback className="bg-sidebar-primary/15 text-sidebar-primary font-bold">
+            <DropdownMenuTrigger className="flex w-full items-center gap-3 p-2 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground transition-colors group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-1">
+              <Avatar className="size-9 border border-emerald-200/20">
+                <AvatarFallback className="bg-white/12 text-emerald-100 font-bold">
                   {user.name.slice(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-              <span className="min-w-0 text-left flex-1">
+              <span className="min-w-0 text-left flex-1 group-data-[collapsible=icon]:hidden">
                 <span className="block truncate text-xs font-semibold text-sidebar-foreground">
                   {user.name}
                 </span>
@@ -238,7 +255,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
                   {roleNames[user.role]}
                 </span>
               </span>
-              <ChevronsUpDown className="size-4 text-sidebar-foreground/60" />
+              <ChevronsUpDown className="size-4 text-sidebar-foreground/60 group-data-[collapsible=icon]:hidden" />
             </DropdownMenuTrigger>
             <DropdownMenuContent side="top" align="start">
               <DropdownMenuLabel>{user.nip}</DropdownMenuLabel>
@@ -256,21 +273,30 @@ export function Shell({ children }: { children: React.ReactNode }) {
           </DropdownMenu>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset className="min-w-0">
-        <header className="flex h-17 shrink-0 items-center gap-3 border-b bg-card px-5 lg:px-8">
-          <SidebarTrigger />
-          <span className="h-4 border-l mx-1" />
+      <SidebarInset className="gass-workspace min-w-0">
+        <header className="gass-app-header sticky top-0 z-20 flex h-16 shrink-0 items-center gap-2.5 border-b px-4 sm:px-5 lg:px-8">
+          <SidebarTrigger className="size-10 shrink-0 rounded-xl border bg-card shadow-xs hover:bg-primary/5 hover:text-primary sm:size-9" />
+          <Image
+            src="/branding/logo-gass.png"
+            alt="GASS"
+            width={1312}
+            height={1199}
+            className="size-8 object-contain sm:hidden"
+          />
+          <span className="h-4 border-l mx-1 hidden sm:block" />
           <span className="text-xs text-muted-foreground hidden sm:inline">
             Ruang kerja
           </span>
           <span className="text-muted-foreground/50 hidden sm:inline">/</span>
-          <span className="text-xs font-medium">{active?.title || "GASS"}</span>
+          <span className="min-w-0 truncate text-xs font-semibold text-primary">
+            {active?.title || "GASS"}
+          </span>
           <div className="ml-auto flex items-center gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={() => setCommand(true)}
-              className="text-muted-foreground"
+              className="border-emerald-900/10 bg-white/80 text-muted-foreground shadow-xs hover:border-primary/25 hover:bg-white hover:text-primary"
             >
               <Search className="size-4" />
               <span className="hidden md:inline mr-8">Cari menu…</span>
@@ -280,7 +306,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
             <ThemeCustomizerTrigger onClick={() => setCustomizer(true)} />
           </div>
         </header>
-        <section className="flex-1 p-5 lg:p-8 max-w-[1800px] w-full mx-auto">
+        <section className="gass-app-content flex-1 p-4 sm:p-5 lg:p-8 max-w-[1800px] w-full mx-auto">
           {active && !user.permissions.includes(active.key) ? (
             <div className="empty-state">
               <ShieldCheck />
@@ -291,7 +317,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
             children
           )}
         </section>
-        <footer className="px-8 py-4 border-t flex justify-between text-[10px] text-muted-foreground">
+        <footer className="gass-app-footer px-4 sm:px-8 py-4 border-t flex flex-col gap-1.5 sm:flex-row sm:justify-between text-[10px] text-muted-foreground">
           <span>© {new Date().getFullYear()} GASS · Dinas Kesehatan</span>
           <span className="flex items-center gap-1">
             Gerakan Aksi Sehat Setara <ArrowUpRight className="size-3" />

@@ -102,9 +102,11 @@ test.describe("Authenticated GASS workflows", () => {
     await page.goto("/dashboard");
     await page.setViewportSize({ width: 390, height: 844 });
     await expect(
-      page.getByRole("button", { name: "Toggle Sidebar" }),
+      page.getByRole("button", { name: "Buka atau tutup navigasi" }),
     ).toBeVisible();
-    await page.getByRole("button", { name: "Toggle Sidebar" }).click();
+    await page
+      .getByRole("button", { name: "Buka atau tutup navigasi" })
+      .click();
     await expect(
       page.getByRole("link", { name: "Capaian kinerja", exact: true }),
     ).toBeVisible();

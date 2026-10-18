@@ -23,8 +23,8 @@ export function SidebarConfigProvider({
   children: React.ReactNode;
 }) {
   const [config, setConfig] = React.useState<SidebarConfig>({
-    variant: "sidebar",
-    collapsible: "offcanvas",
+    variant: "inset",
+    collapsible: "icon",
     side: "left",
   });
 

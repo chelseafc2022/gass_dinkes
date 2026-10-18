@@ -10,3 +10,10 @@ backend/src/generated/
 .DS_Store
 playwright-report/
 test-results/
+
+# Raw assets in root
+/BUPATI.png
+/WAKIL BUPATI.png
+/NURLITA JAYA AS, S.Sos., M.Kes.png
+/SEKDA.JPG
+/GERAK AKSI SEHAT SETARA inovasi file.docx

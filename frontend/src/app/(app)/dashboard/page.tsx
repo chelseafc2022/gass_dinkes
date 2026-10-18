@@ -498,14 +498,22 @@ export default function Dashboard() {
                   icon: CheckCheck,
                 },
               ].map((s, i) => (
-                <Card key={s.label} className="gap-4 py-5 shadow-none">
+                <Card key={s.label} className="gass-stat-card gap-4 py-5">
                   <CardContent>
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] text-muted-foreground font-medium">
                         {s.label}
                       </span>
                       <span
-                        className={`rounded-lg p-2 ${i === 0 ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"}`}
+                        className={`rounded-lg p-2 ${
+                          i === 0
+                            ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300"
+                            : i === 1
+                              ? "bg-teal-100 text-teal-800 dark:bg-teal-950/70 dark:text-teal-300"
+                              : i === 2
+                                ? "bg-pink-100 text-pink-700 dark:bg-pink-950/70 dark:text-pink-300"
+                                : "bg-green-100 text-green-800 dark:bg-green-950/70 dark:text-green-300"
+                        }`}
                       >
                         <s.icon className="size-4" />
                       </span>
@@ -529,7 +537,7 @@ export default function Dashboard() {
               <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-4 border-b bg-muted/20">
                 <div>
                   <CardTitle className="text-base">
-                    Perbandingan capaian global
+                    Perbandingan Capaian Kinerjan dan Keuangan
                   </CardTitle>
                   <CardDescription className="mt-1.5 text-xs">
                     Rata-rata capaian kinerja dibandingkan dengan persentase
@@ -559,12 +567,12 @@ export default function Dashboard() {
                       {
                         name: "Capaian kinerja",
                         value: d.summary.capaian,
-                        fill: "#0c9586",
+                        fill: "#0F766E",
                       },
                       {
                         name: "Serapan keuangan",
                         value: d.summary.serapan,
-                        fill: "#2563eb",
+                        fill: "#DB2777",
                       },
                     ]}
                     margin={{ top: 22, right: 16, left: -8, bottom: 4 }}
@@ -630,8 +638,8 @@ export default function Dashboard() {
                         className="fill-foreground text-xs font-semibold"
                       />
                       {[
-                        { fill: "#0c9586" },
-                        { fill: "#2563eb" },
+                        { fill: "#0F766E" },
+                        { fill: "#DB2777" },
                       ].map((item, index) => (
                         <Cell key={index} fill={item.fill} />
                       ))}
