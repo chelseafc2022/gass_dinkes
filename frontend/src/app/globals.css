@@ -200,6 +200,530 @@ body {font-family:Arial,Helvetica,sans-serif;}
 .dark .filter-select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 }
-.login-story {background:radial-gradient(ellipse at 0% 100%,#20695d 0%,transparent 55%),linear-gradient(135deg,#073d3b,#087f73);}
-.login-orbit {position:absolute;border:1px solid #ffffff12;width:700px;height:700px;border-radius:50%;right:-420px;top:-250px;}
-.login-orbit.second {width:900px;height:900px;right:-420px;top:-220px;}
+
+/* GASS login */
+.gass-login-page {
+  --primary: #064E3B;
+  --primary-light: #0F766E;
+  --secondary: #10B981;
+  --background: #F4FBF8;
+  --mint: #D1FAE5;
+  --accent: #DB2777;
+  --text-primary: #134E4A;
+  --text-secondary: #64748B;
+  --border: #E2E8F0;
+  --white: #FFFFFF;
+  min-height: 100svh;
+  width: 100%;
+  overflow-x: hidden;
+  background: var(--background);
+  color: var(--text-primary);
+}
+
+.gass-brand-panel {
+  position: relative;
+  display: none;
+  min-width: 0;
+  overflow: hidden;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.94) 0%, rgba(244,251,248,.88) 32%, rgba(209,250,229,.84) 72%, rgba(16,185,129,.28) 100%),
+    linear-gradient(135deg, #ecfdf5 0%, #ccfbf1 58%, #a7f3d0 100%);
+}
+
+.gass-brand-panel::before {
+  content: "";
+  position: absolute;
+  width: 48rem;
+  height: 48rem;
+  top: -33rem;
+  left: -12rem;
+  border: 1px solid rgba(15, 118, 110, .12);
+  border-radius: 999px;
+  box-shadow: 0 0 0 44px rgba(255,255,255,.25), 0 0 0 46px rgba(15,118,110,.08);
+}
+
+.gass-brand-glow {
+  position: absolute;
+  width: 31rem;
+  height: 31rem;
+  right: -13rem;
+  top: 18%;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, .3);
+  filter: blur(100px);
+}
+
+.gass-brand-panel__content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  min-height: 100svh;
+  width: 100%;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: clamp(1.5rem, 4vh, 3.5rem) clamp(2rem, 5vw, 5.25rem) 38vh;
+}
+
+.gass-office-photo {
+  position: absolute;
+  inset: auto 0 0;
+  height: 52%;
+  mask-image: linear-gradient(to bottom, transparent, #000 35%);
+}
+
+.gass-office-photo img {
+  object-fit: cover;
+  object-position: center 65%;
+}
+
+.gass-office-photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(209,250,229,.16), transparent 45%, rgba(6,78,59,.12));
+}
+
+.gass-agency {
+  display: flex;
+  align-items: center;
+  gap: .85rem;
+  color: var(--primary);
+  text-transform: uppercase;
+}
+
+.gass-agency__crest {
+  width: 2.6rem;
+  height: 3.08rem;
+  object-fit: contain;
+  filter: drop-shadow(0 5px 8px rgba(6,78,59,.13));
+}
+
+.gass-agency span,
+.gass-agency small {
+  display: block;
+  font-weight: 800;
+}
+
+.gass-agency span {
+  font-size: .8rem;
+  letter-spacing: .09em;
+}
+
+.gass-agency small {
+  margin-top: .18rem;
+  font-size: .65rem;
+  letter-spacing: .055em;
+}
+
+.gass-brand-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+
+.gass-main-logo {
+  width: min(31rem, 82%, 46svh);
+  height: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 22px 28px rgba(6, 78, 59, .19));
+}
+
+.gass-brand-copy p {
+  max-width: 34rem;
+  margin-top: 1rem;
+  font-size: clamp(.76rem, 1vw, .94rem);
+  font-weight: 700;
+  line-height: 1.65;
+  color: var(--primary);
+  text-wrap: balance;
+}
+
+.gass-waves {
+  position: absolute;
+  z-index: 1;
+  right: -2%;
+  bottom: -1px;
+  left: -2%;
+  width: 104%;
+  height: clamp(9rem, 23vh, 15rem);
+}
+
+.gass-dot-grid {
+  position: absolute;
+  z-index: 1;
+  width: 7rem;
+  height: 5rem;
+  opacity: .42;
+  background-image: radial-gradient(circle, var(--primary-light) 1.5px, transparent 1.7px);
+  background-size: 14px 14px;
+}
+
+.gass-dot-grid--top { top: 3%; right: 6%; }
+.gass-dot-grid--bottom { bottom: 11%; left: 2%; }
+
+.gass-medical-mark {
+  position: absolute;
+  z-index: 1;
+  color: var(--primary-light);
+  font-size: 6rem;
+  font-weight: 300;
+  line-height: 1;
+  opacity: .08;
+}
+
+.gass-medical-mark--one { top: 22%; left: 5%; }
+.gass-medical-mark--two { right: 5%; bottom: 17%; }
+
+.gass-leaf {
+  position: absolute;
+  z-index: 1;
+  color: var(--secondary);
+  opacity: .15;
+  stroke-width: 1.25;
+}
+
+.gass-leaf--one {
+  top: 7%;
+  right: 4%;
+  width: 7.5rem;
+  height: 7.5rem;
+  transform: rotate(-18deg);
+}
+
+.gass-leaf--two {
+  bottom: 18%;
+  left: 5%;
+  width: 5rem;
+  height: 5rem;
+  transform: rotate(28deg);
+}
+
+.gass-form-panel {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  min-height: 100svh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(16,185,129,.16), transparent 30rem),
+    radial-gradient(circle at 0% 100%, rgba(209,250,229,.8), transparent 24rem),
+    var(--background);
+}
+
+.gass-form-panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 12rem;
+  height: 12rem;
+  border-radius: 0 0 0 100%;
+  background: linear-gradient(145deg, rgba(6,78,59,.12), rgba(16,185,129,.04));
+}
+
+.gass-mobile-brand {
+  position: relative;
+  z-index: 1;
+  width: 7rem;
+  margin: .5rem auto 1rem;
+}
+
+.gass-mobile-brand img {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 14px 18px rgba(6,78,59,.17));
+}
+
+.gass-login-card {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 31rem;
+  border: 1px solid rgba(255,255,255,.94);
+  border-radius: 1.5rem;
+  padding: clamp(1.5rem, 4.2vw, 2.75rem);
+  background: rgba(255,255,255,.96);
+  box-shadow: 0 28px 70px rgba(6,78,59,.12), 0 4px 16px rgba(15,118,110,.06);
+  backdrop-filter: blur(14px);
+}
+
+.gass-agency--compact {
+  align-items: center;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #edf2f0;
+}
+
+.gass-agency--compact .gass-agency__crest {
+  width: 2.8rem;
+  height: 3.3rem;
+}
+
+.gass-agency--compact span { font-size: .78rem; }
+.gass-agency--compact small { font-size: .63rem; }
+
+.gass-heading {
+  margin: 1.75rem 0 1.65rem;
+}
+
+.gass-kicker {
+  display: block;
+  margin-bottom: .65rem;
+  color: var(--secondary);
+  font-size: .64rem;
+  font-weight: 800;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.gass-heading h1 {
+  color: var(--primary);
+  font-size: clamp(2rem, 3.2vw, 2.65rem);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -.045em;
+}
+
+.gass-heading p {
+  margin-top: .55rem;
+  color: var(--text-secondary);
+  font-size: .9rem;
+  line-height: 1.55;
+}
+
+.gass-login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.05rem;
+}
+
+.gass-field label {
+  display: inline-block;
+  margin-bottom: .48rem;
+  color: var(--text-primary);
+  font-size: .78rem;
+  font-weight: 700;
+}
+
+.gass-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.gass-input-wrap > svg {
+  position: absolute;
+  left: 1rem;
+  width: 1.05rem;
+  height: 1.05rem;
+  color: #94a3b8;
+  pointer-events: none;
+  transition: color .2s ease;
+}
+
+.gass-input-wrap input {
+  width: 100%;
+  height: 3.25rem;
+  border: 1px solid var(--border);
+  border-radius: .9rem;
+  padding: 0 3rem 0 2.8rem;
+  background: #fbfefd;
+  color: var(--text-primary);
+  font-size: .88rem;
+  outline: none;
+  transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+}
+
+.gass-input-wrap input::placeholder { color: #94a3b8; }
+
+.gass-input-wrap:focus-within > svg { color: var(--primary-light); }
+
+.gass-input-wrap input:focus {
+  border-color: var(--primary-light);
+  background: var(--white);
+  box-shadow: 0 0 0 4px rgba(16,185,129,.12);
+}
+
+.gass-input-wrap input[aria-invalid="true"] {
+  border-color: #e11d48;
+  box-shadow: 0 0 0 3px rgba(225,29,72,.08);
+}
+
+.gass-password-toggle {
+  position: absolute;
+  right: .55rem;
+  display: inline-flex;
+  width: 2.25rem;
+  height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: .7rem;
+  color: #7b8899;
+  cursor: pointer;
+  transition: color .2s ease, background .2s ease;
+}
+
+.gass-password-toggle:hover { background: var(--mint); color: var(--primary); }
+.gass-password-toggle:focus-visible { outline: 3px solid rgba(16,185,129,.25); }
+.gass-password-toggle svg { width: 1.1rem; height: 1.1rem; }
+
+.gass-field-error {
+  margin: .38rem 0 0 .15rem;
+  color: #be123c;
+  font-size: .72rem;
+  font-weight: 600;
+}
+
+.gass-server-error {
+  display: flex;
+  align-items: flex-start;
+  gap: .65rem;
+  border: 1px solid #fecdd3;
+  border-radius: .8rem;
+  padding: .75rem .85rem;
+  background: #fff1f2;
+  color: #9f1239;
+}
+
+.gass-server-error > svg {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  margin-top: .1rem;
+}
+
+.gass-server-error strong,
+.gass-server-error span { display: block; }
+.gass-server-error strong { font-size: .75rem; }
+.gass-server-error span { margin-top: .15rem; font-size: .7rem; line-height: 1.45; }
+
+.gass-submit {
+  display: inline-flex;
+  width: 100%;
+  min-height: 3.3rem;
+  align-items: center;
+  justify-content: center;
+  gap: .75rem;
+  margin-top: .2rem;
+  border-radius: .9rem;
+  background: linear-gradient(110deg, var(--primary) 0%, var(--primary-light) 56%, var(--secondary) 115%);
+  box-shadow: 0 12px 24px rgba(6,78,59,.19), inset 0 1px 0 rgba(255,255,255,.22);
+  color: var(--white);
+  font-size: .92rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+}
+
+.gass-submit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 28px rgba(6,78,59,.24), inset 0 1px 0 rgba(255,255,255,.22);
+  filter: saturate(1.05);
+}
+
+.gass-submit:focus-visible { outline: 4px solid rgba(16,185,129,.24); outline-offset: 2px; }
+.gass-submit:disabled { cursor: not-allowed; opacity: .72; }
+.gass-submit svg { width: 1.05rem; height: 1.05rem; }
+
+.gass-spinner { animation: gass-spin .8s linear infinite; }
+
+.gass-access-note {
+  display: flex;
+  align-items: flex-start;
+  gap: .65rem;
+  margin-top: 1.35rem;
+  border-radius: .85rem;
+  padding: .8rem .9rem;
+  background: #f0fdf7;
+  color: var(--text-secondary);
+}
+
+.gass-access-note svg {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  margin-top: .1rem;
+  color: var(--primary-light);
+}
+
+.gass-access-note p { font-size: .7rem; line-height: 1.55; }
+
+.gass-setara-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid #edf2f0;
+}
+
+.gass-setara-logo {
+  width: auto;
+  height: 2.2rem;
+  object-fit: contain;
+  opacity: .92;
+  transition: opacity .2s ease;
+}
+
+.gass-setara-logo:hover {
+  opacity: 1;
+}
+
+.gass-copyright {
+  position: relative;
+  z-index: 2;
+  margin-top: 1rem;
+  color: var(--text-secondary);
+  font-size: .65rem;
+  text-align: center;
+}
+
+@keyframes gass-spin { to { transform: rotate(360deg); } }
+
+@media (min-width: 900px) {
+  .gass-login-page { display: grid; grid-template-columns: minmax(0, 55fr) minmax(25rem, 45fr); }
+  .gass-brand-panel { display: flex; }
+  .gass-form-panel { padding: clamp(1.5rem, 3.5vw, 4rem); }
+  .gass-mobile-brand { display: none; }
+}
+
+@media (min-width: 900px) and (max-width: 1180px) {
+  .gass-login-page { grid-template-columns: minmax(0, 48fr) minmax(27rem, 52fr); }
+  .gass-brand-panel__content { padding-right: 2rem; padding-left: 2rem; }
+  .gass-main-logo { width: min(24rem, 82%, 46svh); }
+}
+
+@media (max-width: 520px) {
+  .gass-form-panel { justify-content: flex-start; padding: 1rem; }
+  .gass-form-panel::before { width: 8rem; height: 8rem; }
+  .gass-mobile-brand { width: 6.4rem; margin-top: .1rem; margin-bottom: .65rem; }
+  .gass-login-card { border-radius: 1.35rem; padding: 1.35rem; }
+  .gass-agency--compact { padding-bottom: 1.1rem; }
+  .gass-agency--compact .gass-agency__crest { width: 2.35rem; height: 2.8rem; }
+  .gass-agency--compact span { font-size: .68rem; }
+  .gass-agency--compact small { font-size: .56rem; }
+  .gass-heading { margin: 1.3rem 0 1.25rem; }
+  .gass-heading h1 { font-size: 1.9rem; }
+  .gass-heading p { font-size: .82rem; }
+  .gass-access-note { margin-top: 1.05rem; }
+}
+
+@media (max-height: 760px) and (min-width: 900px) {
+  .gass-brand-panel__content { padding-top: 1.5rem; }
+  .gass-brand-copy p { margin-top: .45rem; }
+  .gass-login-card { padding-top: 1.75rem; padding-bottom: 1.75rem; }
+  .gass-heading { margin-top: 1.2rem; margin-bottom: 1.2rem; }
+  .gass-access-note { margin-top: 1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gass-submit,
+  .gass-password-toggle,
+  .gass-input-wrap input { transition: none; }
+  .gass-spinner { animation-duration: 1.5s; }
+}

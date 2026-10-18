@@ -9,17 +9,20 @@ test("login renders on desktop and mobile with accessible fields", async ({
 }) => {
   await page.goto("/login");
   await expect(
-    page.getByRole("heading", { name: "Masuk ke GASS" }),
+    page.getByRole("heading", { name: "Selamat Datang" }),
   ).toBeVisible();
-  await expect(page.getByLabel("NIP atau username")).toBeVisible();
+  await expect(page.getByLabel("Username atau NIP")).toBeVisible();
   await page.screenshot({
     path: "test-results/login-desktop.png",
     fullPage: true,
     animations: "disabled",
   });
+  await page.getByRole("button", { name: "Masuk", exact: true }).click();
+  await expect(page.getByText("Username atau NIP wajib diisi.")).toBeVisible();
+  await expect(page.getByText("Password wajib diisi.")).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(
-    page.getByRole("button", { name: "Masuk ke ruang kerja" }),
+    page.getByRole("button", { name: "Masuk", exact: true }),
   ).toBeVisible();
   expect(
     await page.evaluate(

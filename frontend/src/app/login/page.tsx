@@ -1,184 +1,284 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import Image from "next/image";
+import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  Activity,
-  ArrowRight,
-  ShieldCheck,
+  AlertCircle,
   Eye,
   EyeOff,
-  HeartPulse,
-  ChartNoAxesCombined,
-  Building2,
+  Leaf,
   LoaderCircle,
+  LockKeyhole,
+  LogIn,
+  ShieldCheck,
+  UserRound,
 } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/gass/providers";
 import { write } from "@/lib/api";
-export default function Login() {
-  const router = useRouter(),
-    client = useQueryClient(),
-    { status } = useAuth();
-  const [show, setShow] = useState(false);
+
+type Credentials = {
+  identifier: string;
+  password: string;
+};
+
+type FieldErrors = Partial<Record<keyof Credentials, string>>;
+
+function GovernmentIdentity({ compact = false }: { compact?: boolean }) {
+  return (
+    <div className={compact ? "gass-agency gass-agency--compact" : "gass-agency"}>
+      <Image
+        src="/branding/logo-konsel.png"
+        alt="Lambang Kabupaten Konawe Selatan"
+        width={678}
+        height={800}
+        className="gass-agency__crest"
+        priority
+      />
+      <div>
+        <span>Dinas Kesehatan</span>
+        <small>Kabupaten Konawe Selatan</small>
+      </div>
+    </div>
+  );
+}
+
+function LoginForm() {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const [showPassword, setShowPassword] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+
   const login = useMutation({
-    mutationFn: (b: any) => write("/auth/login", b, "POST"),
-    onSuccess: (r) => {
-      client.setQueryData(["me"], r.user);
+    mutationFn: (credentials: Credentials) =>
+      write("/auth/login", credentials, "POST"),
+    onSuccess: (response) => {
+      queryClient.setQueryData(["me"], response.user);
+      router.replace("/dashboard");
     },
   });
+
+  const clearFieldError = (field: keyof Credentials) => {
+    if (fieldErrors[field]) {
+      setFieldErrors((current) => ({ ...current, [field]: undefined }));
+    }
+    if (login.error) login.reset();
+  };
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const credentials = {
+      identifier: String(data.get("identifier") ?? "").trim(),
+      password: String(data.get("password") ?? ""),
+    };
+    const errors: FieldErrors = {};
+
+    if (!credentials.identifier) {
+      errors.identifier = "Username atau NIP wajib diisi.";
+    }
+    if (!credentials.password) {
+      errors.password = "Password wajib diisi.";
+    }
+
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+    login.mutate(credentials);
+  };
+
+  return (
+    <form className="gass-login-form" onSubmit={handleSubmit} noValidate>
+      <div className="gass-field">
+        <label htmlFor="identifier">Username atau NIP</label>
+        <div className="gass-input-wrap">
+          <UserRound aria-hidden="true" />
+          <input
+            id="identifier"
+            name="identifier"
+            type="text"
+            placeholder="Masukkan username atau NIP"
+            autoComplete="username"
+            autoCapitalize="none"
+            spellCheck={false}
+            aria-invalid={Boolean(fieldErrors.identifier)}
+            aria-describedby={fieldErrors.identifier ? "identifier-error" : undefined}
+            onChange={() => clearFieldError("identifier")}
+          />
+        </div>
+        {fieldErrors.identifier && (
+          <p id="identifier-error" className="gass-field-error">
+            {fieldErrors.identifier}
+          </p>
+        )}
+      </div>
+
+      <div className="gass-field">
+        <label htmlFor="password">Password</label>
+        <div className="gass-input-wrap">
+          <LockKeyhole aria-hidden="true" />
+          <input
+            id="password"
+            name="password"
+            type={showPassword ? "text" : "password"}
+            placeholder="Masukkan password"
+            autoComplete="current-password"
+            aria-invalid={Boolean(fieldErrors.password)}
+            aria-describedby={fieldErrors.password ? "password-error" : undefined}
+            onChange={() => clearFieldError("password")}
+          />
+          <button
+            type="button"
+            className="gass-password-toggle"
+            aria-label={showPassword ? "Sembunyikan password" : "Tampilkan password"}
+            aria-pressed={showPassword}
+            onClick={() => setShowPassword((current) => !current)}
+          >
+            {showPassword ? <EyeOff /> : <Eye />}
+          </button>
+        </div>
+        {fieldErrors.password && (
+          <p id="password-error" className="gass-field-error">
+            {fieldErrors.password}
+          </p>
+        )}
+      </div>
+
+      {login.error && (
+        <div className="gass-server-error" role="alert">
+          <AlertCircle aria-hidden="true" />
+          <p>
+            <strong>Login belum berhasil</strong>
+            <span>{login.error.message}</span>
+          </p>
+        </div>
+      )}
+
+      <button
+        type="submit"
+        className="gass-submit"
+        disabled={login.isPending}
+      >
+        {login.isPending ? (
+          <>
+            <LoaderCircle className="gass-spinner" aria-hidden="true" />
+            Memverifikasi akun…
+          </>
+        ) : (
+          <>
+            Masuk
+            <LogIn aria-hidden="true" />
+          </>
+        )}
+      </button>
+    </form>
+  );
+}
+
+export default function LoginPage() {
+  const router = useRouter();
+  const { status } = useAuth();
+
   useEffect(() => {
     if (status === "authenticated") router.replace("/dashboard");
   }, [status, router]);
-  return (
-    <div className="min-h-screen grid lg:grid-cols-[1.05fr_1fr]">
-      <section className="login-story hidden lg:flex flex-col justify-between p-14 text-white relative overflow-hidden">
-        <div className="relative z-10 flex items-center gap-3">
-          <Activity className="size-8" />
-          <span className="text-3xl font-extrabold tracking-tight">GASS.</span>
-          <span className="border-l border-white/25 pl-4 ml-2 text-xs leading-5 opacity-80">
-            DINAS KESEHATAN
-            <br />
-            KONAWE SELATAN
-          </span>
-        </div>
-        <div className="relative z-10 max-w-lg">
-          <span className="inline-flex rounded-full border border-white/25 px-3 py-1.5 text-[11px] tracking-widest mb-7">
-            GERAKAN AKSI SEHAT SETARA
-          </span>
-          <h1 className="text-5xl xl:text-6xl leading-[1.12] font-semibold tracking-tight">
-            Bersama bergerak.
-            <br />
-            <span className="text-emerald-200">Kesehatan setara.</span>
-          </h1>
-          <p className="mt-6 text-emerald-50/75 text-sm leading-7 max-w-sm">
-            Satu ruang untuk memantau kinerja, mengawal program, dan
-            meningkatkan pelayanan kesehatan bagi seluruh masyarakat.
-          </p>
-          <div className="grid grid-cols-3 gap-5 mt-12 border-t border-white/20 pt-7">
-            {[
-              [Building2, "Puskesmas terhubung"],
-              [ChartNoAxesCombined, "Kinerja terukur"],
-              [HeartPulse, "Layanan lebih baik"],
-            ].map(([Icon, text]: any) => (
-              <div key={text}>
-                <Icon className="size-6 text-emerald-200 mb-3" />
-                <p className="text-xs opacity-85">{text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-        <p className="relative z-10 text-[11px] text-white/55">
-          Dinas Kesehatan Kabupaten Konawe Selatan
-        </p>
-        <div className="login-orbit" />
-        <div className="login-orbit second" />
-      </section>
-      <section className="flex flex-col min-h-screen justify-between p-7 sm:p-12 bg-card">
-        <div className="flex justify-between items-center">
-          <span className="text-xl font-bold lg:invisible text-primary">
-            GASS.
-          </span>
-          <span className="text-[11px] text-muted-foreground">
-            Portal monitoring kesehatan
-          </span>
-        </div>
-        <div className="w-full max-w-sm mx-auto py-12">
-          <div className="brand-icon mb-7">
-            <ShieldCheck className="size-6" />
-          </div>
-          <p className="eyebrow">SELAMAT DATANG KEMBALI</p>
-          <h2 className="text-3xl font-semibold tracking-tight mt-2">
-            Masuk ke GASS
-          </h2>
 
-          <form
-            className="space-y-5"
-            onSubmit={(e) => {
-              e.preventDefault();
-              const d = new FormData(e.currentTarget);
-              login.mutate({
-                identifier: d.get("identifier"),
-                password: d.get("password"),
-              });
-            }}
-          >
-            <div className="space-y-2">
-              <Label htmlFor="identifier">NIP atau username</Label>
-              <Input
-                id="identifier"
-                name="identifier"
-                placeholder="Masukkan NIP atau username"
-                autoComplete="username"
-                required
-                className="h-11"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Kata sandi</Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  name="password"
-                  type={show ? "text" : "password"}
-                  placeholder="Masukkan kata sandi eGov"
-                  autoComplete="current-password"
-                  required
-                  className="h-11 pr-11"
-                />
-                <button
-                  type="button"
-                  aria-label={
-                    show ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"
-                  }
-                  onClick={() => setShow(!show)}
-                  className="absolute right-3 top-3 text-muted-foreground"
-                >
-                  {show ? (
-                    <EyeOff className="size-5" />
-                  ) : (
-                    <Eye className="size-5" />
-                  )}
-                </button>
-              </div>
-            </div>
-            {login.error && (
-              <p
-                role="alert"
-                className="rounded-lg bg-destructive/10 p-3 text-xs text-destructive"
-              >
-                {login.error.message}
-              </p>
-            )}
-            <Button
-              type="submit"
-              className="h-11 w-full"
-              disabled={login.isPending}
-            >
-              {login.isPending ? (
-                <LoaderCircle className="animate-spin size-4" />
-              ) : (
-                <>
-                  Masuk ke ruang kerja
-                  <ArrowRight className="ml-auto size-4" />
-                </>
-              )}
-            </Button>
-          </form>
-          <div className="mt-7 flex items-start gap-3 rounded-lg bg-muted/60 p-4 text-xs leading-5 text-muted-foreground">
-            <ShieldCheck className="size-4 shrink-0 mt-0.5" />
+  return (
+    <main className="gass-login-page">
+      <section className="gass-brand-panel" aria-label="Tentang GASS">
+        <div className="gass-office-photo">
+          <Image
+            src="/branding/foto-kantor.jpeg"
+            alt="Kantor Dinas Kesehatan Kabupaten Konawe Selatan"
+            fill
+            sizes="(min-width: 1181px) 55vw, (min-width: 900px) 48vw, 1px"
+          />
+        </div>
+        <div className="gass-brand-glow" aria-hidden="true" />
+        <div className="gass-dot-grid gass-dot-grid--top" aria-hidden="true" />
+        <div className="gass-dot-grid gass-dot-grid--bottom" aria-hidden="true" />
+        <div className="gass-medical-mark gass-medical-mark--one" aria-hidden="true">+</div>
+        <div className="gass-medical-mark gass-medical-mark--two" aria-hidden="true">+</div>
+        <Leaf className="gass-leaf gass-leaf--one" aria-hidden="true" />
+        <Leaf className="gass-leaf gass-leaf--two" aria-hidden="true" />
+
+        <div className="gass-brand-panel__content">
+          <div className="gass-brand-copy">
+            <Image
+              src="/branding/logo-gass.png"
+              alt="GASS — Gerak Aksi Sehat Setara"
+              width={1312}
+              height={1199}
+              className="gass-main-logo"
+              priority
+            />
             <p>
-              Akses diberikan oleh Admin Dinkes. Jika belum memiliki akses,
+              Model Inovasi Tata Kelola Pelayanan Kesehatan Berbasis
+              Kolaborasi untuk Percepatan Standar Pelayanan Minimal (SPM)
+              Bidang Kesehatan
+            </p>
+          </div>
+
+        </div>
+
+        <svg
+          className="gass-waves"
+          viewBox="0 0 1000 190"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <path d="M0 120C170 55 272 180 447 119C616 60 725 35 1000 112V190H0Z" fill="#D1FAE5" fillOpacity=".62" />
+          <path d="M0 148C181 88 305 205 497 137C680 73 823 85 1000 134V190H0Z" fill="#10B981" fillOpacity=".38" />
+          <path d="M0 171C201 114 328 215 526 158C710 106 841 124 1000 151V190H0Z" fill="#064E3B" fillOpacity=".96" />
+          <path d="M284 179C430 128 552 193 702 160C787 141 884 140 1000 167V190H277Z" fill="#DB2777" fillOpacity=".88" />
+        </svg>
+      </section>
+
+      <section className="gass-form-panel">
+        <div className="gass-mobile-brand">
+          <Image
+            src="/branding/logo-gass.png"
+            alt="GASS — Gerak Aksi Sehat Setara"
+            width={1312}
+            height={1199}
+            priority
+          />
+        </div>
+
+        <div className="gass-login-card">
+          <GovernmentIdentity compact />
+
+          <div className="gass-heading">
+            <span className="gass-kicker">Portal Monitoring Kesehatan</span>
+            <h1>Selamat Datang</h1>
+            <p>Masuk untuk mengakses sistem GASS</p>
+          </div>
+
+          <LoginForm />
+
+          <div className="gass-access-note">
+            <ShieldCheck aria-hidden="true" />
+            <p>
+              Akses diberikan oleh Admin Dinkes. Jika mengalami kendala akun,
               hubungi administrator instansi Anda.
             </p>
           </div>
+
+          <div className="gass-setara-brand">
+            <Image
+              src="/branding/logo-setara.png"
+              alt="Logo SETARA"
+              width={160}
+              height={52}
+              className="gass-setara-logo"
+            />
+          </div>
         </div>
-        <p className="text-center text-[11px] text-muted-foreground">
-          © {new Date().getFullYear()} GASS · Gerakan Aksi Sehat Setara
+
+        <p className="gass-copyright">
+          © {new Date().getFullYear()} Dinas Kesehatan Kabupaten Konawe Selatan
         </p>
       </section>
-    </div>
+    </main>
   );
 }

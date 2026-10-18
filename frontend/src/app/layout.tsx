@@ -5,6 +5,11 @@ export const metadata: Metadata = {
   title: { default: "GASS · Dinas Kesehatan", template: "%s · GASS" },
   description:
     "Gerakan Aksi Sehat Setara — Monitoring kinerja dan keuangan Dinas Kesehatan",
+  icons: {
+    icon: "/branding/logo-gass.png",
+    shortcut: "/branding/logo-gass.png",
+    apple: "/branding/logo-gass.png",
+  },
 };
 export default function RootLayout({
   children,
