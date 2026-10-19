@@ -225,7 +225,7 @@ export async function importSpmData() {
         where: { capaianId: capaian.id },
       });
 
-      const verifData = [];
+      const verifData: any[] = [];
       for (let m = 1; m <= 6; m++) {
         verifData.push({
           capaianId: capaian.id,

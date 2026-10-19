@@ -45,12 +45,26 @@ export class ReportsController {
   ) {
     return this.service.verify("kinerja", id, u, b);
   }
+  @Menu("capaian_kinerja") @Post("capaian/kinerja/:id/verify-all") verifyAllK(
+    @CurrentUser() u: Actor,
+    @Param("id") id: string,
+    @Body() b: unknown,
+  ) {
+    return this.service.verifyAll("kinerja", id, u, b);
+  }
   @Menu("capaian_keuangan") @Post("capaian/keuangan/:id/verify") verifyF(
     @CurrentUser() u: Actor,
     @Param("id") id: string,
     @Body() b: unknown,
   ) {
     return this.service.verify("keuangan", id, u, b);
+  }
+  @Menu("capaian_keuangan") @Post("capaian/keuangan/:id/verify-all") verifyAllF(
+    @CurrentUser() u: Actor,
+    @Param("id") id: string,
+    @Body() b: unknown,
+  ) {
+    return this.service.verifyAll("keuangan", id, u, b);
   }
   @Menu("capaian_kinerja") @Delete("capaian/kinerja/:id") deleteK(
     @CurrentUser() u: Actor,

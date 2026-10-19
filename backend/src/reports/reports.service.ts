@@ -459,6 +459,87 @@ export class ReportsService {
       { isolationLevel: "Serializable" },
     );
   }
+  async verifyAll(
+    kind: "kinerja" | "keuangan",
+    id: string,
+    u: Actor,
+    body: unknown,
+  ) {
+    if (!["ADMIN_DINKES", "AKUN_BIDANG"].includes(u.role))
+      throw new ForbiddenException(
+        "Verifikasi hanya oleh Admin Dinkes atau penanggung jawab indikator.",
+      );
+    const b = z
+      .object({
+        validated: z.boolean().default(true),
+      })
+      .strict()
+      .parse(body || {});
+    const model = kind === "kinerja" ? "capaianKinerja" : "capaianKeuangan";
+    const monthlyModel =
+      kind === "kinerja"
+        ? "verifikasiKinerjaBulanan"
+        : "verifikasiKeuanganBulanan";
+    return this.db.$transaction(
+      async (tx) => {
+        if (u.role === "AKUN_BIDANG" && !u.bidangId)
+          throw new ForbiddenException("Bidang belum ditetapkan.");
+        const responsibility = { bidang: { some: { bidangId: u.bidangId! } } };
+        const row = await (tx as any)[model].findFirst({
+          where: {
+            id,
+            ...(u.role === "AKUN_BIDANG"
+              ? kind === "kinerja"
+                ? { indikator: responsibility }
+                : { subKegiatan: { indikator: { some: responsibility } } }
+              : {}),
+          },
+          include: { verifikasiBulanan: true },
+        });
+        if (!row)
+          throw new ForbiddenException(
+            "Laporan tidak ditemukan atau bukan tanggung jawab bidang Anda.",
+          );
+
+        const targetMonths = row.verifikasiBulanan.filter(
+          (m: any) => m.isValidated !== b.validated,
+        );
+        if (targetMonths.length === 0) {
+          return { count: 0, message: "Tidak ada bulan yang perlu diverifikasi." };
+        }
+
+        const updated = await (tx as any)[monthlyModel].updateMany({
+          where: {
+            capaianId: id,
+            isValidated: !b.validated,
+          },
+          data: {
+            isValidated: b.validated,
+            verifiedById: b.validated ? u.id : null,
+            verifiedAt: b.validated ? new Date() : null,
+            legacyVerification: false,
+          },
+        });
+
+        await tx.auditLog.create({
+          data: {
+            userId: u.id,
+            action: b.validated ? "VERIFY_ALL" : "UNVERIFY_ALL",
+            entity: model,
+            entityId: id,
+            details: JSON.stringify({
+              tahun: row.tahun,
+              affectedMonths: targetMonths.map((m: any) => m.bulan),
+              count: updated.count,
+            }),
+          },
+        });
+
+        return { count: updated.count, success: true };
+      },
+      { isolationLevel: "Serializable" },
+    );
+  }
   async remove(kind: "kinerja" | "keuangan", id: string, u: Actor) {
     if (u.role !== "ADMIN_DINKES")
       throw new ForbiddenException("Penghapusan hanya oleh Admin Dinkes.");
