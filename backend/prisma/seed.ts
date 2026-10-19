@@ -51,8 +51,16 @@ async function main() {
     console.warn("Peringatan import data awal Excel:", err?.message);
   }
 
+  // Import data riil 12 SPM Triwulan II 2026
+  try {
+    const { importSpmData } = await import("./import-spm-2026.js");
+    await importSpmData();
+  } catch (err: any) {
+    console.warn("Peringatan import SPM 2026:", err?.message);
+  }
+
   console.log(
-    "Seed GASS selesai. Program, kegiatan, sub kegiatan, indikator, dan capaian diisi dari data resmi Dinas Kesehatan.",
+    "Seed GASS selesai. Seluruh 12 SPM dan data riil 26 Puskesmas berhasil dimuat.",
   );
 }
 main()

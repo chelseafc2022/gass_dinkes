@@ -1,0 +1,2331 @@
+[
+  {
+    "spmIndex": 1,
+    "col": 3,
+    "namaIndikator": "Pelayanan Kesehatan Ibu Hamil",
+    "kodeSubKegiatan": "1.02.02.2.02.0001",
+    "satuan": "Orang",
+    "bidang": [
+      "KESMAS"
+    ],
+    "faskesData": [
+      {
+        "rawName": "Andoolo",
+        "namaFaskes": "UPTD PUSKESMAS ANDOOLO",
+        "target": 158.0,
+        "realisasi": 65.0,
+        "persentase": 41.14
+      },
+      {
+        "rawName": "Andoolo Utama",
+        "namaFaskes": "UPTD PUSKESMAS ANDOOLO UTAMA",
+        "target": 214.0,
+        "realisasi": 121.0,
+        "persentase": 56.54
+      },
+      {
+        "rawName": "Amondo",
+        "namaFaskes": "UPTD PUSKESMAS AMONDO",
+        "target": 111.0,
+        "realisasi": 55.0,
+        "persentase": 49.55
+      },
+      {
+        "rawName": "Atari Jaya",
+        "namaFaskes": "UPTD PUSKESMAS ATARI JAYA",
+        "target": 231.0,
+        "realisasi": 68.0,
+        "persentase": 29.44
+      },
+      {
+        "rawName": "Baito",
+        "namaFaskes": "UPTD PUSKESMAS BAITO",
+        "target": 146.0,
+        "realisasi": 52.0,
+        "persentase": 35.62
+      },
+      {
+        "rawName": "Basala",
+        "namaFaskes": "UPTD PUSKESMAS BASALA",
+        "target": 108.0,
+        "realisasi": 34.0,
+        "persentase": 31.48
+      },
+      {
+        "rawName": "Benua",
+        "namaFaskes": "UPTD PUSKESMAS BENUA",
+        "target": 156.0,
+        "realisasi": 48.0,
+        "persentase": 30.77
+      },
+      {
+        "rawName": "Bimamaroa",
+        "namaFaskes": "UPTD PUSKESMAS BIMA MAROA",
+        "target": 133.0,
+        "realisasi": 72.0,
+        "persentase": 54.14
+      },
+      {
+        "rawName": "Kolono",
+        "namaFaskes": "UPTD PUSKESMAS KOLONO",
+        "target": 203.0,
+        "realisasi": 49.0,
+        "persentase": 24.14
+      },
+      {
+        "rawName": "Konda",
+        "namaFaskes": "UPTD PUSKESMAS KONDA",
+        "target": 342.0,
+        "realisasi": 121.0,
+        "persentase": 35.38
+      },
+      {
+        "rawName": "Landono",
+        "namaFaskes": "UPTD PUSKESMAS LANDONO",
+        "target": 133.0,
+        "realisasi": 33.0,
+        "persentase": 24.81
+      },
+      {
+        "rawName": "Lameuru",
+        "namaFaskes": "UPTD PUSKESMAS LAMEURU",
+        "target": 150.0,
+        "realisasi": 53.0,
+        "persentase": 35.33
+      },
+      {
+        "rawName": "Lalowaru",
+        "namaFaskes": "UPTD PUSKESMAS LALOWARU",
+        "target": 183.0,
+        "realisasi": 23.0,
+        "persentase": 12.57
+      },
+      {
+        "rawName": "Laonti",
+        "namaFaskes": "UPTD PUSKESMAS LAONTI",
+        "target": 100.0,
+        "realisasi": 32.0,
+        "persentase": 32.0
+      },
+      {
+        "rawName": "Moramo",
+        "namaFaskes": "UPTD PUSKESMAS MORAMO",
+        "target": 232.0,
+        "realisasi": 90.0,
+        "persentase": 38.79
+      },
+      {
+        "rawName": "Motaha",
+        "namaFaskes": "UPTD PUSKESMAS MOTAHA",
+        "target": 275.0,
+        "realisasi": 93.0,
+        "persentase": 33.82
+      },
+      {
+        "rawName": "Mowila",
+        "namaFaskes": "UPTD PUSKESMAS MOWILA",
+        "target": 210.0,
+        "realisasi": 55.0,
+        "persentase": 26.19
+      },
+      {
+        "rawName": "Palangga",
+        "namaFaskes": "UPTD PUSKESMAS PALANGGA",
+        "target": 245.0,
+        "realisasi": 62.0,
+        "persentase": 25.31
+      },
+      {
+        "rawName": "Pamandati",
+        "namaFaskes": "UPTD PUSKESMAS PAMANDATI",
+        "target": 147.0,
+        "realisasi": 44.0,
+        "persentase": 29.93
+      },
+      {
+        "rawName": "Punggaluku",
+        "namaFaskes": "UPTD PUSKESMAS PUNGGALUKU",
+        "target": 332.0,
+        "realisasi": 88.0,
+        "persentase": 26.51
+      },
+      {
+        "rawName": "Ranomeeto",
+        "namaFaskes": "UPTD PUSKESMAS RANOMEETO",
+        "target": 353.0,
+        "realisasi": 87.0,
+        "persentase": 24.65
+      },
+      {
+        "rawName": "Sabulakoa",
+        "namaFaskes": "UPTD PUSKESMAS SABULAKOA",
+        "target": 112.0,
+        "realisasi": 30.0,
+        "persentase": 26.79
+      },
+      {
+        "rawName": "Tinanggea",
+        "namaFaskes": "UPTD PUSKESMAS TINANGGEA",
+        "target": 372.0,
+        "realisasi": 163.0,
+        "persentase": 43.82
+      },
+      {
+        "rawName": "Tumbu-Tumbu Jaya",
+        "namaFaskes": "UPTD PUSKESMAS TUMBU-TUMBU JAYA",
+        "target": 81.0,
+        "realisasi": 29.0,
+        "persentase": 35.8
+      },
+      {
+        "rawName": "Wolasi",
+        "namaFaskes": "UPTD PUSKESMAS WOLASI",
+        "target": 101.0,
+        "realisasi": 32.0,
+        "persentase": 31.68
+      },
+      {
+        "rawName": "Tambolosu",
+        "namaFaskes": "UPTD PUSKESMAS TAMBOLOSU",
+        "target": 72.0,
+        "realisasi": 18.0,
+        "persentase": 25.0
+      }
+    ]
+  },
+  {
+    "spmIndex": 2,
+    "col": 6,
+    "namaIndikator": "Pelayanan Kesehatan Ibu Bersalin",
+    "kodeSubKegiatan": "1.02.02.2.02.0002",
+    "satuan": "Orang",
+    "bidang": [
+      "KESMAS"
+    ],
+    "faskesData": [
+      {
+        "rawName": "Andoolo",
+        "namaFaskes": "UPTD PUSKESMAS ANDOOLO",
+        "target": 158.0,
+        "realisasi": 77.0,
+        "persentase": 48.73
+      },
+      {
+        "rawName": "Andoolo Utama",
+        "namaFaskes": "UPTD PUSKESMAS ANDOOLO UTAMA",
+        "target": 214.0,
+        "realisasi": 109.0,
+        "persentase": 50.93
+      },
+      {
+        "rawName": "Amondo",
+        "namaFaskes": "UPTD PUSKESMAS AMONDO",
+        "target": 111.0,
+        "realisasi": 55.0,
+        "persentase": 49.55
+      },
+      {
+        "rawName": "Atari Jaya",
+        "namaFaskes": "UPTD PUSKESMAS ATARI JAYA",
+        "target": 231.0,
+        "realisasi": 95.0,
+        "persentase": 41.13
+      },
+      {
+        "rawName": "Baito",
+        "namaFaskes": "UPTD PUSKESMAS BAITO",
+        "target": 146.0,
+        "realisasi": 66.0,
+        "persentase": 45.21
+      },
+      {
+        "rawName": "Basala",
+        "namaFaskes": "UPTD PUSKESMAS BASALA",
+        "target": 108.0,
+        "realisasi": 55.0,
+        "persentase": 50.93
+      },
+      {
+        "rawName": "Benua",
+        "namaFaskes": "UPTD PUSKESMAS BENUA",
+        "target": 156.0,
+        "realisasi": 86.0,
+        "persentase": 55.13
+      },
+      {
+        "rawName": "Bimamaroa",
+        "namaFaskes": "UPTD PUSKESMAS BIMA MAROA",
+        "target": 133.0,
+        "realisasi": 80.0,
+        "persentase": 60.15
+      },
+      {
+        "rawName": "Kolono",
+        "namaFaskes": "UPTD PUSKESMAS KOLONO",
+        "target": 203.0,
+        "realisasi": 95.0,
+        "persentase": 46.8
+      },
+      {
+        "rawName": "Konda",
+        "namaFaskes": "UPTD PUSKESMAS KONDA",
+        "target": 342.0,
+        "realisasi": 182.0,
+        "persentase": 53.22
+      },
+      {
+        "rawName": "Landono",
+        "namaFaskes": "UPTD PUSKESMAS LANDONO",
+        "target": 133.0,
+        "realisasi": 53.0,
+        "persentase": 39.85
+      },
+      {
+        "rawName": "Lameuru",
+        "namaFaskes": "UPTD PUSKESMAS LAMEURU",
+        "target": 150.0,
+        "realisasi": 79.0,
+        "persentase": 52.67
+      },
+      {
+        "rawName": "Lalowaru",
+        "namaFaskes": "UPTD PUSKESMAS LALOWARU",
+        "target": 183.0,
+        "realisasi": 75.0,
+        "persentase": 40.98
+      },
+      {
+        "rawName": "Laonti",
+        "namaFaskes": "UPTD PUSKESMAS LAONTI",
+        "target": 100.0,
+        "realisasi": 48.0,
+        "persentase": 48.0
+      },
+      {
+        "rawName": "Moramo",
+        "namaFaskes": "UPTD PUSKESMAS MORAMO",
+        "target": 232.0,
+        "realisasi": 135.0,
+        "persentase": 58.19
+      },
+      {
+        "rawName": "Motaha",
+        "namaFaskes": "UPTD PUSKESMAS MOTAHA",
+        "target": 275.0,
+        "realisasi": 137.0,
+        "persentase": 49.82
+      },
+      {
+        "rawName": "Mowila",
+        "namaFaskes": "UPTD PUSKESMAS MOWILA",
+        "target": 210.0,
+        "realisasi": 97.0,
+        "persentase": 46.19
+      },
+      {
+        "rawName": "Palangga",
+        "namaFaskes": "UPTD PUSKESMAS PALANGGA",
+        "target": 245.0,
+        "realisasi": 115.0,
+        "persentase": 46.94
+      },
+      {
+        "rawName": "Pamandati",
+        "namaFaskes": "UPTD PUSKESMAS PAMANDATI",
+        "target": 147.0,
+        "realisasi": 67.0,
+        "persentase": 45.58
+      },
+      {
+        "rawName": "Punggaluku",
+        "namaFaskes": "UPTD PUSKESMAS PUNGGALUKU",
+        "target": 332.0,
+        "realisasi": 145.0,
+        "persentase": 43.67
+      },
+      {
+        "rawName": "Ranomeeto",
+        "namaFaskes": "UPTD PUSKESMAS RANOMEETO",
+        "target": 353.0,
+        "realisasi": 165.0,
+        "persentase": 46.74
+      },
+      {
+        "rawName": "Sabulakoa",
+        "namaFaskes": "UPTD PUSKESMAS SABULAKOA",
+        "target": 112.0,
+        "realisasi": 53.0,
+        "persentase": 47.32
+      },
+      {
+        "rawName": "Tinanggea",
+        "namaFaskes": "UPTD PUSKESMAS TINANGGEA",
+        "target": 372.0,
+        "realisasi": 189.0,
+        "persentase": 50.81
+      },
+      {
+        "rawName": "Tumbu-Tumbu Jaya",
+        "namaFaskes": "UPTD PUSKESMAS TUMBU-TUMBU JAYA",
+        "target": 81.0,
+        "realisasi": 30.0,
+        "persentase": 37.04
+      },
+      {
+        "rawName": "Wolasi",
+        "namaFaskes": "UPTD PUSKESMAS WOLASI",
+        "target": 101.0,
+        "realisasi": 43.0,
+        "persentase": 42.57
+      },
+      {
+        "rawName": "Tambolosu",
+        "namaFaskes": "UPTD PUSKESMAS TAMBOLOSU",
+        "target": 72.0,
+        "realisasi": 25.0,
+        "persentase": 34.72
+      }
+    ]
+  },
+  {
+    "spmIndex": 3,
+    "col": 9,
+    "namaIndikator": "Pelayanan Kesehatan Bayi Baru Lahir",
+    "kodeSubKegiatan": "1.02.02.2.02.0003",
+    "satuan": "Orang",
+    "bidang": [
+      "KESMAS"
+    ],
+    "faskesData": [
+      {
+        "rawName": "Andoolo",
+        "namaFaskes": "UPTD PUSKESMAS ANDOOLO",
+        "target": 158.0,
+        "realisasi": 76.0,
+        "persentase": 48.1
+      },
+      {
+        "rawName": "Andoolo Utama",
+        "namaFaskes": "UPTD PUSKESMAS ANDOOLO UTAMA",
+        "target": 214.0,
+        "realisasi": 107.0,
+        "persentase": 50.0
+      },
+      {
+        "rawName": "Amondo",
+        "namaFaskes": "UPTD PUSKESMAS AMONDO",
+        "target": 111.0,
+        "realisasi": 36.0,
+        "persentase": 32.43
+      },
+      {
+        "rawName": "Atari Jaya",
+        "namaFaskes": "UPTD PUSKESMAS ATARI JAYA",
+        "target": 231.0,
+        "realisasi": 94.0,
+        "persentase": 40.69
+      },
+      {
+        "rawName": "Baito",
+        "namaFaskes": "UPTD PUSKESMAS BAITO",
+        "target": 146.0,
+        "realisasi": 65.0,
+        "persentase": 44.52
+      },
+      {
+        "rawName": "Basala",
+        "namaFaskes": "UPTD PUSKESMAS BASALA",
+        "target": 108.0,
+        "realisasi": 54.0,
+        "persentase": 50.0
+      },
+      {
+        "rawName": "Benua",
+        "namaFaskes": "UPTD PUSKESMAS BENUA",
+        "target": 156.0,
+        "realisasi": 87.0,
+        "persentase": 55.77
+      },
+      {
+        "rawName": "Bimamaroa",
+        "namaFaskes": "UPTD PUSKESMAS BIMA MAROA",
+        "target": 127.0,
+        "realisasi": 79.0,
+        "persentase": 62.2
+      },
+      {
+        "rawName": "Kolono",
+        "namaFaskes": "UPTD PUSKESMAS KOLONO",
+        "target": 205.0,
+        "realisasi": 95.0,
+        "persentase": 46.34
+      },
+      {
+        "rawName": "Konda",
+        "namaFaskes": "UPTD PUSKESMAS KONDA",
+        "target": 340.0,
+        "realisasi": 178.0,
+        "persentase": 52.35
+      },
+      {
+        "rawName": "Landono",
+        "namaFaskes": "UPTD PUSKESMAS LANDONO",
+        "target": 133.0,
+        "realisasi": 50.0,
+        "persentase": 37.59
+      },
+      {
+        "rawName": "Lameuru",
+        "namaFaskes": "UPTD PUSKESMAS LAMEURU",
+        "target": 150.0,
+        "realisasi": 78.0,
+        "persentase": 52.0
+      },
+      {
+        "rawName": "Lalowaru",
+        "namaFaskes": "UPTD PUSKESMAS LALOWARU",
+        "target": 188.0,
+        "realisasi": 71.0,
+        "persentase": 37.77
+      },
+      {
+        "rawName": "Laonti",
+        "namaFaskes": "UPTD PUSKESMAS LAONTI",
+        "target": 104.0,
+        "realisasi": 48.0,
+        "persentase": 46.15
+      },
+      {
+        "rawName": "Moramo",
+        "namaFaskes": "UPTD PUSKESMAS MORAMO",
+        "target": 225.0,
+        "realisasi": 135.0,
+        "persentase": 60.0
+      },
+      {
+        "rawName": "Motaha",
+        "namaFaskes": "UPTD PUSKESMAS MOTAHA",
+        "target": 275.0,
+        "realisasi": 139.0,
+        "persentase": 50.55
+      },
+      {
+        "rawName": "Mowila",
+        "namaFaskes": "UPTD PUSKESMAS MOWILA",
+        "target": 212.0,
+        "realisasi": 93.0,
+        "persentase": 43.87
+      },
+      {
+        "rawName": "Palangga",
+        "namaFaskes": "UPTD PUSKESMAS PALANGGA",
+        "target": 245.0,
+        "realisasi": 115.0,
+        "persentase": 46.94
+      },
+      {
+        "rawName": "Pamandati",
+        "namaFaskes": "UPTD PUSKESMAS PAMANDATI",
+        "target": 147.0,
+        "realisasi": 64.0,
+        "persentase": 43.54
+      },
+      {
+        "rawName": "Punggaluku",
+        "namaFaskes": "UPTD PUSKESMAS PUNGGALUKU",
+        "target": 331.0,
+        "realisasi": 141.0,
+        "persentase": 42.6
+      },
+      {
+        "rawName": "Ranomeeto",
+        "namaFaskes": "UPTD PUSKESMAS RANOMEETO",
+        "target": 347.0,
+        "realisasi": 161.0,
+        "persentase": 46.4
+      },
+      {
+        "rawName": "Sabulakoa",
+        "namaFaskes": "UPTD PUSKESMAS SABULAKOA",
+        "target": 113.0,
+        "realisasi": 43.0,
+        "persentase": 38.05
+      },
+      {
+        "rawName": "Tinanggea",
+        "namaFaskes": "UPTD PUSKESMAS TINANGGEA",
+        "target": 373.0,
+        "realisasi": 181.0,
+        "persentase": 48.53
+      },
+      {
+        "rawName": "Tumbu-Tumbu Jaya",
+        "namaFaskes": "UPTD PUSKESMAS TUMBU-TUMBU JAYA",
+        "target": 81.0,
+        "realisasi": 23.0,
+        "persentase": 28.4
+      },
+      {
+        "rawName": "Wolasi",
+        "namaFaskes": "UPTD PUSKESMAS WOLASI",
+        "target": 102.0,
+        "realisasi": 43.0,
+        "persentase": 42.16
+      },
+      {
+        "rawName": "Tambolosu",
+        "namaFaskes": "UPTD PUSKESMAS TAMBOLOSU",
+        "target": 77.0,
+        "realisasi": 25.0,
+        "persentase": 32.47
+      }
+    ]
+  },
+  {
+    "spmIndex": 4,
+    "col": 12,
+    "namaIndikator": "Pelayanan Kesehatan Balita",
+    "kodeSubKegiatan": "1.02.02.2.02.0004",
+    "satuan": "Orang",
+    "bidang": [
+      "KESMAS"
+    ],
+    "faskesData": [
+      {
+        "rawName": "Andoolo",
+        "namaFaskes": "UPTD PUSKESMAS ANDOOLO",
+        "target": 801.0,
+        "realisasi": 380.0,
+        "persentase": 47.44
+      },
+      {
+        "rawName": "Andoolo Utama",
+        "namaFaskes": "UPTD PUSKESMAS ANDOOLO UTAMA",
+        "target": 1091.0,
+        "realisasi": 471.0,
+        "persentase": 43.17
+      },
+      {
+        "rawName": "Amondo",
+        "namaFaskes": "UPTD PUSKESMAS AMONDO",
+        "target": 591.0,
+        "realisasi": 302.0,
+        "persentase": 51.1
+      },
+      {
+        "rawName": "Atari Jaya",
+        "namaFaskes": "UPTD PUSKESMAS ATARI JAYA",
+        "target": 1171.0,
+        "realisasi": 472.0,
+        "persentase": 40.31
+      },
+      {
+        "rawName": "Baito",
+        "namaFaskes": "UPTD PUSKESMAS BAITO",
+        "target": 706.0,
+        "realisasi": 397.0,
+        "persentase": 56.23
+      },
+      {
+        "rawName": "Basala",
+        "namaFaskes": "UPTD PUSKESMAS BASALA",
+        "target": 562.0,
+        "realisasi": 236.0,
+        "persentase": 41.99
+      },
+      {
+        "rawName": "Benua",
+        "namaFaskes": "UPTD PUSKESMAS BENUA",
+        "target": 808.0,
+        "realisasi": 475.0,
+        "persentase": 58.79
+      },
+      {
+        "rawName": "Bimamaroa",
+        "namaFaskes": "UPTD PUSKESMAS BIMA MAROA",
+        "target": 654.0,
+        "realisasi": 392.0,
+        "persentase": 59.94
+      },
+      {
+        "rawName": "Kolono",
+        "namaFaskes": "UPTD PUSKESMAS KOLONO",
+        "target": 864.0,
+        "realisasi": 323.0,
+        "persentase": 37.38
+      },
+      {
+        "rawName": "Konda",
+        "namaFaskes": "UPTD PUSKESMAS KONDA",
+        "target": 1680.0,
+        "realisasi": 1304.0,
+        "persentase": 77.62
+      },
+      {
+        "rawName": "Landono",
+        "namaFaskes": "UPTD PUSKESMAS LANDONO",
+        "target": 648.0,
+        "realisasi": 298.0,
+        "persentase": 45.99
+      },
+      {
+        "rawName": "Lameuru",
+        "namaFaskes": "UPTD PUSKESMAS LAMEURU",
+        "target": 622.0,
+        "realisasi": 315.0,
+        "persentase": 50.64
+      },
+      {
+        "rawName": "Lalowaru",
+        "namaFaskes": "UPTD PUSKESMAS LALOWARU",
+        "target": 728.0,
+        "realisasi": 428.0,
+        "persentase": 58.79
+      },
+      {
+        "rawName": "Laonti",
+        "namaFaskes": "UPTD PUSKESMAS LAONTI",
+        "target": 525.0,
+        "realisasi": 244.0,
+        "persentase": 46.48
+      },
+      {
+        "rawName": "Moramo",
+        "namaFaskes": "UPTD PUSKESMAS MORAMO",
+        "target": 1167.0,
+        "realisasi": 493.0,
+        "persentase": 42.25
+      },
+      {
+        "rawName": "Motaha",
+        "namaFaskes": "UPTD PUSKESMAS MOTAHA",
+        "target": 1330.0,
+        "realisasi": 533.0,
+        "persentase": 40.08
+      },
+      {
+        "rawName": "Mowila",
+        "namaFaskes": "UPTD PUSKESMAS MOWILA",
+        "target": 1017.0,
+        "realisasi": 452.0,
+        "persentase": 44.44
+      },
+      {
+        "rawName": "Palangga",
+        "namaFaskes": "UPTD PUSKESMAS PALANGGA",
+        "target": 1122.0,
+        "realisasi": 526.0,
+        "persentase": 46.88
+      },
+      {
+        "rawName": "Pamandati",
+        "namaFaskes": "UPTD PUSKESMAS PAMANDATI",
+        "target": 753.0,
+        "realisasi": 320.0,
+        "persentase": 42.5
+      },
+      {
+        "rawName": "Punggaluku",
+        "namaFaskes": "UPTD PUSKESMAS PUNGGALUKU",
+        "target": 1640.0,
+        "realisasi": 728.0,
+        "persentase": 44.39
+      },
+      {
+        "rawName": "Ranomeeto",
+        "namaFaskes": "UPTD PUSKESMAS RANOMEETO",
+        "target": 1550.0,
+        "realisasi": 685.0,
+        "persentase": 44.19
+      },
+      {
+        "rawName": "Sabulakoa",
+        "namaFaskes": "UPTD PUSKESMAS SABULAKOA",
+        "target": 430.0,
+        "realisasi": 179.0,
+        "persentase": 41.63
+      },
+      {
+        "rawName": "Tinanggea",
+        "namaFaskes": "UPTD PUSKESMAS TINANGGEA",
+        "target": 1907.0,
+        "realisasi": 1145.0,
+        "persentase": 60.04
+      },
+      {
+        "rawName": "Tumbu-Tumbu Jaya",
+        "namaFaskes": "UPTD PUSKESMAS TUMBU-TUMBU JAYA",
+        "target": 422.0,
+        "realisasi": 232.0,
+        "persentase": 54.98
+      },
+      {
+        "rawName": "Wolasi",
+        "namaFaskes": "UPTD PUSKESMAS WOLASI",
+        "target": 440.0,
+        "realisasi": 257.0,
+        "persentase": 58.41
+      },
+      {
+        "rawName": "Tambolosu",
+        "namaFaskes": "UPTD PUSKESMAS TAMBOLOSU",
+        "target": 339.0,
+        "realisasi": 90.0,
+        "persentase": 26.55
+      }
+    ]
+  },
+  {
+    "spmIndex": 5,
+    "col": 15,
+    "namaIndikator": "Pelayanan Kesehatan Pada Usia Pendidikan Dasar",
+    "kodeSubKegiatan": "1.02.02.2.02.0005",
+    "satuan": "Orang",
+    "bidang": [
+      "KESMAS"
+    ],
+    "faskesData": [
+      {
+        "rawName": "Andoolo",
+        "namaFaskes": "UPTD PUSKESMAS ANDOOLO",
+        "target": 1784.0,
+        "realisasi": 1801.0,
+        "persentase": 100.95
+      },
+      {
+        "rawName": "Andoolo Utama",
+        "namaFaskes": "UPTD PUSKESMAS ANDOOLO UTAMA",
+        "target": 2425.0,
+        "realisasi": 2245.0,
+        "persentase": 92.58
+      },
+      {
+        "rawName": "Amondo",
+        "namaFaskes": "UPTD PUSKESMAS AMONDO",
+        "target": 1316.0,
+        "realisasi": 1419.0,
+        "persentase": 107.83
+      },
+      {
+        "rawName": "Atari Jaya",
+        "namaFaskes": "UPTD PUSKESMAS ATARI JAYA",
+        "target": 2608.0,
+        "realisasi": 1737.0,
+        "persentase": 66.6
+      },
+      {
+        "rawName": "Baito",
+        "namaFaskes": "UPTD PUSKESMAS BAITO",
+        "target": 1572.0,
+        "realisasi": 1407.0,
+        "persentase": 89.5
+      },
+      {
+        "rawName": "Basala",
+        "namaFaskes": "UPTD PUSKESMAS BASALA",
+        "target": 1251.0,
+        "realisasi": 977.0,
+        "persentase": 78.1
+      },
+      {
+        "rawName": "Benua",
+        "namaFaskes": "UPTD PUSKESMAS BENUA",
+        "target": 1797.0,
+        "realisasi": 1573.0,
+        "persentase": 87.53
+      },
+      {
+        "rawName": "Bimamaroa",
+        "namaFaskes": "UPTD PUSKESMAS BIMA MAROA",
+        "target": 1455.0,
+        "realisasi": 1322.0,
+        "persentase": 90.86
+      },
+      {
+        "rawName": "Kolono",
+        "namaFaskes": "UPTD PUSKESMAS KOLONO",
+        "target": 1927.0,
+        "realisasi": 1783.0,
+        "persentase": 92.53
+      },
+      {
+        "rawName": "Konda",
+        "namaFaskes": "UPTD PUSKESMAS KONDA",
+        "target": 3741.0,
+        "realisasi": 4169.0,
+        "persentase": 111.44
+      },
+      {
+        "rawName": "Landono",
+        "namaFaskes": "UPTD PUSKESMAS LANDONO",
+        "target": 1444.0,
+        "realisasi": 1397.0,
+        "persentase": 96.75
+      },
+      {
+        "rawName": "Lameuru",
+        "namaFaskes": "UPTD PUSKESMAS LAMEURU",
+        "target": 1385.0,
+        "realisasi": 1375.0,
+        "persentase": 99.28
+      },
+      {
+        "rawName": "Lalowaru",
+        "namaFaskes": "UPTD PUSKESMAS LALOWARU",
+        "target": 1623.0,
+        "realisasi": 1384.0,
+        "persentase": 85.27
+      },
+      {
+        "rawName": "Laonti",
+        "namaFaskes": "UPTD PUSKESMAS LAONTI",
+        "target": 1171.0,
+        "realisasi": 877.0,
+        "persentase": 74.89
+      },
+      {
+        "rawName": "Moramo",
+        "namaFaskes": "UPTD PUSKESMAS MORAMO",
+        "target": 2600.0,
+        "realisasi": 2390.0,
+        "persentase": 91.92
+      },
+      {
+        "rawName": "Motaha",
+        "namaFaskes": "UPTD PUSKESMAS MOTAHA",
+        "target": 2962.0,
+        "realisasi": 2991.0,
+        "persentase": 100.98
+      },
+      {
+        "rawName": "Mowila",
+        "namaFaskes": "UPTD PUSKESMAS MOWILA",
+        "target": 2264.0,
+        "realisasi": 2464.0,
+        "persentase": 108.83
+      },
+      {
+        "rawName": "Palangga",
+        "namaFaskes": "UPTD PUSKESMAS PALANGGA",
+        "target": 2499.0,
+        "realisasi": 2629.0,
+        "persentase": 105.2
+      },
+      {
+        "rawName": "Pamandati",
+        "namaFaskes": "UPTD PUSKESMAS PAMANDATI",
+        "target": 1679.0,
+        "realisasi": 1160.0,
+        "persentase": 69.09
+      },
+      {
+        "rawName": "Punggaluku",
+        "namaFaskes": "UPTD PUSKESMAS PUNGGALUKU",
+        "target": 3651.0,
+        "realisasi": 3476.0,
+        "persentase": 95.21
+      },
+      {
+        "rawName": "Ranomeeto",
+        "namaFaskes": "UPTD PUSKESMAS RANOMEETO",
+        "target": 3452.0,
+        "realisasi": 3958.0,
+        "persentase": 114.66
+      },
+      {
+        "rawName": "Sabulakoa",
+        "namaFaskes": "UPTD PUSKESMAS SABULAKOA",
+        "target": 956.0,
+        "realisasi": 911.0,
+        "persentase": 95.29
+      },
+      {
+        "rawName": "Tinanggea",
+        "namaFaskes": "UPTD PUSKESMAS TINANGGEA",
+        "target": 4247.0,
+        "realisasi": 4537.0,
+        "persentase": 106.83
+      },
+      {
+        "rawName": "Tumbu-Tumbu Jaya",
+        "namaFaskes": "UPTD PUSKESMAS TUMBU-TUMBU JAYA",
+        "target": 941.0,
+        "realisasi": 1021.0,
+        "persentase": 108.5
+      },
+      {
+        "rawName": "Wolasi",
+        "namaFaskes": "UPTD PUSKESMAS WOLASI",
+        "target": 956.0,
+        "realisasi": 990.0,
+        "persentase": 103.56
+      },
+      {
+        "rawName": "Tambolosu",
+        "namaFaskes": "UPTD PUSKESMAS TAMBOLOSU",
+        "target": 756.0,
+        "realisasi": 689.0,
+        "persentase": 91.14
+      }
+    ]
+  },
+  {
+    "spmIndex": 6,
+    "col": 18,
+    "namaIndikator": "Pelayanan Kesehatan Pada Usia Produktif",
+    "kodeSubKegiatan": "1.02.02.2.02.0006",
+    "satuan": "Orang",
+    "bidang": [
+      "P2P",
+      "KESMAS"
+    ],
+    "faskesData": [
+      {
+        "rawName": "Andoolo",
+        "namaFaskes": "UPTD PUSKESMAS ANDOOLO",
+        "target": 7404.0,
+        "realisasi": 3713.0,
+        "persentase": 50.15
+      },
+      {
+        "rawName": "Andoolo Utama",
+        "namaFaskes": "UPTD PUSKESMAS ANDOOLO UTAMA",
+        "target": 10064.0,
+        "realisasi": 4449.0,
+        "persentase": 44.21
+      },
+      {
+        "rawName": "Amondo",
+        "namaFaskes": "UPTD PUSKESMAS AMONDO",
+        "target": 5466.0,
+        "realisasi": 3858.0,
+        "persentase": 70.58
+      },
+      {
+        "rawName": "Atari Jaya",
+        "namaFaskes": "UPTD PUSKESMAS ATARI JAYA",
+        "target": 10822.0,
+        "realisasi": 2441.0,
+        "persentase": 22.56
+      },
+      {
+        "rawName": "Baito",
+        "namaFaskes": "UPTD PUSKESMAS BAITO",
+        "target": 6529.0,
+        "realisasi": 3292.0,
+        "persentase": 50.42
+      },
+      {
+        "rawName": "Basala",
+        "namaFaskes": "UPTD PUSKESMAS BASALA",
+        "target": 5190.0,
+        "realisasi": 2219.0,
+        "persentase": 42.76
+      },
+      {
+        "rawName": "Benua",
+        "namaFaskes": "UPTD PUSKESMAS BENUA",
+        "target": 7464.0,
+        "realisasi": 5998.0,
+        "persentase": 80.36
+      },
+      {
+        "rawName": "Bimamaroa",
+        "namaFaskes": "UPTD PUSKESMAS BIMA MAROA",
+        "target": 6037.0,
+        "realisasi": 3521.0,
+        "persentase": 58.32
+      },
+      {
+        "rawName": "Kolono",
+        "namaFaskes": "UPTD PUSKESMAS KOLONO",
+        "target": 7995.0,
+        "realisasi": 3068.0,
+        "persentase": 38.37
+      },
+      {
+        "rawName": "Konda",
+        "namaFaskes": "UPTD PUSKESMAS KONDA",
+        "target": 15530.0,
+        "realisasi": 5348.0,
+        "persentase": 34.44
+      },
+      {
+        "rawName": "Landono",
+        "namaFaskes": "UPTD PUSKESMAS LANDONO",
+        "target": 5998.0,
+        "realisasi": 2292.0,
+        "persentase": 38.21
+      },
+      {
+        "rawName": "Lameuru",
+        "namaFaskes": "UPTD PUSKESMAS LAMEURU",
+        "target": 5748.0,
+        "realisasi": 3073.0,
+        "persentase": 53.46
+      },
+      {
+        "rawName": "Lalowaru",
+        "namaFaskes": "UPTD PUSKESMAS LALOWARU",
+        "target": 6732.0,
+        "realisasi": 3283.0,
+        "persentase": 48.77
+      },
+      {
+        "rawName": "Laonti",
+        "namaFaskes": "UPTD PUSKESMAS LAONTI",
+        "target": 4860.0,
+        "realisasi": 2188.0,
+        "persentase": 45.02
+      },
+      {
+        "rawName": "Moramo",
+        "namaFaskes": "UPTD PUSKESMAS MORAMO",
+        "target": 10798.0,
+        "realisasi": 6706.0,
+        "persentase": 62.1
+      },
+      {
+        "rawName": "Motaha",
+        "namaFaskes": "UPTD PUSKESMAS MOTAHA",
+        "target": 12295.0,
+        "realisasi": 4526.0,
+        "persentase": 36.81
+      },
+      {
+        "rawName": "Mowila",
+        "namaFaskes": "UPTD PUSKESMAS MOWILA",
+        "target": 9406.0,
+        "realisasi": 4848.0,
+        "persentase": 51.54
+      },
+      {
+        "rawName": "Palangga",
+        "namaFaskes": "UPTD PUSKESMAS PALANGGA",
+        "target": 10371.0,
+        "realisasi": 3978.0,
+        "persentase": 38.36
+      },
+      {
+        "rawName": "Pamandati",
+        "namaFaskes": "UPTD PUSKESMAS PAMANDATI",
+        "target": 6965.0,
+        "realisasi": 4530.0,
+        "persentase": 65.04
+      },
+      {
+        "rawName": "Punggaluku",
+        "namaFaskes": "UPTD PUSKESMAS PUNGGALUKU",
+        "target": 15154.0,
+        "realisasi": 5392.0,
+        "persentase": 35.58
+      },
+      {
+        "rawName": "Ranomeeto",
+        "namaFaskes": "UPTD PUSKESMAS RANOMEETO",
+        "target": 14330.0,
+        "realisasi": 6581.0,
+        "persentase": 45.92
+      },
+      {
+        "rawName": "Sabulakoa",
+        "namaFaskes": "UPTD PUSKESMAS SABULAKOA",
+        "target": 3974.0,
+        "realisasi": 1372.0,
+        "persentase": 34.52
+      },
+      {
+        "rawName": "Tinanggea",
+        "namaFaskes": "UPTD PUSKESMAS TINANGGEA",
+        "target": 17632.0,
+        "realisasi": 8393.0,
+        "persentase": 47.6
+      },
+      {
+        "rawName": "Tumbu-Tumbu Jaya",
+        "namaFaskes": "UPTD PUSKESMAS TUMBU-TUMBU JAYA",
+        "target": 3908.0,
+        "realisasi": 1385.0,
+        "persentase": 35.44
+      },
+      {
+        "rawName": "Wolasi",
+        "namaFaskes": "UPTD PUSKESMAS WOLASI",
+        "target": 3959.0,
+        "realisasi": 2820.0,
+        "persentase": 71.23
+      },
+      {
+        "rawName": "Tambolosu",
+        "namaFaskes": "UPTD PUSKESMAS TAMBOLOSU",
+        "target": 3134.0,
+        "realisasi": 2766.0,
+        "persentase": 88.26
+      }
+    ]
+  },
+  {
+    "spmIndex": 7,
+    "col": 21,
+    "namaIndikator": "Pelayanan Kesehatan Pada Usia Lanjut",
+    "kodeSubKegiatan": "1.02.02.2.02.0007",
+    "satuan": "Orang",
+    "bidang": [
+      "KESMAS"
+    ],
+    "faskesData": [
+      {
+        "rawName": "Andoolo",
+        "namaFaskes": "UPTD PUSKESMAS ANDOOLO",
+        "target": 992.0,
+        "realisasi": 487.0,
+        "persentase": 49.09
+      },
+      {
+        "rawName": "Andoolo Utama",
+        "namaFaskes": "UPTD PUSKESMAS ANDOOLO UTAMA",
+        "target": 1927.0,
+        "realisasi": 805.0,
+        "persentase": 41.77
+      },
+      {
+        "rawName": "Amondo",
+        "namaFaskes": "UPTD PUSKESMAS AMONDO",
+        "target": 594.0,
+        "realisasi": 334.0,
+        "persentase": 56.23
+      },
+      {
+        "rawName": "Atari Jaya",
+        "namaFaskes": "UPTD PUSKESMAS ATARI JAYA",
+        "target": 2435.0,
+        "realisasi": 1199.0,
+        "persentase": 49.24
+      },
+      {
+        "rawName": "Baito",
+        "namaFaskes": "UPTD PUSKESMAS BAITO",
+        "target": 906.0,
+        "realisasi": 599.0,
+        "persentase": 66.11
+      },
+      {
+        "rawName": "Basala",
+        "namaFaskes": "UPTD PUSKESMAS BASALA",
+        "target": 919.0,
+        "realisasi": 587.0,
+        "persentase": 63.87
+      },
+      {
+        "rawName": "Benua",
+        "namaFaskes": "UPTD PUSKESMAS BENUA",
+        "target": 1003.0,
+        "realisasi": 560.0,
+        "persentase": 55.83
+      },
+      {
+        "rawName": "Bimamaroa",
+        "namaFaskes": "UPTD PUSKESMAS BIMA MAROA",
+        "target": 1114.0,
+        "realisasi": 570.0,
+        "persentase": 51.17
+      },
+      {
+        "rawName": "Kolono",
+        "namaFaskes": "UPTD PUSKESMAS KOLONO",
+        "target": 1022.0,
+        "realisasi": 636.0,
+        "persentase": 62.23
+      },
+      {
+        "rawName": "Konda",
+        "namaFaskes": "UPTD PUSKESMAS KONDA",
+        "target": 2097.0,
+        "realisasi": 1240.0,
+        "persentase": 59.13
+      },
+      {
+        "rawName": "Landono",
+        "namaFaskes": "UPTD PUSKESMAS LANDONO",
+        "target": 1073.0,
+        "realisasi": 518.0,
+        "persentase": 48.28
+      },
+      {
+        "rawName": "Lameuru",
+        "namaFaskes": "UPTD PUSKESMAS LAMEURU",
+        "target": 892.0,
+        "realisasi": 457.0,
+        "persentase": 51.23
+      },
+      {
+        "rawName": "Lalowaru",
+        "namaFaskes": "UPTD PUSKESMAS LALOWARU",
+        "target": 749.0,
+        "realisasi": 252.0,
+        "persentase": 33.64
+      },
+      {
+        "rawName": "Laonti",
+        "namaFaskes": "UPTD PUSKESMAS LAONTI",
+        "target": 575.0,
+        "realisasi": 317.0,
+        "persentase": 55.13
+      },
+      {
+        "rawName": "Moramo",
+        "namaFaskes": "UPTD PUSKESMAS MORAMO",
+        "target": 1766.0,
+        "realisasi": 775.0,
+        "persentase": 43.88
+      },
+      {
+        "rawName": "Motaha",
+        "namaFaskes": "UPTD PUSKESMAS MOTAHA",
+        "target": 1555.0,
+        "realisasi": 590.0,
+        "persentase": 37.94
+      },
+      {
+        "rawName": "Mowila",
+        "namaFaskes": "UPTD PUSKESMAS MOWILA",
+        "target": 1552.0,
+        "realisasi": 335.0,
+        "persentase": 21.59
+      },
+      {
+        "rawName": "Palangga",
+        "namaFaskes": "UPTD PUSKESMAS PALANGGA",
+        "target": 1401.0,
+        "realisasi": 705.0,
+        "persentase": 50.32
+      },
+      {
+        "rawName": "Pamandati",
+        "namaFaskes": "UPTD PUSKESMAS PAMANDATI",
+        "target": 970.0,
+        "realisasi": 317.0,
+        "persentase": 32.68
+      },
+      {
+        "rawName": "Punggaluku",
+        "namaFaskes": "UPTD PUSKESMAS PUNGGALUKU",
+        "target": 2113.0,
+        "realisasi": 979.0,
+        "persentase": 46.33
+      },
+      {
+        "rawName": "Ranomeeto",
+        "namaFaskes": "UPTD PUSKESMAS RANOMEETO",
+        "target": 1745.0,
+        "realisasi": 956.0,
+        "persentase": 54.79
+      },
+      {
+        "rawName": "Sabulakoa",
+        "namaFaskes": "UPTD PUSKESMAS SABULAKOA",
+        "target": 509.0,
+        "realisasi": 164.0,
+        "persentase": 32.22
+      },
+      {
+        "rawName": "Tinanggea",
+        "namaFaskes": "UPTD PUSKESMAS TINANGGEA",
+        "target": 2214.0,
+        "realisasi": 1086.0,
+        "persentase": 49.05
+      },
+      {
+        "rawName": "Tumbu-Tumbu Jaya",
+        "namaFaskes": "UPTD PUSKESMAS TUMBU-TUMBU JAYA",
+        "target": 495.0,
+        "realisasi": 223.0,
+        "persentase": 45.05
+      },
+      {
+        "rawName": "Wolasi",
+        "namaFaskes": "UPTD PUSKESMAS WOLASI",
+        "target": 554.0,
+        "realisasi": 369.0,
+        "persentase": 66.61
+      },
+      {
+        "rawName": "Tambolosu",
+        "namaFaskes": "UPTD PUSKESMAS TAMBOLOSU",
+        "target": 550.0,
+        "realisasi": 150.0,
+        "persentase": 27.27
+      }
+    ]
+  },
+  {
+    "spmIndex": 8,
+    "col": 24,
+    "namaIndikator": "Pelayanan Kesehatan Penderita Hipertensi",
+    "kodeSubKegiatan": "1.02.02.2.02.0008",
+    "satuan": "Orang",
+    "bidang": [
+      "P2P"
+    ],
+    "faskesData": [
+      {
+        "rawName": "Andoolo",
+        "namaFaskes": "UPTD PUSKESMAS ANDOOLO",
+        "target": 451.0,
+        "realisasi": 383.0,
+        "persentase": 84.92
+      },
+      {
+        "rawName": "Andoolo Utama",
+        "namaFaskes": "UPTD PUSKESMAS ANDOOLO UTAMA",
+        "target": 612.0,
+        "realisasi": 550.0,
+        "persentase": 89.87
+      },
+      {
+        "rawName": "Amondo",
+        "namaFaskes": "UPTD PUSKESMAS AMONDO",
+        "target": 333.0,
+        "realisasi": 283.0,
+        "persentase": 84.98
+      },
+      {
+        "rawName": "Atari Jaya",
+        "namaFaskes": "UPTD PUSKESMAS ATARI JAYA",
+        "target": 658.0,
+        "realisasi": 347.0,
+        "persentase": 52.74
+      },
+      {
+        "rawName": "Baito",
+        "namaFaskes": "UPTD PUSKESMAS BAITO",
+        "target": 398.0,
+        "realisasi": 378.0,
+        "persentase": 94.97
+      },
+      {
+        "rawName": "Basala",
+        "namaFaskes": "UPTD PUSKESMAS BASALA",
+        "target": 316.0,
+        "realisasi": 337.0,
+        "persentase": 106.65
+      },
+      {
+        "rawName": "Benua",
+        "namaFaskes": "UPTD PUSKESMAS BENUA",
+        "target": 454.0,
+        "realisasi": 344.0,
+        "persentase": 75.77
+      },
+      {
+        "rawName": "Bimamaroa",
+        "namaFaskes": "UPTD PUSKESMAS BIMA MAROA",
+        "target": 368.0,
+        "realisasi": 295.0,
+        "persentase": 80.16
+      },
+      {
+        "rawName": "Kolono",
+        "namaFaskes": "UPTD PUSKESMAS KOLONO",
+        "target": 486.0,
+        "realisasi": 386.0,
+        "persentase": 79.42
+      },
+      {
+        "rawName": "Konda",
+        "namaFaskes": "UPTD PUSKESMAS KONDA",
+        "target": 944.0,
+        "realisasi": 595.0,
+        "persentase": 63.03
+      },
+      {
+        "rawName": "Landono",
+        "namaFaskes": "UPTD PUSKESMAS LANDONO",
+        "target": 365.0,
+        "realisasi": 357.0,
+        "persentase": 97.81
+      },
+      {
+        "rawName": "Lameuru",
+        "namaFaskes": "UPTD PUSKESMAS LAMEURU",
+        "target": 350.0,
+        "realisasi": 360.0,
+        "persentase": 102.86
+      },
+      {
+        "rawName": "Lalowaru",
+        "namaFaskes": "UPTD PUSKESMAS LALOWARU",
+        "target": 409.0,
+        "realisasi": 345.0,
+        "persentase": 84.35
+      },
+      {
+        "rawName": "Laonti",
+        "namaFaskes": "UPTD PUSKESMAS LAONTI",
+        "target": 296.0,
+        "realisasi": 341.0,
+        "persentase": 115.2
+      },
+      {
+        "rawName": "Moramo",
+        "namaFaskes": "UPTD PUSKESMAS MORAMO",
+        "target": 657.0,
+        "realisasi": 526.0,
+        "persentase": 80.06
+      },
+      {
+        "rawName": "Motaha",
+        "namaFaskes": "UPTD PUSKESMAS MOTAHA",
+        "target": 748.0,
+        "realisasi": 546.0,
+        "persentase": 72.99
+      },
+      {
+        "rawName": "Mowila",
+        "namaFaskes": "UPTD PUSKESMAS MOWILA",
+        "target": 572.0,
+        "realisasi": 504.0,
+        "persentase": 88.11
+      },
+      {
+        "rawName": "Palangga",
+        "namaFaskes": "UPTD PUSKESMAS PALANGGA",
+        "target": 630.0,
+        "realisasi": 370.0,
+        "persentase": 58.73
+      },
+      {
+        "rawName": "Pamandati",
+        "namaFaskes": "UPTD PUSKESMAS PAMANDATI",
+        "target": 424.0,
+        "realisasi": 307.0,
+        "persentase": 72.41
+      },
+      {
+        "rawName": "Punggaluku",
+        "namaFaskes": "UPTD PUSKESMAS PUNGGALUKU",
+        "target": 922.0,
+        "realisasi": 868.0,
+        "persentase": 94.14
+      },
+      {
+        "rawName": "Ranomeeto",
+        "namaFaskes": "UPTD PUSKESMAS RANOMEETO",
+        "target": 871.0,
+        "realisasi": 622.0,
+        "persentase": 71.41
+      },
+      {
+        "rawName": "Sabulakoa",
+        "namaFaskes": "UPTD PUSKESMAS SABULAKOA",
+        "target": 241.0,
+        "realisasi": 168.0,
+        "persentase": 69.71
+      },
+      {
+        "rawName": "Tinanggea",
+        "namaFaskes": "UPTD PUSKESMAS TINANGGEA",
+        "target": 1073.0,
+        "realisasi": 638.0,
+        "persentase": 59.46
+      },
+      {
+        "rawName": "Tumbu-Tumbu Jaya",
+        "namaFaskes": "UPTD PUSKESMAS TUMBU-TUMBU JAYA",
+        "target": 238.0,
+        "realisasi": 181.0,
+        "persentase": 76.05
+      },
+      {
+        "rawName": "Wolasi",
+        "namaFaskes": "UPTD PUSKESMAS WOLASI",
+        "target": 241.0,
+        "realisasi": 265.0,
+        "persentase": 109.96
+      },
+      {
+        "rawName": "Tambolosu",
+        "namaFaskes": "UPTD PUSKESMAS TAMBOLOSU",
+        "target": 191.0,
+        "realisasi": 139.0,
+        "persentase": 72.77
+      }
+    ]
+  },
+  {
+    "spmIndex": 9,
+    "col": 27,
+    "namaIndikator": "Pelayanan Kesehatan Penderita Diabetes Melitus",
+    "kodeSubKegiatan": "1.02.02.2.02.0009",
+    "satuan": "Orang",
+    "bidang": [
+      "P2P"
+    ],
+    "faskesData": [
+      {
+        "rawName": "Andoolo",
+        "namaFaskes": "UPTD PUSKESMAS ANDOOLO",
+        "target": 136.0,
+        "realisasi": 104.0,
+        "persentase": 76.47
+      },
+      {
+        "rawName": "Andoolo Utama",
+        "namaFaskes": "UPTD PUSKESMAS ANDOOLO UTAMA",
+        "target": 185.0,
+        "realisasi": 185.0,
+        "persentase": 100.0
+      },
+      {
+        "rawName": "Amondo",
+        "namaFaskes": "UPTD PUSKESMAS AMONDO",
+        "target": 101.0,
+        "realisasi": 83.0,
+        "persentase": 82.18
+      },
+      {
+        "rawName": "Atari Jaya",
+        "namaFaskes": "UPTD PUSKESMAS ATARI JAYA",
+        "target": 199.0,
+        "realisasi": 106.0,
+        "persentase": 53.27
+      },
+      {
+        "rawName": "Baito",
+        "namaFaskes": "UPTD PUSKESMAS BAITO",
+        "target": 120.0,
+        "realisasi": 107.0,
+        "persentase": 89.17
+      },
+      {
+        "rawName": "Basala",
+        "namaFaskes": "UPTD PUSKESMAS BASALA",
+        "target": 95.0,
+        "realisasi": 101.0,
+        "persentase": 106.32
+      },
+      {
+        "rawName": "Benua",
+        "namaFaskes": "UPTD PUSKESMAS BENUA",
+        "target": 137.0,
+        "realisasi": 146.0,
+        "persentase": 106.57
+      },
+      {
+        "rawName": "Bimamaroa",
+        "namaFaskes": "UPTD PUSKESMAS BIMA MAROA",
+        "target": 110.0,
+        "realisasi": 102.0,
+        "persentase": 92.73
+      },
+      {
+        "rawName": "Kolono",
+        "namaFaskes": "UPTD PUSKESMAS KOLONO",
+        "target": 147.0,
+        "realisasi": 163.0,
+        "persentase": 110.88
+      },
+      {
+        "rawName": "Konda",
+        "namaFaskes": "UPTD PUSKESMAS KONDA",
+        "target": 285.0,
+        "realisasi": 147.0,
+        "persentase": 51.58
+      },
+      {
+        "rawName": "Landono",
+        "namaFaskes": "UPTD PUSKESMAS LANDONO",
+        "target": 110.0,
+        "realisasi": 124.0,
+        "persentase": 112.73
+      },
+      {
+        "rawName": "Lameuru",
+        "namaFaskes": "UPTD PUSKESMAS LAMEURU",
+        "target": 106.0,
+        "realisasi": 122.0,
+        "persentase": 115.09
+      },
+      {
+        "rawName": "Lalowaru",
+        "namaFaskes": "UPTD PUSKESMAS LALOWARU",
+        "target": 124.0,
+        "realisasi": 131.0,
+        "persentase": 105.65
+      },
+      {
+        "rawName": "Laonti",
+        "namaFaskes": "UPTD PUSKESMAS LAONTI",
+        "target": 89.0,
+        "realisasi": 96.0,
+        "persentase": 107.87
+      },
+      {
+        "rawName": "Moramo",
+        "namaFaskes": "UPTD PUSKESMAS MORAMO",
+        "target": 199.0,
+        "realisasi": 157.0,
+        "persentase": 78.89
+      },
+      {
+        "rawName": "Motaha",
+        "namaFaskes": "UPTD PUSKESMAS MOTAHA",
+        "target": 226.0,
+        "realisasi": 144.0,
+        "persentase": 63.72
+      },
+      {
+        "rawName": "Mowila",
+        "namaFaskes": "UPTD PUSKESMAS MOWILA",
+        "target": 173.0,
+        "realisasi": 111.0,
+        "persentase": 64.16
+      },
+      {
+        "rawName": "Palangga",
+        "namaFaskes": "UPTD PUSKESMAS PALANGGA",
+        "target": 190.0,
+        "realisasi": 162.0,
+        "persentase": 85.26
+      },
+      {
+        "rawName": "Pamandati",
+        "namaFaskes": "UPTD PUSKESMAS PAMANDATI",
+        "target": 128.0,
+        "realisasi": 113.0,
+        "persentase": 88.28
+      },
+      {
+        "rawName": "Punggaluku",
+        "namaFaskes": "UPTD PUSKESMAS PUNGGALUKU",
+        "target": 278.0,
+        "realisasi": 269.0,
+        "persentase": 96.76
+      },
+      {
+        "rawName": "Ranomeeto",
+        "namaFaskes": "UPTD PUSKESMAS RANOMEETO",
+        "target": 264.0,
+        "realisasi": 220.0,
+        "persentase": 83.33
+      },
+      {
+        "rawName": "Sabulakoa",
+        "namaFaskes": "UPTD PUSKESMAS SABULAKOA",
+        "target": 73.0,
+        "realisasi": 52.0,
+        "persentase": 71.23
+      },
+      {
+        "rawName": "Tinanggea",
+        "namaFaskes": "UPTD PUSKESMAS TINANGGEA",
+        "target": 324.0,
+        "realisasi": 274.0,
+        "persentase": 84.57
+      },
+      {
+        "rawName": "Tumbu-Tumbu Jaya",
+        "namaFaskes": "UPTD PUSKESMAS TUMBU-TUMBU JAYA",
+        "target": 72.0,
+        "realisasi": 36.0,
+        "persentase": 50.0
+      },
+      {
+        "rawName": "Wolasi",
+        "namaFaskes": "UPTD PUSKESMAS WOLASI",
+        "target": 72.0,
+        "realisasi": 72.0,
+        "persentase": 100.0
+      },
+      {
+        "rawName": "Tambolosu",
+        "namaFaskes": "UPTD PUSKESMAS TAMBOLOSU",
+        "target": 58.0,
+        "realisasi": 55.0,
+        "persentase": 94.83
+      }
+    ]
+  },
+  {
+    "spmIndex": 10,
+    "col": 30,
+    "namaIndikator": "Pelayanan Kesehatan Orang Dengan Gangguan Jiwa (ODGJ) Berat",
+    "kodeSubKegiatan": "1.02.02.2.02.0010",
+    "satuan": "Orang",
+    "bidang": [
+      "P2P"
+    ],
+    "faskesData": [
+      {
+        "rawName": "Andoolo",
+        "namaFaskes": "UPTD PUSKESMAS ANDOOLO",
+        "target": 14.93,
+        "realisasi": 20.0,
+        "persentase": 133.98
+      },
+      {
+        "rawName": "Andoolo Utama",
+        "namaFaskes": "UPTD PUSKESMAS ANDOOLO UTAMA",
+        "target": 20.29,
+        "realisasi": 29.0,
+        "persentase": 142.94
+      },
+      {
+        "rawName": "Amondo",
+        "namaFaskes": "UPTD PUSKESMAS AMONDO",
+        "target": 11.02,
+        "realisasi": 9.0,
+        "persentase": 81.66
+      },
+      {
+        "rawName": "Atari Jaya",
+        "namaFaskes": "UPTD PUSKESMAS ATARI JAYA",
+        "target": 21.82,
+        "realisasi": 29.0,
+        "persentase": 132.89
+      },
+      {
+        "rawName": "Baito",
+        "namaFaskes": "UPTD PUSKESMAS BAITO",
+        "target": 13.17,
+        "realisasi": 11.0,
+        "persentase": 83.55
+      },
+      {
+        "rawName": "Basala",
+        "namaFaskes": "UPTD PUSKESMAS BASALA",
+        "target": 10.46,
+        "realisasi": 25.0,
+        "persentase": 238.91
+      },
+      {
+        "rawName": "Benua",
+        "namaFaskes": "UPTD PUSKESMAS BENUA",
+        "target": 15.04,
+        "realisasi": 21.0,
+        "persentase": 139.63
+      },
+      {
+        "rawName": "Bimamaroa",
+        "namaFaskes": "UPTD PUSKESMAS BIMA MAROA",
+        "target": 12.18,
+        "realisasi": 16.0,
+        "persentase": 131.41
+      },
+      {
+        "rawName": "Kolono",
+        "namaFaskes": "UPTD PUSKESMAS KOLONO",
+        "target": 16.12,
+        "realisasi": 28.0,
+        "persentase": 173.69
+      },
+      {
+        "rawName": "Konda",
+        "namaFaskes": "UPTD PUSKESMAS KONDA",
+        "target": 31.3,
+        "realisasi": 29.0,
+        "persentase": 92.65
+      },
+      {
+        "rawName": "Landono",
+        "namaFaskes": "UPTD PUSKESMAS LANDONO",
+        "target": 12.09,
+        "realisasi": 15.0,
+        "persentase": 124.11
+      },
+      {
+        "rawName": "Lameuru",
+        "namaFaskes": "UPTD PUSKESMAS LAMEURU",
+        "target": 11.59,
+        "realisasi": 22.0,
+        "persentase": 189.79
+      },
+      {
+        "rawName": "Lalowaru",
+        "namaFaskes": "UPTD PUSKESMAS LALOWARU",
+        "target": 13.58,
+        "realisasi": 16.0,
+        "persentase": 117.86
+      },
+      {
+        "rawName": "Laonti",
+        "namaFaskes": "UPTD PUSKESMAS LAONTI",
+        "target": 9.8,
+        "realisasi": 6.0,
+        "persentase": 61.2
+      },
+      {
+        "rawName": "Moramo",
+        "namaFaskes": "UPTD PUSKESMAS MORAMO",
+        "target": 21.76,
+        "realisasi": 24.0,
+        "persentase": 110.27
+      },
+      {
+        "rawName": "Motaha",
+        "namaFaskes": "UPTD PUSKESMAS MOTAHA",
+        "target": 24.78,
+        "realisasi": 34.0,
+        "persentase": 137.18
+      },
+      {
+        "rawName": "Mowila",
+        "namaFaskes": "UPTD PUSKESMAS MOWILA",
+        "target": 18.96,
+        "realisasi": 28.0,
+        "persentase": 147.66
+      },
+      {
+        "rawName": "Palangga",
+        "namaFaskes": "UPTD PUSKESMAS PALANGGA",
+        "target": 20.9,
+        "realisasi": 13.0,
+        "persentase": 62.19
+      },
+      {
+        "rawName": "Pamandati",
+        "namaFaskes": "UPTD PUSKESMAS PAMANDATI",
+        "target": 14.05,
+        "realisasi": 9.0,
+        "persentase": 64.08
+      },
+      {
+        "rawName": "Punggaluku",
+        "namaFaskes": "UPTD PUSKESMAS PUNGGALUKU",
+        "target": 30.55,
+        "realisasi": 38.0,
+        "persentase": 124.37
+      },
+      {
+        "rawName": "Ranomeeto",
+        "namaFaskes": "UPTD PUSKESMAS RANOMEETO",
+        "target": 28.88,
+        "realisasi": 24.0,
+        "persentase": 83.1
+      },
+      {
+        "rawName": "Sabulakoa",
+        "namaFaskes": "UPTD PUSKESMAS SABULAKOA",
+        "target": 8.01,
+        "realisasi": 8.0,
+        "persentase": 99.93
+      },
+      {
+        "rawName": "Tinanggea",
+        "namaFaskes": "UPTD PUSKESMAS TINANGGEA",
+        "target": 35.54,
+        "realisasi": 60.0,
+        "persentase": 168.81
+      },
+      {
+        "rawName": "Tumbu-Tumbu Jaya",
+        "namaFaskes": "UPTD PUSKESMAS TUMBU-TUMBU JAYA",
+        "target": 7.88,
+        "realisasi": 21.0,
+        "persentase": 266.65
+      },
+      {
+        "rawName": "Wolasi",
+        "namaFaskes": "UPTD PUSKESMAS WOLASI",
+        "target": 7.98,
+        "realisasi": 11.0,
+        "persentase": 137.83
+      },
+      {
+        "rawName": "Tambolosu",
+        "namaFaskes": "UPTD PUSKESMAS TAMBOLOSU",
+        "target": 6.32,
+        "realisasi": 4.0,
+        "persentase": 63.32
+      }
+    ]
+  },
+  {
+    "spmIndex": 11,
+    "col": 33,
+    "namaIndikator": "Pelayanan Kesehatan Orang Terduga Tuberkulosis",
+    "kodeSubKegiatan": "1.02.02.2.02.0011",
+    "satuan": "Orang",
+    "bidang": [
+      "P2P"
+    ],
+    "faskesData": [
+      {
+        "rawName": "Andoolo",
+        "namaFaskes": "UPTD PUSKESMAS ANDOOLO",
+        "target": 148.0,
+        "realisasi": 118.0,
+        "persentase": 79.73
+      },
+      {
+        "rawName": "Andoolo Utama",
+        "namaFaskes": "UPTD PUSKESMAS ANDOOLO UTAMA",
+        "target": 201.0,
+        "realisasi": 155.0,
+        "persentase": 77.11
+      },
+      {
+        "rawName": "Amondo",
+        "namaFaskes": "UPTD PUSKESMAS AMONDO",
+        "target": 109.0,
+        "realisasi": 98.0,
+        "persentase": 89.91
+      },
+      {
+        "rawName": "Atari Jaya",
+        "namaFaskes": "UPTD PUSKESMAS ATARI JAYA",
+        "target": 216.0,
+        "realisasi": 165.0,
+        "persentase": 76.39
+      },
+      {
+        "rawName": "Baito",
+        "namaFaskes": "UPTD PUSKESMAS BAITO",
+        "target": 130.0,
+        "realisasi": 119.0,
+        "persentase": 91.54
+      },
+      {
+        "rawName": "Basala",
+        "namaFaskes": "UPTD PUSKESMAS BASALA",
+        "target": 104.0,
+        "realisasi": 72.0,
+        "persentase": 69.23
+      },
+      {
+        "rawName": "Benua",
+        "namaFaskes": "UPTD PUSKESMAS BENUA",
+        "target": 149.0,
+        "realisasi": 92.0,
+        "persentase": 61.74
+      },
+      {
+        "rawName": "Bimamaroa",
+        "namaFaskes": "UPTD PUSKESMAS BIMA MAROA",
+        "target": 121.0,
+        "realisasi": 85.0,
+        "persentase": 70.25
+      },
+      {
+        "rawName": "Kolono",
+        "namaFaskes": "UPTD PUSKESMAS KOLONO",
+        "target": 160.0,
+        "realisasi": 147.0,
+        "persentase": 91.88
+      },
+      {
+        "rawName": "Konda",
+        "namaFaskes": "UPTD PUSKESMAS KONDA",
+        "target": 310.0,
+        "realisasi": 230.0,
+        "persentase": 74.19
+      },
+      {
+        "rawName": "Landono",
+        "namaFaskes": "UPTD PUSKESMAS LANDONO",
+        "target": 120.0,
+        "realisasi": 113.0,
+        "persentase": 94.17
+      },
+      {
+        "rawName": "Lameuru",
+        "namaFaskes": "UPTD PUSKESMAS LAMEURU",
+        "target": 115.0,
+        "realisasi": 114.0,
+        "persentase": 99.13
+      },
+      {
+        "rawName": "Lalowaru",
+        "namaFaskes": "UPTD PUSKESMAS LALOWARU",
+        "target": 134.0,
+        "realisasi": 147.0,
+        "persentase": 109.7
+      },
+      {
+        "rawName": "Laonti",
+        "namaFaskes": "UPTD PUSKESMAS LAONTI",
+        "target": 97.0,
+        "realisasi": 49.0,
+        "persentase": 50.52
+      },
+      {
+        "rawName": "Moramo",
+        "namaFaskes": "UPTD PUSKESMAS MORAMO",
+        "target": 215.0,
+        "realisasi": 168.0,
+        "persentase": 78.14
+      },
+      {
+        "rawName": "Motaha",
+        "namaFaskes": "UPTD PUSKESMAS MOTAHA",
+        "target": 245.0,
+        "realisasi": 153.0,
+        "persentase": 62.45
+      },
+      {
+        "rawName": "Mowila",
+        "namaFaskes": "UPTD PUSKESMAS MOWILA",
+        "target": 188.0,
+        "realisasi": 113.0,
+        "persentase": 60.11
+      },
+      {
+        "rawName": "Palangga",
+        "namaFaskes": "UPTD PUSKESMAS PALANGGA",
+        "target": 207.0,
+        "realisasi": 161.0,
+        "persentase": 77.78
+      },
+      {
+        "rawName": "Pamandati",
+        "namaFaskes": "UPTD PUSKESMAS PAMANDATI",
+        "target": 139.0,
+        "realisasi": 96.0,
+        "persentase": 69.06
+      },
+      {
+        "rawName": "Punggaluku",
+        "namaFaskes": "UPTD PUSKESMAS PUNGGALUKU",
+        "target": 302.0,
+        "realisasi": 205.0,
+        "persentase": 67.88
+      },
+      {
+        "rawName": "Ranomeeto",
+        "namaFaskes": "UPTD PUSKESMAS RANOMEETO",
+        "target": 286.0,
+        "realisasi": 291.0,
+        "persentase": 101.75
+      },
+      {
+        "rawName": "Sabulakoa",
+        "namaFaskes": "UPTD PUSKESMAS SABULAKOA",
+        "target": 79.0,
+        "realisasi": 75.0,
+        "persentase": 94.94
+      },
+      {
+        "rawName": "Tinanggea",
+        "namaFaskes": "UPTD PUSKESMAS TINANGGEA",
+        "target": 352.0,
+        "realisasi": 233.0,
+        "persentase": 66.19
+      },
+      {
+        "rawName": "Tumbu-Tumbu Jaya",
+        "namaFaskes": "UPTD PUSKESMAS TUMBU-TUMBU JAYA",
+        "target": 78.0,
+        "realisasi": 42.0,
+        "persentase": 53.85
+      },
+      {
+        "rawName": "Wolasi",
+        "namaFaskes": "UPTD PUSKESMAS WOLASI",
+        "target": 79.0,
+        "realisasi": 63.0,
+        "persentase": 79.75
+      },
+      {
+        "rawName": "Tambolosu",
+        "namaFaskes": "UPTD PUSKESMAS TAMBOLOSU",
+        "target": 63.0,
+        "realisasi": 27.0,
+        "persentase": 42.86
+      }
+    ]
+  },
+  {
+    "spmIndex": 12,
+    "col": 36,
+    "namaIndikator": "Pelayanan Kesehatan Orang Dengan Risiko Terinfeksi Virus Yang Melemahkan Daya Tahan Tubuh Manusia (Human Immunodeficiency Virus)",
+    "kodeSubKegiatan": "1.02.02.2.02.0012",
+    "satuan": "Orang",
+    "bidang": [
+      "P2P"
+    ],
+    "faskesData": [
+      {
+        "rawName": "Andoolo",
+        "namaFaskes": "UPTD PUSKESMAS ANDOOLO",
+        "target": 276.0,
+        "realisasi": 142.0,
+        "persentase": 51.45
+      },
+      {
+        "rawName": "Andoolo Utama",
+        "namaFaskes": "UPTD PUSKESMAS ANDOOLO UTAMA",
+        "target": 407.0,
+        "realisasi": 232.0,
+        "persentase": 57.0
+      },
+      {
+        "rawName": "Amondo",
+        "namaFaskes": "UPTD PUSKESMAS AMONDO",
+        "target": 207.0,
+        "realisasi": 80.0,
+        "persentase": 38.65
+      },
+      {
+        "rawName": "Atari Jaya",
+        "namaFaskes": "UPTD PUSKESMAS ATARI JAYA",
+        "target": 422.0,
+        "realisasi": 222.0,
+        "persentase": 52.61
+      },
+      {
+        "rawName": "Baito",
+        "namaFaskes": "UPTD PUSKESMAS BAITO",
+        "target": 266.0,
+        "realisasi": 114.0,
+        "persentase": 42.86
+      },
+      {
+        "rawName": "Basala",
+        "namaFaskes": "UPTD PUSKESMAS BASALA",
+        "target": 189.0,
+        "realisasi": 113.0,
+        "persentase": 59.79
+      },
+      {
+        "rawName": "Benua",
+        "namaFaskes": "UPTD PUSKESMAS BENUA",
+        "target": 258.0,
+        "realisasi": 124.0,
+        "persentase": 48.06
+      },
+      {
+        "rawName": "Bimamaroa",
+        "namaFaskes": "UPTD PUSKESMAS BIMA MAROA",
+        "target": 197.0,
+        "realisasi": 90.0,
+        "persentase": 45.69
+      },
+      {
+        "rawName": "Kolono",
+        "namaFaskes": "UPTD PUSKESMAS KOLONO",
+        "target": 230.0,
+        "realisasi": 130.0,
+        "persentase": 56.52
+      },
+      {
+        "rawName": "Konda",
+        "namaFaskes": "UPTD PUSKESMAS KONDA",
+        "target": 491.0,
+        "realisasi": 300.0,
+        "persentase": 61.1
+      },
+      {
+        "rawName": "Landono",
+        "namaFaskes": "UPTD PUSKESMAS LANDONO",
+        "target": 258.0,
+        "realisasi": 155.0,
+        "persentase": 60.08
+      },
+      {
+        "rawName": "Lameuru",
+        "namaFaskes": "UPTD PUSKESMAS LAMEURU",
+        "target": 238.0,
+        "realisasi": 139.0,
+        "persentase": 58.4
+      },
+      {
+        "rawName": "Lalowaru",
+        "namaFaskes": "UPTD PUSKESMAS LALOWARU",
+        "target": 230.0,
+        "realisasi": 98.0,
+        "persentase": 42.61
+      },
+      {
+        "rawName": "Laonti",
+        "namaFaskes": "UPTD PUSKESMAS LAONTI",
+        "target": 172.0,
+        "realisasi": 77.0,
+        "persentase": 44.77
+      },
+      {
+        "rawName": "Moramo",
+        "namaFaskes": "UPTD PUSKESMAS MORAMO",
+        "target": 341.0,
+        "realisasi": 160.0,
+        "persentase": 46.92
+      },
+      {
+        "rawName": "Motaha",
+        "namaFaskes": "UPTD PUSKESMAS MOTAHA",
+        "target": 434.0,
+        "realisasi": 293.0,
+        "persentase": 67.51
+      },
+      {
+        "rawName": "Mowila",
+        "namaFaskes": "UPTD PUSKESMAS MOWILA",
+        "target": 310.0,
+        "realisasi": 151.0,
+        "persentase": 48.71
+      },
+      {
+        "rawName": "Palangga",
+        "namaFaskes": "UPTD PUSKESMAS PALANGGA",
+        "target": 419.0,
+        "realisasi": 222.0,
+        "persentase": 52.98
+      },
+      {
+        "rawName": "Pamandati",
+        "namaFaskes": "UPTD PUSKESMAS PAMANDATI",
+        "target": 257.0,
+        "realisasi": 114.0,
+        "persentase": 44.36
+      },
+      {
+        "rawName": "Punggaluku",
+        "namaFaskes": "UPTD PUSKESMAS PUNGGALUKU",
+        "target": 490.0,
+        "realisasi": 220.0,
+        "persentase": 44.9
+      },
+      {
+        "rawName": "Ranomeeto",
+        "namaFaskes": "UPTD PUSKESMAS RANOMEETO",
+        "target": 658.0,
+        "realisasi": 652.0,
+        "persentase": 99.09
+      },
+      {
+        "rawName": "Sabulakoa",
+        "namaFaskes": "UPTD PUSKESMAS SABULAKOA",
+        "target": 107.0,
+        "realisasi": 81.0,
+        "persentase": 75.7
+      },
+      {
+        "rawName": "Tinanggea",
+        "namaFaskes": "UPTD PUSKESMAS TINANGGEA",
+        "target": 509.0,
+        "realisasi": 228.0,
+        "persentase": 44.79
+      },
+      {
+        "rawName": "Tumbu-Tumbu Jaya",
+        "namaFaskes": "UPTD PUSKESMAS TUMBU-TUMBU JAYA",
+        "target": 193.0,
+        "realisasi": 76.0,
+        "persentase": 39.38
+      },
+      {
+        "rawName": "Wolasi",
+        "namaFaskes": "UPTD PUSKESMAS WOLASI",
+        "target": 218.0,
+        "realisasi": 113.0,
+        "persentase": 51.83
+      },
+      {
+        "rawName": "Tambolosu",
+        "namaFaskes": "UPTD PUSKESMAS TAMBOLOSU",
+        "target": 168.0,
+        "realisasi": 57.0,
+        "persentase": 33.93
+      }
+    ]
+  }
+]

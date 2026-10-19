@@ -32,7 +32,7 @@ function GovernmentIdentity({ compact = false }: { compact?: boolean }) {
     <div className={compact ? "gass-agency gass-agency--compact" : "gass-agency"}>
       <div className="gass-agency__marks">
         <Image
-          src="/branding/logo-konsel.png"
+          src="/branding/logo-konsel.webp"
           alt="Lambang Kabupaten Konawe Selatan"
           width={678}
           height={800}
@@ -201,7 +201,7 @@ export default function LoginPage() {
       <section className="gass-brand-panel" aria-label="Tentang GASS">
         <div className="gass-office-photo">
           <Image
-            src="/branding/foto-kantor.jpeg"
+            src="/branding/foto-kantor.webp"
             alt="Kantor Dinas Kesehatan Kabupaten Konawe Selatan"
             fill
             sizes="(min-width: 1181px) 55vw, (min-width: 900px) 48vw, 1px"
@@ -218,7 +218,7 @@ export default function LoginPage() {
         <div className="gass-brand-panel__content">
           <div className="gass-brand-copy">
             <Image
-              src="/branding/logo-gass.png"
+              src="/branding/logo-gass.webp"
               alt="GASS — Gerak Aksi Sehat Setara"
               width={1312}
               height={1199}
@@ -250,7 +250,7 @@ export default function LoginPage() {
       <section className="gass-form-panel">
         <div className="gass-mobile-brand">
           <Image
-            src="/branding/logo-gass.png"
+            src="/branding/logo-gass.webp"
             alt="GASS — Gerak Aksi Sehat Setara"
             width={1312}
             height={1199}
@@ -283,7 +283,7 @@ export default function LoginPage() {
               Profil GASS
             </Link>
             <Image
-              src="/branding/new_logo_Setara.png"
+              src="/branding/new_logo_Setara.webp"
               alt="Logo SETARA"
               width={160}
               height={52}

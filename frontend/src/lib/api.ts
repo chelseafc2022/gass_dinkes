@@ -68,8 +68,17 @@ export function queryString(values: Record<string, unknown>) {
       .map(([k, v]) => [k, String(v)]),
   ).toString();
 }
-export const number = (n: number) =>
-  new Intl.NumberFormat("id-ID", { maximumFractionDigits: 1 }).format(n || 0);
+export const number = (n: number, maxDigits = 2) =>
+  new Intl.NumberFormat("id-ID", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: maxDigits,
+  }).format(n || 0);
+
+export const percent = (n: number, digits = 2) =>
+  new Intl.NumberFormat("id-ID", {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  }).format(n || 0);
 export const rupiah = (n: number) =>
   new Intl.NumberFormat("id-ID", {
     style: "currency",

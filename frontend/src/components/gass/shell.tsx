@@ -193,7 +193,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           >
             <div className="gass-sidebar-logo-wrap">
               <Image
-                src="/branding/logo-gass.png"
+                src="/branding/logo-gass.webp"
                 alt="Logo GASS"
                 width={1312}
                 height={1199}
@@ -281,7 +281,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <header className="gass-app-header sticky top-0 z-20 flex h-16 shrink-0 items-center gap-2.5 border-b px-4 sm:px-5 lg:px-8">
           <SidebarTrigger className="size-10 shrink-0 rounded-xl border bg-card shadow-xs hover:bg-primary/5 hover:text-primary sm:size-9" />
           <Image
-            src="/branding/logo-gass.png"
+            src="/branding/logo-gass.webp"
             alt="GASS"
             width={1312}
             height={1199}

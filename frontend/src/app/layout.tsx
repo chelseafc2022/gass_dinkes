@@ -6,9 +6,9 @@ export const metadata: Metadata = {
   description:
     "Gerakan Aksi Sehat Setara — Monitoring kinerja dan keuangan Dinas Kesehatan",
   icons: {
-    icon: "/branding/logo-gass.png",
-    shortcut: "/branding/logo-gass.png",
-    apple: "/branding/logo-gass.png",
+    icon: "/branding/logo-gass.webp",
+    shortcut: "/branding/logo-gass.webp",
+    apple: "/branding/logo-gass.webp",
   },
 };
 export default function RootLayout({

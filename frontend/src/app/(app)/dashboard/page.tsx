@@ -1,6 +1,6 @@
 "use client";
 import { ThresholdLegend } from "@/components/gass/threshold-legend";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowDownToLine,
@@ -12,8 +12,12 @@ import {
   ArrowRight,
   CheckCheck,
   CalendarDays,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import {
+  ComposedChart,
+  Line,
   BarChart,
   Bar,
   CartesianGrid,
@@ -39,6 +43,13 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useAuth } from "@/components/gass/providers";
 import {
   ErrorState,
@@ -47,7 +58,7 @@ import {
   Loading,
   StatusBadge,
 } from "@/components/gass/shared";
-import { api, exportCsv, number, queryString, rupiah, shortFaskes } from "@/lib/api";
+import { api, exportCsv, number, percent, queryString, rupiah, shortFaskes } from "@/lib/api";
 const colors: Record<string, string> = {
   HIJAU: "#0c9586",
   KUNING: "#e4af54",
@@ -76,16 +87,38 @@ function Trend({
 }) {
   const [selected, setSelected] = useState("all");
   const items = indicators.filter((i) => i.kategori === category);
-  const chosen =
-    selected === "all" ? items : items.filter((i) => i.id === selected);
-  const data = [0, 1, 2, 3].map((q) => ({
-    name: `TW ${q + 1}`,
-    ...Object.fromEntries(chosen.map((i) => [i.id, i.trend[q].value])),
-  }));
+  const isAll = selected === "all";
+  const chosenItem = !isAll ? items.find((i) => i.id === selected) : null;
+
+  // Data per triwulan: TW 1, TW 2, TW 3, TW 4
+  const data = [0, 1, 2, 3].map((q) => {
+    const twNumber = q + 1;
+    const target = twNumber * 25; // Target kumulatif standar: 25%, 50%, 75%, 100%
+
+    if (isAll) {
+      const values = items.map((i) => i.trend?.[q]?.value ?? 0);
+      const avg =
+        values.length > 0
+          ? values.reduce((sum, val) => sum + val, 0) / values.length
+          : 0;
+      return {
+        name: `TW ${twNumber}`,
+        capaian: Number(avg.toFixed(1)),
+        target,
+      };
+    } else {
+      return {
+        name: `TW ${twNumber}`,
+        capaian: Number((chosenItem?.trend?.[q]?.value ?? 0).toFixed(1)),
+        target,
+      };
+    }
+  });
+
   return (
-    <Card>
-      <CardHeader className="flex flex-row flex-wrap justify-between items-start gap-4">
-        <div>
+    <Card className="overflow-hidden border shadow-sm">
+      <CardHeader className="flex flex-row flex-wrap justify-between items-start gap-4 pb-3">
+        <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-2">
             <CardTitle className="text-sm font-semibold">
               {category === "IKU"
@@ -105,84 +138,183 @@ function Trend({
                 (Seluruh Faskes)
               </span>
             )}
+            {chosenItem && (
+              <StatusBadge status={chosenItem.status} compact />
+            )}
           </div>
-          <CardDescription className="text-xs mt-1.5">
-            {faskesName
-              ? `Realisasi kumulatif ${category} sampai akhir setiap triwulan pada ${faskesName} terhadap target tahunan`
-              : `Realisasi kumulatif sampai akhir setiap triwulan terhadap target tahunan (agregat seluruh faskes)`}
+          <CardDescription className="text-xs">
+            {isAll
+              ? faskesName
+                ? `Rata-rata kumulatif seluruh ${items.length} indikator ${category} di ${faskesName} per triwulan terhadap target tahunan`
+                : `Rata-rata kumulatif seluruh ${items.length} indikator ${category} per triwulan terhadap target tahunan (agregat kabupaten)`
+              : `Progres kumulatif ${chosenItem?.nama} per triwulan terhadap target tahunan`}
           </CardDescription>
         </div>
+
         <select
           aria-label={`Pilihan tren ${category}`}
-          className="filter-select max-w-60"
+          className="filter-select max-w-sm text-xs font-medium"
           value={selected}
           onChange={(e) => setSelected(e.target.value)}
         >
-          <option value="all">Seluruh {category}</option>
-          {items.map((i) => (
-            <option key={i.id} value={i.id}>
-              {i.nama}
-            </option>
-          ))}
+          <option value="all">
+            📊 Rata-rata Seluruh {category} ({items.length} Indikator)
+          </option>
+          <optgroup label={`Pilih Indikator ${category}`}>
+            {items.map((i, idx) => (
+              <option key={i.id} value={i.id}>
+                {category} {String(idx + 1).padStart(2, "0")} — {i.nama}
+              </option>
+            ))}
+          </optgroup>
         </select>
       </CardHeader>
-      <CardContent>
+
+      <CardContent className="space-y-4 pt-1">
         {items.length === 0 ? (
           <div className="h-60 grid place-content-center text-xs text-muted-foreground">
             Belum ada indikator {category} untuk periode ini.
           </div>
         ) : (
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart
-              data={data}
-              margin={{ top: 12, right: 12, left: -10, bottom: 4 }}
-            >
-              <CartesianGrid
-                vertical={false}
-                strokeDasharray="3 4"
-                stroke="var(--border)"
-              />
-              <XAxis
-                dataKey="name"
-                fontSize={11}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis unit="%" fontSize={10} axisLine={false} tickLine={false} />
-              <Tooltip
-                contentStyle={{
-                  background: "var(--card)",
-                  borderRadius: 12,
-                  border: "1px solid var(--border)",
-                  fontSize: 11,
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-                }}
-                formatter={(v: any, name: any) => [
-                  `${number(Number(v))}%`,
-                  items.find((x) => x.id === name || x.nama === name)?.nama ||
-                    name,
-                ]}
-              />
-              {chosen.length > 1 && (
-                <Legend
-                  wrapperStyle={{ fontSize: 11, paddingTop: 12 }}
-                  iconType="circle"
-                  iconSize={8}
-                />
-              )}
-              {chosen.map((i, n) => (
-                <Bar
-                  isAnimationActive={false}
-                  key={i.id}
-                  dataKey={i.id}
-                  name={i.nama}
-                  fill={trendPalette[n % trendPalette.length]}
-                  radius={[4, 4, 0, 0]}
-                  maxBarSize={chosen.length > 3 ? 24 : 40}
-                />
-              ))}
-            </BarChart>
-          </ResponsiveContainer>
+          <>
+            {/* Kartu Ringkasan Progres Triwulan */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+              {data.map((d) => {
+                const isReached = d.capaian >= d.target;
+                const hasData = d.capaian > 0;
+                return (
+                  <div
+                    key={d.name}
+                    className={`rounded-lg p-2.5 border transition-all ${
+                      hasData
+                        ? isReached
+                          ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-950 dark:text-emerald-200"
+                          : "bg-amber-500/10 border-amber-500/30 text-amber-950 dark:text-amber-200"
+                        : "bg-muted/30 border-border/60 text-muted-foreground"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between text-[11px] font-medium">
+                      <span className="font-semibold">{d.name}</span>
+                      <span className="text-[10px] text-muted-foreground">Target {d.target}%</span>
+                    </div>
+                    <div className="mt-1 flex items-baseline gap-1.5">
+                      <span className="text-base font-bold font-mono">
+                        {percent(d.capaian)}%
+                      </span>
+                      {hasData ? (
+                        <span
+                          className={`text-[9.5px] font-medium leading-none ${
+                            isReached
+                              ? "text-emerald-700 dark:text-emerald-300"
+                              : "text-amber-700 dark:text-amber-300"
+                          }`}
+                        >
+                          {isReached ? "Tercapai" : "Kurang"}
+                        </span>
+                      ) : (
+                        <span className="text-[9.5px] text-muted-foreground leading-none">
+                          Belum periode
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Banner info tambahan jika memilih indikator spesifik */}
+            {chosenItem && (
+              <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-lg bg-muted/40 border text-xs">
+                <span className="font-semibold text-foreground truncate max-w-md" title={chosenItem.nama}>
+                  {chosenItem.nama}
+                </span>
+                <div className="flex items-center gap-3 text-[11px] text-muted-foreground font-mono">
+                  <span>Target: <strong className="text-foreground">{number(chosenItem.target)}</strong> {chosenItem.satuan || "orang"}</span>
+                  <span>·</span>
+                  <span>Realisasi: <strong className="text-emerald-700 dark:text-emerald-400">{number(chosenItem.realisasi)}</strong> {chosenItem.satuan || "orang"}</span>
+                  <span>·</span>
+                  <span>Capaian: <strong className="text-foreground">{percent(chosenItem.persentase)}%</strong></span>
+                </div>
+              </div>
+            )}
+
+            {/* Grafik ComposedChart: Bar Capaian + Line Target */}
+            <div className="w-full">
+              <ResponsiveContainer width="100%" height={290}>
+                <ComposedChart
+                  data={data}
+                  margin={{ top: 20, right: 16, left: -12, bottom: 4 }}
+                >
+                  <CartesianGrid
+                    vertical={false}
+                    strokeDasharray="3 4"
+                    stroke="var(--border)"
+                  />
+                  <XAxis
+                    dataKey="name"
+                    fontSize={11}
+                    fontWeight={500}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    unit="%"
+                    fontSize={10}
+                    axisLine={false}
+                    tickLine={false}
+                    domain={[0, (dataMax: number) => Math.max(105, Math.ceil(dataMax / 10) * 10)]}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      background: "var(--card)",
+                      borderRadius: 12,
+                      border: "1px solid var(--border)",
+                      fontSize: 11,
+                      boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
+                      padding: "8px 12px",
+                    }}
+                    formatter={(v: any, name: any) => [
+                      `${percent(Number(v))}%`,
+                      name === "capaian"
+                        ? isAll
+                          ? `Rata-rata Capaian ${category}`
+                          : `Capaian Kumulatif`
+                        : "Target Minimal Triwulan",
+                    ]}
+                  />
+                  <Legend
+                    wrapperStyle={{ fontSize: 11, paddingTop: 10 }}
+                    iconType="circle"
+                    iconSize={8}
+                  />
+                  <Bar
+                    isAnimationActive={false}
+                    dataKey="capaian"
+                    name={isAll ? `Rata-rata Capaian ${category}` : `Capaian Kumulatif`}
+                    fill="#0F766E"
+                    radius={[6, 6, 0, 0]}
+                    maxBarSize={48}
+                  >
+                    <LabelList
+                      dataKey="capaian"
+                      position="top"
+                      formatter={(v: any) => (Number(v) > 0 ? `${percent(Number(v))}%` : "")}
+                      style={{ fontSize: 11, fontWeight: 700, fill: "var(--foreground)" }}
+                    />
+                  </Bar>
+                  <Line
+                    type="monotone"
+                    dataKey="target"
+                    name="Target Kumulatif (25%, 50%, 75%, 100%)"
+                    stroke="#DB2777"
+                    strokeWidth={2.5}
+                    strokeDasharray="5 5"
+                    dot={{ r: 4, fill: "#DB2777", strokeWidth: 2, stroke: "#FFFFFF" }}
+                  />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          </>
         )}
       </CardContent>
     </Card>
@@ -248,7 +380,7 @@ function AllIndicatorQuarterlyTrend({
   }));
 
   return (
-    <Card>
+    <Card className="overflow-hidden border shadow-sm">
       <CardHeader className="flex flex-row flex-wrap justify-between items-start gap-4">
         <div>
           <CardTitle className="text-sm font-semibold">
@@ -265,7 +397,7 @@ function AllIndicatorQuarterlyTrend({
         </div>
         <select
           aria-label={`Filter fasilitas kesehatan tren seluruh ${category}`}
-          className="filter-select w-full sm:w-64"
+          className="filter-select w-full sm:w-64 text-xs font-medium"
           value={lockedFaskesId || faskesId}
           disabled={!!lockedFaskesId}
           onChange={(event) => setFaskesId(event.target.value)}
@@ -292,7 +424,7 @@ function AllIndicatorQuarterlyTrend({
           </div>
         ) : (
           <div className="overflow-x-auto pb-2">
-            <div style={{ minWidth: Math.max(760, data.length * 130) }}>
+            <div style={{ minWidth: Math.max(680, data.length * 64) }}>
               <ResponsiveContainer width="100%" height={340}>
                 <BarChart
                   data={data}
@@ -305,7 +437,8 @@ function AllIndicatorQuarterlyTrend({
                   />
                   <XAxis
                     dataKey="label"
-                    fontSize={10}
+                    fontSize={11}
+                    fontWeight={500}
                     axisLine={false}
                     tickLine={false}
                     interval={0}
@@ -317,11 +450,12 @@ function AllIndicatorQuarterlyTrend({
                     tickLine={false}
                   />
                   <Tooltip
-                    labelFormatter={(_label, payload) =>
-                      payload?.[0]?.payload?.nama || _label
-                    }
+                    labelFormatter={(_label, payload) => {
+                      const item = payload?.[0]?.payload;
+                      return item ? `${item.label} — ${item.nama}` : _label;
+                    }}
                     formatter={(value: any, name: any) => [
-                      `${number(Number(value))}%`,
+                      `${percent(Number(value))}%`,
                       name,
                     ]}
                     contentStyle={{
@@ -329,7 +463,8 @@ function AllIndicatorQuarterlyTrend({
                       borderRadius: 12,
                       border: "1px solid var(--border)",
                       fontSize: 11,
-                      maxWidth: 320,
+                      maxWidth: 340,
+                      boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
                     }}
                   />
                   <Legend
@@ -345,7 +480,7 @@ function AllIndicatorQuarterlyTrend({
                       name={quarter.label}
                       fill={quarter.color}
                       radius={[4, 4, 0, 0]}
-                      maxBarSize={24}
+                      maxBarSize={14}
                     />
                   ))}
                 </BarChart>
@@ -360,7 +495,10 @@ function AllIndicatorQuarterlyTrend({
 export default function Dashboard() {
   const { user } = useAuth();
   const [filters, setFilters] = useState(initialFilters),
-    [selected, setSelected] = useState("");
+    [selected, setSelected] = useState<string>("all"),
+    [showAllSpmCards, setShowAllSpmCards] = useState<boolean>(false),
+    [showAllPuskesmas, setShowAllPuskesmas] = useState<boolean>(false),
+    [rankingSort, setRankingSort] = useState<"asc" | "desc">("asc");
   const optionsQuery = useQuery({
     queryKey: ["options"],
     queryFn: () => api("/options"),
@@ -384,20 +522,140 @@ export default function Dashboard() {
     queryFn: () => api(`/dashboard?${queryString(effectiveFilters as any)}`),
   });
   const d = q.data;
-  const spm = d?.indicators.filter((i: any) => i.kategori === "SPM") ?? [],
-    detail = spm.find((i: any) => i.id === selected) ?? spm[0];
-  const rankingList = (detail?.ranking || [])
-    .filter(
-      (r: any) =>
-        !r.namaFaskes.includes("BLUD RSU KONAWE SELATAN") &&
-        !r.namaFaskes.toUpperCase().includes("RUMAH SAKIT") &&
-        !r.namaFaskes.toUpperCase().includes("RSUD") &&
-        shortFaskes(r.namaFaskes) !== "RSUD",
-    )
-    .map((r: any) => ({
-      ...r,
-      namaRingkas: shortFaskes(r.namaFaskes),
-    }));
+  const spm = d?.indicators.filter((i: any) => i.kategori === "SPM") ?? [];
+  const isAll = !selected || selected === "all";
+  const detail = isAll ? null : spm.find((i: any) => i.id === selected) ?? null;
+
+  // 12 SPM overall calculation per Puskesmas (matching official Excel calculation)
+  const overallPuskesmasRanking = useMemo(() => {
+    if (!spm.length) return [];
+    const faskesMap = new Map<
+      string,
+      {
+        faskesId: string;
+        namaFaskes: string;
+        namaRingkas: string;
+        items: {
+          indId: string;
+          persentase: number;
+          capped: number;
+          status: string;
+          reported: boolean;
+        }[];
+      }
+    >();
+
+    for (const ind of spm) {
+      for (const r of ind.ranking || []) {
+        if (
+          r.namaFaskes.includes("BLUD RSU KONAWE SELATAN") ||
+          r.namaFaskes.toUpperCase().includes("RUMAH SAKIT") ||
+          r.namaFaskes.toUpperCase().includes("RSUD") ||
+          shortFaskes(r.namaFaskes) === "RSUD"
+        ) {
+          continue;
+        }
+        if (!faskesMap.has(r.faskesId)) {
+          faskesMap.set(r.faskesId, {
+            faskesId: r.faskesId,
+            namaFaskes: r.namaFaskes,
+            namaRingkas: shortFaskes(r.namaFaskes),
+            items: [],
+          });
+        }
+        faskesMap.get(r.faskesId)!.items.push({
+          indId: ind.id,
+          persentase: r.persentase,
+          capped: Math.min(100, r.persentase),
+          status: r.status,
+          reported: r.reported,
+        });
+      }
+    }
+
+    const currentThreshold = d?.threshold?.hijauMin ?? 80;
+    const kuningThreshold = d?.threshold?.kuningMin ?? 50;
+
+    return [...faskesMap.values()].map((f) => {
+      const sumCapped = f.items.reduce((s, x) => s + x.capped, 0);
+      const avg = sumCapped / spm.length;
+      const statusStr =
+        avg >= currentThreshold
+          ? "HIJAU"
+          : kuningThreshold !== null && avg >= kuningThreshold
+            ? "KUNING"
+            : "MERAH";
+
+      return {
+        faskesId: f.faskesId,
+        namaFaskes: f.namaFaskes,
+        namaRingkas: f.namaRingkas,
+        persentase: avg,
+        status: statusStr,
+        reported: f.items.some((x) => x.reported),
+        tercapaiCount: f.items.filter((x) => x.status === "HIJAU").length,
+        totalIndikator: spm.length,
+      };
+    });
+  }, [spm, d?.threshold]);
+
+  const kabupatenAvgSpm = useMemo(() => {
+    if (!overallPuskesmasRanking.length) return 0;
+    return (
+      overallPuskesmasRanking.reduce((s, f) => s + f.persentase, 0) /
+      overallPuskesmasRanking.length
+    );
+  }, [overallPuskesmasRanking]);
+
+  // Priority 3 SPM indicators (lowest achievement first)
+  const spmPriorityIndicators = useMemo(() => {
+    return [...spm].sort((a, b) => a.persentase - b.persentase);
+  }, [spm]);
+
+  // Active ranking list for table & cards
+  const activeRankingList = useMemo(() => {
+    if (isAll) {
+      const list = [...overallPuskesmasRanking];
+      return rankingSort === "asc"
+        ? list.sort((a, b) => a.persentase - b.persentase)
+        : list.sort((a, b) => b.persentase - a.persentase);
+    }
+    const list = (detail?.ranking || [])
+      .filter(
+        (r: any) =>
+          !r.namaFaskes.includes("BLUD RSU KONAWE SELATAN") &&
+          !r.namaFaskes.toUpperCase().includes("RUMAH SAKIT") &&
+          !r.namaFaskes.toUpperCase().includes("RSUD") &&
+          shortFaskes(r.namaFaskes) !== "RSUD",
+      )
+      .map((r: any) => ({
+        ...r,
+        namaRingkas: shortFaskes(r.namaFaskes),
+      }));
+    return rankingSort === "asc"
+      ? list.sort((a: any, b: any) => a.persentase - b.persentase)
+      : list.sort((a: any, b: any) => b.persentase - a.persentase);
+  }, [isAll, overallPuskesmasRanking, detail, rankingSort]);
+
+  // Bar chart list (always sorted ascending from lowest to highest)
+  const chartRankingList = useMemo(() => {
+    if (isAll) {
+      return [...overallPuskesmasRanking].sort((a, b) => a.persentase - b.persentase);
+    }
+    return (detail?.ranking || [])
+      .filter(
+        (r: any) =>
+          !r.namaFaskes.includes("BLUD RSU KONAWE SELATAN") &&
+          !r.namaFaskes.toUpperCase().includes("RUMAH SAKIT") &&
+          !r.namaFaskes.toUpperCase().includes("RSUD") &&
+          shortFaskes(r.namaFaskes) !== "RSUD",
+      )
+      .map((r: any) => ({
+        ...r,
+        namaRingkas: shortFaskes(r.namaFaskes),
+      }))
+      .sort((a: any, b: any) => a.persentase - b.persentase);
+  }, [isAll, overallPuskesmasRanking, detail]);
   return (
     <div>
       <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
@@ -478,7 +736,7 @@ export default function Dashboard() {
                 },
                 {
                   label: "Rata-rata capaian kinerja",
-                  value: number(d.summary.capaian),
+                  value: percent(d.summary.capaian),
                   unit: "%",
                   description: `${d.summary.indikator} indikator pada tahun ${filters.tahun}`,
                   icon: Activity,
@@ -490,7 +748,7 @@ export default function Dashboard() {
                     maximumFractionDigits: 1,
                   }).format(d.summary.realisasiKeuangan),
                   unit: "Rp",
-                  description: `${number(d.summary.serapan)}% dari pagu anggaran`,
+                  description: `${percent(d.summary.serapan)}% dari pagu anggaran`,
                   icon: Wallet,
                 },
                 {
@@ -540,7 +798,7 @@ export default function Dashboard() {
               <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-4 border-b bg-muted/20">
                 <div>
                   <CardTitle className="text-base">
-                    Perbandingan Capaian Kinerjan dan Keuangan
+                    Perbandingan Capaian Kinerja dan Keuangan
                   </CardTitle>
                   <CardDescription className="mt-1.5 text-xs">
                     Rata-rata capaian kinerja dibandingkan dengan persentase
@@ -553,13 +811,13 @@ export default function Dashboard() {
                     variant="outline"
                     className="border-primary/25 bg-primary/5 text-primary"
                   >
-                    Kinerja {number(d.summary.capaian)}%
+                    Kinerja {percent(d.summary.capaian)}%
                   </Badge>
                   <Badge
                     variant="outline"
                     className="border-blue-500/25 bg-blue-500/5 text-blue-700 dark:text-blue-300"
                   >
-                    Keuangan {number(d.summary.serapan)}%
+                    Keuangan {percent(d.summary.serapan)}%
                   </Badge>
                 </div>
               </CardHeader>
@@ -604,7 +862,7 @@ export default function Dashboard() {
                     />
                     <Tooltip
                       formatter={(value: any) => [
-                        `${number(Number(value))}%`,
+                        `${percent(Number(value))}%`,
                         "Capaian",
                       ]}
                       contentStyle={{
@@ -636,7 +894,7 @@ export default function Dashboard() {
                         dataKey="value"
                         position="top"
                         formatter={(value: any) =>
-                          `${number(Number(value))}%`
+                          `${percent(Number(value))}%`
                         }
                         className="fill-foreground text-xs font-semibold"
                       />
@@ -676,25 +934,64 @@ export default function Dashboard() {
                     Keuangan
                   </TabsTrigger>
                 </TabsList>
-                <span className="text-[10px] text-muted-foreground hidden lg:inline">
+                {/* <span className="text-[10px] text-muted-foreground hidden lg:inline">
                   TA {filters.tahun} · Data laporan fasilitas kesehatan
-                </span>
+                </span> */}
               </div>
               <TabsContent value="spm" className="space-y-6">
-                <div className="flex justify-between items-start">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div>
-                    <h2 className="text-base font-semibold">
-                      Capaian indikator SPM
-                    </h2>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Pilih indikator untuk melihat fasilitas kesehatan yang
-                      membutuhkan perhatian.
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-base font-semibold">
+                        Capaian 12 indikator SPM
+                      </h2>
+                      
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Pilih &ldquo;Semua SPM&rdquo; untuk evaluasi terpadu atau pilih indikator tertentu.
                     </p>
                   </div>
-                  <Badge variant="outline" className="bg-card text-[10px]">
-                    {spm.length} indikator
-                  </Badge>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Select
+                      value={selected || "all"}
+                      onValueChange={(val) => setSelected(val)}
+                    >
+                      <SelectTrigger className="h-9 min-w-[240px] max-w-sm text-xs bg-card">
+                        <SelectValue placeholder="Pilih Indikator SPM" />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-80">
+                        <SelectItem value="all" className="text-xs font-semibold">
+                        Semua 12 SPM (Rata-rata: {percent(kabupatenAvgSpm)}%)
+                        </SelectItem>
+                        {spm.map((i: any, n: number) => (
+                          <SelectItem key={i.id} value={i.id} className="text-xs">
+                            SPM {String(n + 1).padStart(2, "0")}: {i.nama} ({percent(i.persentase)}%)
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowAllSpmCards((prev) => !prev)}
+                      className="h-9 text-xs bg-card gap-1.5"
+                    >
+                      {showAllSpmCards ? (
+                        <>
+                          <ChevronUp className="size-3.5" />
+                          Tampilkan 3 Prioritas
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="size-3.5" />
+                          Tampilkan Semua
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
+
                 {spm.length === 0 ? (
                   <div className="empty-state">
                     <Target />
@@ -715,158 +1012,339 @@ export default function Dashboard() {
                   </div>
                 ) : (
                   <>
-                    <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                      {spm.map((i: any, n: number) => (
-                        <button
-                          key={i.id}
-                          onClick={() => setSelected(i.id)}
-                          className={`rounded-xl border bg-card p-4 text-left transition hover:border-primary/50 hover:shadow-sm ${detail?.id === i.id ? "border-primary ring-1 ring-primary/10" : ""}`}
-                        >
-                          <div className="flex justify-between items-center mb-3">
-                            <span className="text-[9px] tracking-widest text-muted-foreground font-semibold">
-                              SPM {String(n + 1).padStart(2, "0")}
+                    <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-3">
+                      {/* Summary Card "Semua 12 SPM" */}
+                      <button
+                        type="button"
+                        onClick={() => setSelected("all")}
+                        className={`rounded-xl border bg-card p-4 text-left transition hover:border-primary/50 hover:shadow-sm ${
+                          isAll
+                            ? "border-primary ring-2 ring-primary/20 bg-primary/[0.04]"
+                            : ""
+                        }`}
+                      >
+                        <div className="flex justify-between items-center mb-3">
+                          <span className="inline-flex items-center gap-1.5 text-[9px] tracking-wider text-primary font-bold uppercase">
+                            <span className="size-1.5 rounded-full bg-primary" />
+                            Gabungan 12 SPM
+                          </span>
+                          <span className="text-[10px] font-medium text-primary">
+                            {isAll ? "Aktif" : "Pilih"}
+                          </span>
+                        </div>
+                        <h3 className="text-xs font-semibold leading-5 text-foreground min-h-10">
+                          Rata-rata Capaian Seluruh SPM
+                        </h3>
+                        <div className="flex justify-between items-baseline mt-4">
+                          <span className="text-2xl font-bold font-mono tracking-tight">
+                            {percent(kabupatenAvgSpm)}
+                            <span className="text-sm font-normal text-muted-foreground ml-0.5">
+                              %
                             </span>
-                            <ArrowUpRight className="size-3.5 text-muted-foreground" />
-                          </div>
-                          <h3 className="text-xs font-semibold leading-5 min-h-10">
-                            {i.nama}
-                          </h3>
-                          <div className="flex justify-between items-center mt-4">
-                            <span className="text-2xl font-semibold">
-                              {number(i.persentase)}
-                              <span className="text-sm text-muted-foreground">
-                                %
-                              </span>
-                            </span>
-                            <StatusBadge status={i.status} />
-                          </div>
-                          <Progress
-                            value={Math.min(i.persentase, 100)}
-                            className="h-1.5 mt-3"
-                          />
-                          <div className="flex justify-between text-[10px] text-muted-foreground mt-3">
-                            <span>
-                              {number(i.realisasi)} / {number(i.target)}{" "}
-                              {i.satuan}
-                            </span>
-                            <span>
-                              {i.tercapai}/{i.totalFaskes} tercapai
-                            </span>
-                          </div>
-                        </button>
-                      ))}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground">
+                            Kab. Konsel
+                          </span>
+                        </div>
+                        <Progress
+                          value={Math.min(kabupatenAvgSpm, 100)}
+                          className="h-1.5 mt-3"
+                        />
+                        <div className="flex justify-between text-[10px] text-muted-foreground mt-3">
+                          <span>26 Puskesmas terpantau</span>
+                          <span>12 Indikator</span>
+                        </div>
+                      </button>
+
+                      {/* Display either 3 lowest priority SPM cards or all 12 SPM cards */}
+                      {(showAllSpmCards ? spm : spmPriorityIndicators.slice(0, 3)).map(
+                        (i: any, n: number) => {
+                          const originalIndex = spm.findIndex((x: any) => x.id === i.id);
+                          const isSelected = selected === i.id;
+                          return (
+                            <button
+                              key={i.id}
+                              type="button"
+                              onClick={() => setSelected(i.id)}
+                              className={`rounded-xl border bg-card p-4 text-left transition hover:border-primary/50 hover:shadow-sm ${
+                                isSelected
+                                  ? "border-primary ring-2 ring-primary/20 bg-primary/[0.04]"
+                                  : ""
+                              }`}
+                            >
+                              <div className="flex justify-between items-center mb-3">
+                                <span className="text-[9px] tracking-widest text-muted-foreground font-semibold">
+                                  SPM {String(originalIndex + 1).padStart(2, "0")}
+                                </span>
+                                {!showAllSpmCards && (
+                                  <span className="text-[9px] font-medium text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/50 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-900/40">
+                                    Prioritas {n + 1}
+                                  </span>
+                                )}
+                              </div>
+                              <h3 className="text-xs font-semibold leading-5 min-h-10">
+                                {i.nama}
+                              </h3>
+                              <div className="flex justify-between items-center mt-4">
+                                <span className="text-2xl font-bold font-mono tracking-tight">
+                                  {percent(i.persentase)}
+                                  <span className="text-sm font-normal text-muted-foreground ml-0.5">
+                                    %
+                                  </span>
+                                </span>
+                                <StatusBadge status={i.status} />
+                              </div>
+                              <Progress
+                                value={Math.min(i.persentase, 100)}
+                                className="h-1.5 mt-3"
+                              />
+                              <div className="flex justify-between text-[10px] text-muted-foreground mt-3">
+                                <span>
+                                  {number(i.realisasi)} / {number(i.target)}{" "}
+                                  {i.satuan}
+                                </span>
+                                {/* <span>
+                                  {i.tercapai}/{i.totalFaskes} tercapai
+                                </span> */}
+                              </div>
+                            </button>
+                          );
+                        },
+                      )}
                     </div>
-                    {detail && (
-                      <div className="grid xl:grid-cols-[1.3fr_1fr] gap-5">
-                            <Card>
-                              <CardHeader>
-                                <CardTitle className="text-sm">
-                                  Capaian per fasilitas kesehatan
-                                </CardTitle>
-                                <CardDescription className="text-xs">
-                                  {detail.nama}
-                                </CardDescription>
-                              </CardHeader>
-                              <CardContent>
-                                <ResponsiveContainer width="100%" height={320}>
-                                  <BarChart
-                                    data={rankingList}
-                                    margin={{ bottom: 35 }}
-                                  >
-                                    <CartesianGrid
-                                      vertical={false}
-                                      strokeDasharray="3 4"
-                                      stroke="var(--border)"
-                                    />
-                                    <XAxis
-                                      dataKey="namaRingkas"
-                                      angle={-35}
-                                      textAnchor="end"
-                                      fontSize={9}
-                                      interval={0}
-                                      height={55}
-                                      axisLine={false}
-                                      tickLine={false}
-                                    />
-                                    <YAxis
-                                      unit="%"
-                                      fontSize={10}
-                                      axisLine={false}
-                                      tickLine={false}
-                                    />
-                                    <Tooltip
-                                      formatter={(v: any, _n: any, item: any) => [
-                                        `${number(Number(v))}%`,
-                                        item?.payload?.namaFaskes || "Capaian",
-                                      ]}
-                                      contentStyle={{
-                                        background: "var(--card)",
-                                        borderRadius: 12,
-                                        border: "1px solid var(--border)",
-                                        fontSize: 11,
-                                      }}
-                                    />
-                                    <Bar
-                                      isAnimationActive={false}
-                                      dataKey="persentase"
-                                      name="Capaian"
-                                      radius={[5, 5, 0, 0]}
-                                      maxBarSize={36}
-                                    >
-                                      {rankingList.map((r: any) => (
-                                        <Cell
-                                          key={r.faskesId}
-                                          fill={colors[r.status]}
-                                        />
-                                      ))}
-                                    </Bar>
-                                  </BarChart>
-                                </ResponsiveContainer>
-                              </CardContent>
-                            </Card>
-                            <Card>
-                              <CardHeader>
-                                <CardTitle className="text-sm">
-                                  Prioritas pembinaan
-                                </CardTitle>
-                                <CardDescription className="text-xs">
-                                  Urutan capaian terendah hingga tertinggi
-                                </CardDescription>
-                              </CardHeader>
-                              <CardContent className="max-h-90 overflow-auto">
-                                {rankingList.map((r: any, n: number) => (
-                                  <div
-                                    className="flex items-center gap-3 py-3 border-b last:border-0"
+
+                    {!showAllSpmCards && spm.length > 3 && (
+                      <div className="flex items-center justify-between text-[11px] text-muted-foreground px-1 -mt-2">
+                        <span>
+                          Menampilkan 3 dari {spm.length} indikator SPM dengan capaian terendah yang butuh perhatian.
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="grid xl:grid-cols-[1.3fr_1fr] gap-5">
+                      {/* Left: Capaian per fasilitas kesehatan */}
+                      <Card>
+                        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
+                          <div>
+                            <CardTitle className="text-sm font-semibold">
+                              Capaian per fasilitas kesehatan
+                            </CardTitle>
+                            <CardDescription className="text-xs mt-0.5">
+                              {isAll
+                                ? `Rata-rata 12 indikator SPM · Rata-rata Kabupaten: ${percent(kabupatenAvgSpm)}%`
+                                : detail?.nama}
+                            </CardDescription>
+                          </div>
+                          <Badge variant="outline" className="text-[10px] bg-muted/40 font-mono">
+                            {isAll
+                              ? "12 SPM Terpadu"
+                              : `Target ${number(detail?.target || 0)} ${detail?.satuan || ""}`}
+                          </Badge>
+                        </CardHeader>
+                        <CardContent>
+                          <ResponsiveContainer width="100%" height={320}>
+                            <BarChart
+                              data={chartRankingList}
+                              margin={{ bottom: 35, top: 15 }}
+                            >
+                              <CartesianGrid
+                                vertical={false}
+                                strokeDasharray="3 4"
+                                stroke="var(--border)"
+                              />
+                              <XAxis
+                                dataKey="namaRingkas"
+                                angle={-35}
+                                textAnchor="end"
+                                fontSize={9}
+                                interval={0}
+                                height={55}
+                                axisLine={false}
+                                tickLine={false}
+                              />
+                              <YAxis
+                                unit="%"
+                                fontSize={10}
+                                axisLine={false}
+                                tickLine={false}
+                                domain={[
+                                  0,
+                                  (dataMax: number) =>
+                                    Math.max(100, Math.ceil(dataMax / 10) * 10),
+                                ]}
+                              />
+                              <Tooltip
+                                formatter={(v: any, _n: any, item: any) => [
+                                  `${percent(Number(v))}%`,
+                                  item?.payload?.namaFaskes || "Capaian",
+                                ]}
+                                contentStyle={{
+                                  background: "var(--card)",
+                                  borderRadius: 12,
+                                  border: "1px solid var(--border)",
+                                  fontSize: 11,
+                                }}
+                              />
+                              <ReferenceLine
+                                y={100}
+                                stroke="var(--muted-foreground)"
+                                strokeDasharray="4 4"
+                                opacity={0.5}
+                                label={{
+                                  value: "Target 100%",
+                                  position: "insideTopRight",
+                                  fontSize: 9,
+                                  fill: "var(--muted-foreground)",
+                                }}
+                              />
+                              <Bar
+                                isAnimationActive={false}
+                                dataKey="persentase"
+                                name="Capaian"
+                                radius={[5, 5, 0, 0]}
+                                maxBarSize={36}
+                              >
+                                {chartRankingList.map((r: any) => (
+                                  <Cell
                                     key={r.faskesId}
+                                    fill={colors[r.status] || "#0c9586"}
+                                  />
+                                ))}
+                              </Bar>
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </CardContent>
+                      </Card>
+
+                      {/* Right: Prioritas pembinaan / Tabel Peringkat */}
+                      <Card className="flex flex-col">
+                        <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 border-b bg-muted/10 pb-3">
+                          <div>
+                            <CardTitle className="text-sm font-semibold">
+                              {isAll ? "Prioritas Pembinaan & Peringkat" : "Prioritas Pembinaan"}
+                            </CardTitle>
+                            <CardDescription className="text-xs mt-0.5">
+                              {isAll
+                                ? "Urutan capaian rata-rata 12 indikator SPM (26 Puskesmas)"
+                                : `Urutan capaian ${detail?.nama || "indikator"}`}
+                            </CardDescription>
+                          </div>
+                          <div className="flex items-center rounded-lg border bg-muted/40 p-0.5 text-[10px]">
+                            <button
+                              type="button"
+                              onClick={() => setRankingSort("asc")}
+                              className={`px-2 py-1 rounded-md transition-all font-medium ${
+                                rankingSort === "asc"
+                                  ? "bg-card text-foreground shadow-xs font-semibold"
+                                  : "text-muted-foreground hover:text-foreground"
+                              }`}
+                            >
+                              Terendah (Prioritas)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setRankingSort("desc")}
+                              className={`px-2 py-1 rounded-md transition-all font-medium ${
+                                rankingSort === "desc"
+                                  ? "bg-card text-foreground shadow-xs font-semibold"
+                                  : "text-muted-foreground hover:text-foreground"
+                              }`}
+                            >
+                              Tertinggi (Peringkat)
+                            </button>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="flex-1 p-0">
+                          <div
+                            className={`divide-y divide-border ${
+                              showAllPuskesmas
+                                ? "max-h-[380px] overflow-y-auto"
+                                : ""
+                            }`}
+                          >
+                            {(showAllPuskesmas
+                              ? activeRankingList
+                              : activeRankingList.slice(0, 3)
+                            ).map((r: any, n: number) => {
+                              const rankNum = n + 1;
+                              const isTopPriority = rankingSort === "asc" && rankNum <= 3;
+                              const isTopAchiever = rankingSort === "desc" && rankNum <= 3;
+
+                              return (
+                                <div
+                                  key={r.faskesId}
+                                  className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted/30 transition-colors"
+                                >
+                                  <span
+                                    className={`size-6 grid place-content-center rounded-md text-[11px] font-semibold font-mono shrink-0 ${
+                                      isTopPriority
+                                        ? "bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300 border border-rose-200 dark:border-rose-900/50"
+                                        : isTopAchiever
+                                          ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-900/50"
+                                          : "bg-muted text-muted-foreground"
+                                    }`}
                                   >
-                                    <span className="size-7 grid place-content-center rounded-lg bg-muted text-[10px] text-muted-foreground font-semibold">
-                                      {n + 1}
-                                    </span>
-                                    <div className="flex-1 min-w-0">
-                                      <p
-                                        className="text-xs font-semibold truncate"
-                                        title={r.namaFaskes}
-                                      >
-                                        {r.namaRingkas}
-                                      </p>
-                                      <p className="text-[10px] text-muted-foreground mt-0.5">
-                                        {r.reported
-                                          ? `${number(r.realisasi)} dari ${number(r.target)}`
-                                          : "Belum melaporkan"}
-                                      </p>
-                                    </div>
-                                    <span
-                                      className="text-sm font-semibold"
-                                      style={{ color: colors[r.status] }}
+                                    {rankNum}
+                                  </span>
+                                  <div className="flex-1 min-w-0">
+                                    <p
+                                      className="text-xs font-semibold truncate text-foreground"
+                                      title={r.namaFaskes}
                                     >
-                                      {number(r.persentase)}%
+                                      {r.namaRingkas}
+                                    </p>
+                                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                                      {isAll
+                                        ? `${r.tercapaiCount} dari ${r.totalIndikator} SPM tercapai`
+                                        : r.reported
+                                          ? `${number(r.realisasi)} dari ${number(r.target)} ${detail?.satuan || ""}`
+                                          : "Belum melaporkan"}
+                                    </p>
+                                  </div>
+                                  <div className="text-right shrink-0">
+                                    <span
+                                      className="text-sm font-semibold font-mono block"
+                                      style={{ color: colors[r.status] || "#0c9586" }}
+                                    >
+                                      {percent(r.persentase)}%
+                                    </span>
+                                    <span className="text-[9px] text-muted-foreground">
+                                      {r.status === "HIJAU"
+                                        ? "Tercapai"
+                                        : r.status === "KUNING"
+                                          ? "Cukup"
+                                          : "Perlu Dibina"}
                                     </span>
                                   </div>
-                                ))}
-                              </CardContent>
-                            </Card>
+                                </div>
+                              );
+                            })}
                           </div>
-                        )}
+
+                          {activeRankingList.length > 3 && (
+                            <div className="p-2 border-t bg-muted/5 text-center">
+                              <button
+                                type="button"
+                                onClick={() => setShowAllPuskesmas((prev) => !prev)}
+                                className="text-xs text-primary hover:underline font-medium inline-flex items-center gap-1 py-1"
+                              >
+                                {showAllPuskesmas ? (
+                                  <>
+                                    <ChevronUp className="size-3.5" />
+                                    Tampilkan 3 teratas saja
+                                  </>
+                                ) : (
+                                  <>
+                                    <ChevronDown className="size-3.5" />
+                                    Lihat semua {activeRankingList.length} Puskesmas ({activeRankingList.length - 3} lainnya)
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </div>
                   </>
                 )}
                 <Trend
@@ -996,8 +1474,8 @@ export default function Dashboard() {
                                 {rupiah(p.realisasi)} / {rupiah(p.target)}
                               </p>
                             </div>
-                            <span className="font-semibold text-primary text-sm">
-                              {number(p.persentase)}%
+                            <span className="font-semibold text-primary text-sm font-mono">
+                              {percent(p.persentase)}%
                             </span>
                           </div>
                         ))}

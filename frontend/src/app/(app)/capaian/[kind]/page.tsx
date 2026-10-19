@@ -54,7 +54,7 @@ import {
 } from "@/components/gass/shared";
 import { useAuth } from "@/components/gass/providers";
 import { monthKeys, monthNames } from "@/components/gass/navigation";
-import { api, write, queryString, number, rupiah, exportCsv, shortFaskes } from "@/lib/api";
+import { api, write, queryString, number, percent, rupiah, exportCsv, shortFaskes } from "@/lib/api";
 import { useDebounced } from "@/hooks/use-debounced";
 import { ThresholdLegend } from "@/components/gass/threshold-legend";
 
@@ -797,7 +797,7 @@ export default function Capaian({
                       <TableCell className={`${canReview ? "border-r" : ""} px-1 py-1.5 text-center align-middle`}>
                         <div className="flex flex-col items-center justify-center gap-1">
                           <span className="font-mono text-[11px] font-bold leading-tight">
-                            {number(r.persentase)}%
+                            {percent(r.persentase)}%
                           </span>
                           <StatusBadge status={r.status} compact />
                         </div>
@@ -1056,7 +1056,7 @@ export default function Capaian({
                         </div>
                         <div>
                           <span className="text-muted-foreground text-[10px] font-sans">Capaian: </span>
-                          <strong className="text-amber-950 dark:text-amber-100">{number(existingRecord.persentase)}%</strong>
+                          <strong className="text-amber-950 dark:text-amber-100">{percent(existingRecord.persentase)}%</strong>
                         </div>
                       </div>
                       <p className="text-[11px] text-amber-800/90 dark:text-amber-300/90">
@@ -1255,7 +1255,7 @@ export default function Capaian({
               </div>
               <div className="flex justify-between font-sans">
                 <span className="text-muted-foreground">Capaian:</span>
-                <span className="font-semibold text-foreground">{number(existingRecord.persentase)}%</span>
+                <span className="font-semibold text-foreground">{percent(existingRecord.persentase)}%</span>
               </div>
             </div>
           )}
@@ -1323,7 +1323,7 @@ export default function Capaian({
                 <div className="rounded-lg border bg-card p-3 space-y-1">
                   <span className="text-[11px] text-muted-foreground">Capaian</span>
                   <div className="flex items-center gap-1.5">
-                    <span className="font-mono font-bold text-sm text-foreground">{number(activeSheetRow.persentase)}%</span>
+                    <span className="font-mono font-bold text-sm text-foreground">{percent(activeSheetRow.persentase)}%</span>
                     <StatusBadge status={activeSheetRow.status} compact />
                   </div>
                 </div>

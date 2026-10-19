@@ -120,7 +120,10 @@ export class ReportsService {
                 },
               },
             },
-            orderBy: { updatedAt: "desc" },
+            orderBy: [
+              { indikator: { subKegiatan: { kodeSubKegiatan: "asc" } } },
+              { faskes: { namaFaskes: "asc" } },
+            ],
           })
         : await this.db.capaianKeuangan.findMany({
             where,
@@ -145,6 +148,7 @@ export class ReportsService {
         ? await this.db.indikator.findMany({
             where: this.indicatorWhere(u, q),
             include: { satuan: true, subKegiatan: true },
+            orderBy: { subKegiatan: { kodeSubKegiatan: "asc" } },
           })
         : await this.db.subKegiatan.findMany({
             where: this.subWhere(u, q),

@@ -67,7 +67,7 @@ export default function Home() {
             </div>
             <figure className={styles.initiator}>
               <div className={styles.portraitBackdrop} aria-hidden="true"><div className={styles.orbit} /><span className={styles.decorativeCross}>+</span><span className={styles.dotPattern} /></div>
-              <div className={styles.heroLogo}><Image src="/branding/logo-gass.png" alt="GASS — Gerak Aksi Sehat Setara" width={1312} height={1199} sizes="120px" priority /></div>
+              <div className={styles.heroLogo}><Image src="/branding/logo-gass.webp" alt="GASS — Gerak Aksi Sehat Setara" width={1312} height={1199} sizes="120px" priority /></div>
               <Image src="/landing/nurlita.webp" alt="Nurlita Jaya AS, S.Sos., M.Kes., Kepala Dinas Kesehatan Kabupaten Konawe Selatan dan inisiator GASS" width={1000} height={1021} priority sizes="(max-width: 640px) 90vw, (max-width: 1000px) 560px, 46vw" className={styles.portrait} />
               <figcaption className={styles.initiatorCaption}>
                 <span className={styles.initiatorLabel}><span />INISIATOR GASS</span>
@@ -88,14 +88,14 @@ export default function Home() {
         <section id="profil" className={`${styles.section} ${styles.container}`} aria-labelledby="profile-title">
           <div className={styles.profileGrid}>
             <div className={styles.profileVisual}>
-              <Image src="/branding/foto-kantor.jpeg" alt="Kantor Dinas Kesehatan Kabupaten Konawe Selatan" fill sizes="(max-width: 900px) 90vw, 43vw" className={styles.officePhoto} />
+              <Image src="/branding/foto-kantor.webp" alt="Kantor Dinas Kesehatan Kabupaten Konawe Selatan" fill sizes="(max-width: 900px) 90vw, 43vw" className={styles.officePhoto} />
               <div className={styles.photoCaption}><MapPin size={18} aria-hidden="true" /><div>Dinas Kesehatan<span>Kabupaten Konawe Selatan</span></div></div>
               <div className={styles.profileStamp}><HeartPulse size={26} aria-hidden="true" /><span>Dekat dengan warga.<br /><strong>Nyata dalam aksi.</strong></span></div>
             </div>
             <div className={styles.profileCopy}>
               <div className={styles.profileSetara}>
                 <Image
-                  src="/branding/new_logo_Setara.png"
+                  src="/branding/new_logo_Setara.webp"
                   alt="SETARA — Sehat, Cerdas dan Sejahtera"
                   width={8042}
                   height={4157}
@@ -127,7 +127,7 @@ export default function Home() {
           <div className={styles.container}>
             <div className={styles.collaborationHeading}>
               <SectionHeading label="KOLABORASI UNTUK KONAWE SELATAN" title="Kesehatan adalah kerja bersama.">Kepemimpinan daerah dan koordinasi lintas sektor menjadi bagian dari tata kelola GASS, dengan Dinas Kesehatan sebagai penggerak pelaksanaan.</SectionHeading>
-              <Image src="/branding/logo-setara.png" alt="Logo Setara" width={10399} height={3404} sizes="(max-width: 600px) 85px, 160px" className={styles.setaraLogo} />
+              <Image src="/branding/logo-setara.webp" alt="Logo Setara" width={10399} height={3404} sizes="(max-width: 600px) 85px, 160px" className={styles.setaraLogo} />
             </div>
             <div className={styles.leaderGrid}>
               {leaders.map((leader) => (
@@ -173,7 +173,7 @@ export default function Home() {
       </main>
       <footer className={styles.footer}>
         <div className={`${styles.container} ${styles.footerMain}`}>
-          <a href="#beranda" className={styles.footerBrand} aria-label="Kembali ke beranda GASS"><Image src="/branding/logo-gass.png" alt="GASS" width={1312} height={1199} sizes="70px" /><span><strong>Gerak Aksi Sehat Setara</strong><small>Dinas Kesehatan Kabupaten Konawe Selatan</small></span></a>
+          <a href="#beranda" className={styles.footerBrand} aria-label="Kembali ke beranda GASS"><Image src="/branding/logo-gass.webp" alt="GASS" width={1312} height={1199} sizes="70px" /><span><strong>Gerak Aksi Sehat Setara</strong><small>Dinas Kesehatan Kabupaten Konawe Selatan</small></span></a>
           <nav aria-label="Navigasi footer"><a href="#profil">Profil inovasi</a><a href="#alur">Alur sistem</a><Link href="/login">Masuk <ArrowUpRight size={14} aria-hidden="true" /></Link></nav>
         </div>
         <div className={`${styles.container} ${styles.footerBottom}`}><p>© {new Date().getFullYear()} GASS. Dinas Kesehatan Kabupaten Konawe Selatan.</p><span><MapPin size={13} aria-hidden="true" />Konawe Selatan, Sulawesi Tenggara</span></div>
