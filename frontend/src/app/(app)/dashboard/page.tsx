@@ -1,4 +1,5 @@
 "use client";
+import { ThresholdLegend } from "@/components/gass/threshold-legend";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -107,8 +108,8 @@ function Trend({
           </div>
           <CardDescription className="text-xs mt-1.5">
             {faskesName
-              ? `Realisasi capaian ${category} per triwulan pada ${faskesName} terhadap target tahunan`
-              : `Realisasi per triwulan terhadap target tahunan (agregat seluruh faskes)`}
+              ? `Realisasi kumulatif ${category} sampai akhir setiap triwulan pada ${faskesName} terhadap target tahunan`
+              : `Realisasi kumulatif sampai akhir setiap triwulan terhadap target tahunan (agregat seluruh faskes)`}
           </CardDescription>
         </div>
         <select
@@ -436,7 +437,9 @@ export default function Dashboard() {
         value={filters}
         onChange={setFilters}
         excludeRumahSakit
+        cumulative
       />
+      <ThresholdLegend rule={d?.threshold} through={d?.cumulativeThrough} />
       {q.isPending ? (
         <Loading />
       ) : q.error ? (
@@ -491,10 +494,10 @@ export default function Dashboard() {
                   icon: Wallet,
                 },
                 {
-                  label: "Laporan terverifikasi",
+                  label: "Input bulanan terverifikasi",
                   value: number(d.summary.tervalidasi),
                   unit: `/ ${d.summary.jumlahLaporan}`,
-                  description: "Capaian kinerja yang telah diperiksa",
+                  description: "Bulan yang telah diperiksa dari input pada periode terpilih",
                   icon: CheckCheck,
                 },
               ].map((s, i) => (

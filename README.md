@@ -16,9 +16,9 @@ Implementasi ada di `backend/` dan `frontend/`. `nest-simple-auth/` tetap menjad
 | Halaman | Implementasi |
 | --- | --- |
 | Dashboard | Filter tahun, triwulan, bulan, faskes, bidang; kartu SPM; ranking dari capaian rendah; grafik faskes; tren SPM/IKU; pagu vs realisasi per program; CSV |
-| Master | Satuan, program, kegiatan, sub kegiatan, indikator dengan multi-bidang/threshold, kecamatan, faskes, bidang |
-| Capaian kinerja | Target tahunan, input 12 bulan, status threshold, koreksi, verifikasi, CSV |
-| Capaian keuangan | Pagu sub kegiatan, realisasi 12 bulan, Rupiah, serapan, verifikasi, CSV |
+| Master | Satuan, program, kegiatan, sub kegiatan, indikator dengan multi-bidang, threshold triwulan global, kecamatan, faskes, bidang |
+| Capaian kinerja | Target tahunan, input 12 bulan, status threshold, koreksi, verifikasi per bulan, CSV |
+| Capaian keuangan | Pagu sub kegiatan, realisasi 12 bulan, Rupiah, serapan, verifikasi per bulan, CSV |
 | Jadwal | Batas tanggal bulan berikutnya, pembukaan/penutupan khusus, deadline WITA, pra-launching, periode mulai otomatis |
 | Pengguna | Pencarian pegawai eGov/Simpeg, penetapan peran/faskes/bidang lokal, aktivasi/nonaktivasi |
 | Otoritas | Matriks checkbox tersimpan langsung; batas keamanan peran tetap berlaku |
@@ -92,7 +92,10 @@ Jika instansi menyediakan endpoint REST resmi, ubah adapter `EgovService` sesuai
 - Kepala Dinas hanya membaca dashboard dan laporan, tanpa mutasi.
 - Matriks dapat mengurangi akses menu, tetapi tidak dapat meniadakan batas faskes/bidang atau memberi operator akses master. Akses admin sendiri tidak dapat dihapus lewat matriks.
 - Pengubahan peran/penugasan menutup sesi pengguna; status akun dan sesi juga diperiksa pada setiap request.
-- Perubahan target/capaian membatalkan verifikasi sebelumnya. Perubahan target tahunan operator setelah ada periode tertutup memerlukan admin/bidang, karena target mempengaruhi seluruh bulan.
+- Verifikasi dilakukan per bulan oleh Admin Dinkes atau akun bidang yang menjadi penanggung jawab indikator. Untuk keuangan, bidang harus terkait dengan indikator pada sub kegiatan. Faskes dan Kepala Dinas tidak dapat memverifikasi. Bulan terverifikasi terkunci bagi faskes; bulan lain tetap mengikuti jadwal input masing-masing.
+- Koreksi realisasi oleh admin/bidang membatalkan verifikasi hanya pada bulan yang dikoreksi. Perubahan target tahunan membatalkan verifikasi seluruh bulan; operator tidak dapat mengubah target jika ada bulan terverifikasi atau periode tertutup. Menyimpan ulang nilai yang sama mempertahankan verifikasinya.
+- Input bulanan memiliki catatan tersendiri sehingga realisasi nol yang sengaja disimpan dapat diverifikasi, sedangkan bulan belum diinput tidak bisa diverifikasi. Pemeriksa, waktu, bulan, nilai, target, dan pembatalan tercatat dalam audit. Verifikasi menolak nilai/target yang berubah sejak dimuat oleh pemeriksa; transaksi serializable melindungi benturan koreksi dan verifikasi.
+- Migrasi `20261019110000_monthly_verification` mempertahankan verifikasi tahunan lama hanya pada bulan bernilai nonnol, ditandai sebagai verifikasi warisan tanpa mengarang nama/tanggal pemeriksa. Nilai nol lama belum dapat dibedakan dari bulan kosong dan perlu disimpan ulang jika memang merupakan laporan nihil. Kolom `isValidated` tahunan dipertahankan untuk preservasi, tetapi penguncian dan ringkasan dashboard memakai catatan bulanan.
 - Record keuangan disimpan sebagai `Decimal(18,2)`; angka pada grafik diserialisasi menjadi number.
 - Master yang sedang digunakan tidak dapat dihapus karena foreign key `Restrict`.
 - Mutasi dan audit laporan/master/administrasi disimpan dalam transaksi database.
@@ -106,7 +109,11 @@ Jika instansi menyediakan endpoint REST resmi, ubah adapter `EgovService` sesuai
 5. Deadline otomatis adalah tanggal yang dipilih pada bulan berikutnya, pukul 23:59:59.999 **Asia/Makassar (UTC+8)**, termasuk pergantian Desember ke Januari. Tanggal global dibatasi 1–28; deadline lain menggunakan override.
 6. Admin/bidang dapat mengoreksi tanpa batas periode. Kepala Dinas tetap tidak dapat menulis.
 
-Capaian menjumlahkan realisasi bulanan yang dipilih dan membaginya dengan target tahunan; target nol menghasilkan 0%, bukan infinity. Grafik tren menampilkan realisasi **masing-masing triwulan** terhadap target tahunan. Ringkasan kinerja adalah rata-rata persentase laporan dengan target positif, sehingga satuan berbeda tidak dijumlahkan sebagai satu target. Threshold absolut memakai nilai realisasi; threshold persentase memakai persentase target. Nilai di bawah batas kuning termasuk merah. Ranking menyertakan faskes yang belum melaporkan dengan penanda "Belum melaporkan".
+Capaian kinerja menjumlahkan realisasi **kumulatif sejak Januari** sampai akhir triwulan/bulan yang dipilih dan membaginya dengan target tahunan. Tanpa filter periode, perhitungan mencakup Januari–Desember dan memakai aturan TW IV. Filter bulan memakai aturan triwulan yang memuat bulan tersebut. Target nol menghasilkan 0% dan status merah. Grafik tren juga menampilkan capaian kumulatif sampai akhir setiap triwulan. Ringkasan kinerja adalah rata-rata persentase laporan dengan target positif, sehingga satuan berbeda tidak dijumlahkan sebagai satu target. Ranking menyertakan faskes yang belum melaporkan dengan penanda "Belum melaporkan".
+
+Admin Dinkes mengelola empat aturan global melalui **Data Master → Threshold triwulan** (`/master/threshold`). Aturan awal: hijau ≥100% untuk semua triwulan; kuning TW I 25%–<100%, TW II 50%–<100%, TW III 75%–<100%; TW IV tanpa kuning, merah <100%. Jika kuning dinonaktifkan, seluruh capaian di bawah batas hijau berstatus merah. Semua indikator dan tahun laporan memakai master yang sama. Penyimpanan empat aturan beserta audit berlangsung dalam satu transaksi; role lain tidak dapat diberi akses pengelolaan melalui matriks otoritas. Kolom threshold lama pada indikator dipertahankan untuk preservasi data, tetapi tidak lagi digunakan untuk penilaian atau diedit melalui API/form indikator.
+
+Keuangan tetap menjumlahkan bulan dalam periode yang dipilih dengan ambang serapan 80%/50%. Migrasi `20261019090000_global_quarter_threshold` menambahkan tabel master dan empat aturan awal tanpa menghapus data lama; jalankan migrasi dan regenerasi Prisma sebelum menjalankan backend versi ini.
 
 ## Redis, BullMQ, email
 

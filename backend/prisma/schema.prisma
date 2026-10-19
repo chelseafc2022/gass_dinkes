@@ -67,7 +67,7 @@ model Indikator {
   satuanId           String
   kategoriIndikator  String             @default("INDIKATOR_PROGRAM") // IKK, IKU, SPM, INDIKATOR_PROGRAM
 
-  // Konfigurasi Threshold
+  // Legacy: retained for data preservation; scoring uses ThresholdTriwulan.
   jenisThreshold     String             @default("PERSENTASE_TARGET") // PERSENTASE_TARGET, NILAI_ABSOLUT
   thresholdHijauMin  Float              @default(80.0)
   thresholdKuningMin Float              @default(50.0)
@@ -89,6 +89,14 @@ model IndikatorBidang {
   bidang            PenanggungJawab @relation(fields: [bidangId], references: [id], onDelete: Restrict)
 
   @@unique([indikatorId, bidangId])
+}
+
+// Satu aturan global untuk setiap triwulan, berlaku bagi seluruh indikator.
+model ThresholdTriwulan {
+  triwulan  Int      @id
+  hijauMin  Float
+  kuningMin Float?   // null = tidak ada status kuning
+  updatedAt DateTime @updatedAt
 }
 
 model PenanggungJawab {
@@ -177,6 +185,7 @@ model CapaianKinerja {
   capaianDes    Float      @default(0)
 
   isValidated   Boolean    @default(false)
+  verifikasiBulanan VerifikasiKinerjaBulanan[]
   indikator     Indikator  @relation(fields: [indikatorId], references: [id], onDelete: Restrict)
   faskes        Faskes     @relation(fields: [faskesId], references: [id], onDelete: Restrict)
   createdAt     DateTime   @default(now())
@@ -207,6 +216,7 @@ model CapaianKeuangan {
   capaianDes     Decimal       @default(0) @db.Decimal(18, 2)
 
   isValidated    Boolean     @default(false)
+  verifikasiBulanan VerifikasiKeuanganBulanan[]
   subKegiatan    SubKegiatan @relation(fields: [subKegiatanId], references: [id], onDelete: Restrict)
   faskes         Faskes      @relation(fields: [faskesId], references: [id], onDelete: Restrict)
   createdAt      DateTime    @default(now())
@@ -233,8 +243,38 @@ model User {
   faskes Faskes? @relation(fields: [faskesId], references: [id])
   bidang PenanggungJawab? @relation(fields: [bidangId], references: [id])
   sessions Session[]
+  verifikasiKinerja VerifikasiKinerjaBulanan[]
+  verifikasiKeuangan VerifikasiKeuanganBulanan[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model VerifikasiKinerjaBulanan {
+  capaianId String
+  bulan Int
+  submittedAt DateTime?
+  isValidated Boolean @default(false)
+  verifiedAt DateTime?
+  verifiedById String?
+  legacyVerification Boolean @default(false)
+  capaian CapaianKinerja @relation(fields: [capaianId], references: [id], onDelete: Cascade)
+  verifiedBy User? @relation(fields: [verifiedById], references: [id], onDelete: SetNull)
+
+  @@id([capaianId, bulan])
+}
+
+model VerifikasiKeuanganBulanan {
+  capaianId String
+  bulan Int
+  submittedAt DateTime?
+  isValidated Boolean @default(false)
+  verifiedAt DateTime?
+  verifiedById String?
+  legacyVerification Boolean @default(false)
+  capaian CapaianKeuangan @relation(fields: [capaianId], references: [id], onDelete: Cascade)
+  verifiedBy User? @relation(fields: [verifiedById], references: [id], onDelete: SetNull)
+
+  @@id([capaianId, bulan])
 }
 
 model Session {

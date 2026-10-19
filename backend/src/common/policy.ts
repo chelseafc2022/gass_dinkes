@@ -12,6 +12,7 @@ export const MENUS = [
   "master_kegiatan",
   "master_sub_kegiatan",
   "master_indikator",
+  "master_threshold",
   "master_kecamatan",
   "master_faskes",
   "master_bidang",
@@ -55,6 +56,7 @@ export function defaultPermission(role: string, menu: string) {
   );
 }
 export function hardPermission(role: string, menu: string) {
+  if (menu === "master_threshold") return role === "ADMIN_DINKES";
   // Admin Dinkes selalu memiliki akses penuh (anti-lockout)
   if (role === "ADMIN_DINKES") return true;
   // Seluruh role dapat diatur secara dinamis oleh Admin Dinkes
@@ -76,21 +78,19 @@ export function percentage(value: number, target: number) {
 export function status(
   value: number,
   target: number,
-  indicator?: {
-    jenisThreshold: string;
-    thresholdHijauMin: number;
-    thresholdKuningMin: number;
-  },
+  rule: { hijauMin: number; kuningMin: number | null } = { hijauMin: 80, kuningMin: 50 },
 ) {
-  const n =
-    indicator?.jenisThreshold === "NILAI_ABSOLUT"
-      ? value
-      : percentage(value, target);
-  return n >= (indicator?.thresholdHijauMin ?? 80)
+  if (target <= 0) return "MERAH";
+  const n = percentage(value, target);
+  return n >= rule.hijauMin
     ? "HIJAU"
-    : n >= (indicator?.thresholdKuningMin ?? 50)
+    : rule.kuningMin !== null && n >= rule.kuningMin
       ? "KUNING"
       : "MERAH";
+}
+
+export function scoringQuarter(q: { bulan?: number; triwulan?: number }) {
+  return q.bulan ? Math.ceil(q.bulan / 3) : q.triwulan ?? 4;
 }
 export function periodOpen(
   year: number,

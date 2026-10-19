@@ -209,6 +209,27 @@ integration("GASS API with isolated PostgreSQL", () => {
   test("requires authentication", async () => {
     await http().get("/api/dashboard").expect(401);
   });
+  test("global threshold is admin-only, validates complete rules, persists and audits", async () => {
+    const initial = (await call("get", "/master/threshold").expect(200)).body.rules;
+    const rules = initial.map(({ triwulan, hijauMin, kuningMin }: any) => ({ triwulan, hijauMin, kuningMin }));
+    expect(rules).toEqual([
+      { triwulan: 1, hijauMin: 100, kuningMin: 25 },
+      { triwulan: 2, hijauMin: 100, kuningMin: 50 },
+      { triwulan: 3, hijauMin: 100, kuningMin: 75 },
+      { triwulan: 4, hijauMin: 100, kuningMin: null },
+    ]);
+    for (const role of ["operator", "bidang", "kadis"]) {
+      await call("get", "/master/threshold", role).expect(403);
+      await call("put", "/master/threshold", role).send({ rules }).expect(403);
+    }
+    await call("put", "/admin/permissions").send({ role: "OPERATOR_PUSKESMAS", menuKey: "master_threshold", canAccess: true }).expect(403);
+    await call("put", "/master/threshold").send({ rules: rules.slice(0, 3) }).expect(400);
+    const changed = rules.map((rule: any) => rule.triwulan === 1 ? { ...rule, kuningMin: 30 } : rule);
+    await call("put", "/master/threshold").send({ rules: changed }).expect(200);
+    expect((await call("get", "/master/threshold").expect(200)).body.rules[0].kuningMin).toBe(30);
+    expect(await db.auditLog.count({ where: { entity: "threshold_triwulan", userId: admin.id } })).toBeGreaterThan(0);
+    await call("put", "/master/threshold").send({ rules }).expect(200);
+  });
   test("rejects cross-origin mutation", async () => {
     await call("put", "/admin/settings")
       .set("Origin", "https://evil.example")
@@ -340,35 +361,60 @@ integration("GASS API with isolated PostgreSQL", () => {
     ).expect(200);
     expect(r.body.data[0].realisasi).toBe(125.25);
   });
-  test("verified reports are locked for operators and corrections reopen them", async () => {
-    let row = await db.capaianKinerja.findFirstOrThrow({
-      where: { indikatorId: indicator.id },
-    });
-    await call("post", `/capaian/kinerja/${row.id}/verify`, "bidang")
-      .send({ validated: true })
-      .expect(201);
-    await call("put", "/capaian/kinerja", "operator")
-      .send({
-        entityId: indicator.id,
-        faskesId: facility.id,
-        tahun: year,
-        bulan: 2,
-        nilai: 10,
-      })
-      .expect(403);
-    row = await db.capaianKinerja.findUniqueOrThrow({ where: { id: row.id } });
-    expect(row.isValidated).toBe(true);
-    await call("put", "/capaian/kinerja", "bidang")
-      .send({
-        entityId: indicator.id,
-        faskesId: facility.id,
-        tahun: year,
-        bulan: 2,
-        nilai: 10,
-      })
-      .expect(200);
-    row = await db.capaianKinerja.findUniqueOrThrow({ where: { id: row.id } });
-    expect(row.isValidated).toBe(false);
+  test("monthly approval locks only that month and corrections invalidate the affected scope", async () => {
+    const row = await db.capaianKinerja.findFirstOrThrow({ where: { indikatorId: indicator.id, faskesId: facility.id } });
+    const approval = { bulan: 1, validated: true, nilai: 40, target: 100 };
+    const verified = await call("post", `/capaian/kinerja/${row.id}/verify`, "bidang").send(approval).expect(201);
+    expect(verified.body.verifiedBy.id).toBe(bidangUser.id);
+    expect(verified.body.verifiedAt).toBeTruthy();
+    const payload = { entityId: indicator.id, faskesId: facility.id, tahun: year };
+    await call("put", "/capaian/kinerja", "operator").send({ ...payload, bulan: 1, nilai: 41 }).expect(403);
+    await call("put", "/capaian/kinerja", "operator").send({ ...payload, bulan: 2, nilai: 10 }).expect(200);
+    await call("post", `/capaian/kinerja/${row.id}/verify`, "bidang").send({ ...approval, bulan: 2, nilai: 10 }).expect(201);
+    await call("put", "/capaian/kinerja", "bidang").send({ ...payload, bulan: 2, nilai: 12 }).expect(200);
+    let months = await db.verifikasiKinerjaBulanan.findMany({ where: { capaianId: row.id }, orderBy: { bulan: "asc" } });
+    expect(months.map((m) => m.isValidated)).toEqual([true, false]);
+    await call("put", "/capaian/kinerja", "operator").send({ ...payload, target: 110 }).expect(403);
+    await call("put", "/capaian/kinerja").send({ ...payload, target: 110 }).expect(200);
+    months = await db.verifikasiKinerjaBulanan.findMany({ where: { capaianId: row.id } });
+    expect(months.every((m) => !m.isValidated && m.verifiedById === null)).toBe(true);
+    await call("put", "/capaian/kinerja").send({ ...payload, target: 100 }).expect(200);
+  });
+  test("monthly approval rejects missing months, unauthorized reviewers and stale values; accepts submitted zero", async () => {
+    const row = await db.capaianKinerja.findFirstOrThrow({ where: { indikatorId: indicator.id, faskesId: facility.id } });
+    const path = `/capaian/kinerja/${row.id}/verify`;
+    const approval = { bulan: 1, validated: true, nilai: 40, target: 100 };
+    await call("post", path).send({ validated: true }).expect(400);
+    await call("post", path).send({ ...approval, bulan: 13 }).expect(400);
+    await call("post", path).send({ ...approval, bulan: 12, nilai: 0 }).expect(400);
+    await call("post", path, "operator").send(approval).expect(403);
+    await call("post", path, "kadis").send(approval).expect(403);
+    await call("post", path).send({ ...approval, nilai: 39 }).expect(409);
+    await call("post", path).send({ ...approval, target: 99 }).expect(409);
+    await call("put", "/capaian/kinerja", "operator").send({ entityId: indicator.id, faskesId: facility.id, tahun: year, bulan: 3, nilai: 0 }).expect(200);
+    await call("post", path, "bidang").send({ ...approval, bulan: 3, nilai: 0 }).expect(201);
+    const report = (await call("get", `/capaian/kinerja?tahun=${year}`, "operator").expect(200)).body.data.find((r: any) => r.id === row.id);
+    expect(report.canVerify).toBe(false);
+    expect(report.verifikasiBulanan.find((m: any) => m.bulan === 3).isValidated).toBe(true);
+    await call("post", path, "bidang").send({ ...approval, bulan: 3, nilai: 0, validated: false }).expect(201);
+    await call("put", "/capaian/kinerja", "operator").send({ entityId: indicator.id, faskesId: facility.id, tahun: year, bulan: 3, nilai: 1 }).expect(200);
+    const audit = await db.auditLog.findFirstOrThrow({ where: { entityId: row.id, action: "UNVERIFY" }, orderBy: { createdAt: "desc" } });
+    expect(JSON.parse(audit.details!).bulan).toBe(3);
+    await call("put", "/capaian/kinerja").send({ entityId: otherIndicator.id, faskesId: otherFacility.id, tahun: year, target: 100, bulan: 1, nilai: 20 }).expect(200);
+    const other = await db.capaianKinerja.findFirstOrThrow({ where: { indikatorId: otherIndicator.id, faskesId: otherFacility.id } });
+    await call("post", `/capaian/kinerja/${other.id}/verify`, "bidang").send({ ...approval, nilai: 20 }).expect(403);
+  });
+  test("financial verification is monthly and uses the same responsible-indicator scope", async () => {
+    const row = await db.capaianKeuangan.findFirstOrThrow({ where: { subKegiatanId: sub.id, faskesId: facility.id } });
+    const path = `/capaian/keuangan/${row.id}/verify`;
+    const approval = { bulan: 1, validated: true, nilai: 125.25, target: 1000 };
+    await call("post", path, "bidang").send(approval).expect(201);
+    const payload = { entityId: sub.id, faskesId: facility.id, tahun: year };
+    await call("put", "/capaian/keuangan", "operator").send({ ...payload, bulan: 1, nilai: 126 }).expect(403);
+    await call("put", "/capaian/keuangan", "operator").send({ ...payload, bulan: 2, nilai: 0 }).expect(200);
+    expect(await db.verifikasiKeuanganBulanan.count({ where: { capaianId: row.id } })).toBe(2);
+    await call("post", path).send({ ...approval, validated: false }).expect(201);
+    await call("put", "/capaian/keuangan", "operator").send({ ...payload, bulan: 1, nilai: 125.25 }).expect(200);
   });
   test("dashboard is scoped, aggregates selected month, ranks missing reports", async () => {
     await call("put", "/capaian/kinerja")

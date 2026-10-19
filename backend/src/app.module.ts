@@ -10,6 +10,7 @@ import { AuthService } from "./auth/auth.service";
 import { EgovService } from "./auth/egov.service";
 import { MasterController } from "./master/master.controller";
 import { MasterService } from "./master/master.service";
+import { ThresholdService } from "./master/threshold.service";
 import { ReportsController } from "./reports/reports.controller";
 import { ReportsService } from "./reports/reports.service";
 import { AdminController } from "./admin/admin.controller";
@@ -38,6 +39,7 @@ class HealthController {
     AuthService,
     EgovService,
     MasterService,
+    ThresholdService,
     ReportsService,
     NotificationsService,
     { provide: APP_GUARD, useClass: ThrottlerGuard },

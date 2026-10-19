@@ -11,9 +11,16 @@ import {
 import { CurrentUser } from "../auth/security";
 import type { Actor } from "../common/policy";
 import { MasterService } from "./master.service";
+import { ThresholdService } from "./threshold.service";
 @Controller()
 export class MasterController {
-  constructor(private service: MasterService) {}
+  constructor(private service: MasterService, private thresholds: ThresholdService) {}
+  @Get("master/threshold") thresholdsList(@CurrentUser() u: Actor) {
+    return this.thresholds.list(u);
+  }
+  @Put("master/threshold") thresholdsSave(@CurrentUser() u: Actor, @Body() b: unknown) {
+    return this.thresholds.save(u, b);
+  }
   @Get("options") options(@CurrentUser() u: Actor) {
     return this.service.options(u);
   }

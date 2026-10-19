@@ -89,7 +89,7 @@ function LoginForm() {
     const errors: FieldErrors = {};
 
     if (!credentials.identifier) {
-      errors.identifier = "Username wajib diisi.";
+      errors.identifier = "Username atau NIP wajib diisi.";
     }
     if (!credentials.password) {
       errors.password = "Password wajib diisi.";

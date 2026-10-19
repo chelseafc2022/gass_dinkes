@@ -256,8 +256,16 @@ export async function seedDataAwal() {
           capaianNov: cb[10] ?? 0,
           capaianDes: cb[11] ?? 0,
           isValidated: false,
+          verifikasiBulanan: {
+            create: cb.flatMap((nilai, index) => nilai !== 0 ? [{ bulan: index + 1, submittedAt: new Date() }] : []),
+          },
         },
         update: {
+          isValidated: false,
+          verifikasiBulanan: {
+            deleteMany: {},
+            create: cb.flatMap((nilai, index) => nilai !== 0 ? [{ bulan: index + 1, submittedAt: new Date() }] : []),
+          },
           targetKinerja: fItem.targetKinerja,
           capaianJan: cb[0] ?? 0,
           capaianFeb: cb[1] ?? 0,

@@ -153,9 +153,10 @@ export class AdminController {
           role,
           menuKey,
           canAccess:
-            rows.find((r) => r.role === role && r.menuKey === menuKey)
-              ?.canAccess ?? defaultPermission(role, menuKey),
-          locked: role === "ADMIN_DINKES",
+            hardPermission(role, menuKey) &&
+            (rows.find((r) => r.role === role && r.menuKey === menuKey)
+              ?.canAccess ?? defaultPermission(role, menuKey)),
+          locked: role === "ADMIN_DINKES" || !hardPermission(role, menuKey),
         })),
       ),
     };
@@ -177,6 +178,8 @@ export class AdminController {
       throw new ForbiddenException(
         "Batas otoritas peran Admin Dinkes tidak dapat diubah.",
       );
+    if (b.canAccess && !hardPermission(b.role, b.menuKey))
+      throw new ForbiddenException("Menu ini hanya tersedia untuk Admin Dinkes.");
     return this.db.$transaction(async (tx) => {
       const r = await tx.menuPermission.upsert({
         where: { role_menuKey: { role: b.role, menuKey: b.menuKey } },

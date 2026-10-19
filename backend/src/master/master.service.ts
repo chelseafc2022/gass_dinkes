@@ -2,7 +2,6 @@ import {
   Injectable,
   ForbiddenException,
   NotFoundException,
-  BadRequestException,
 } from "@nestjs/common";
 import { z } from "zod";
 import { PrismaService } from "../prisma/prisma.service";
@@ -58,12 +57,6 @@ const config = {
       namaIndikator: text,
       satuanId: text,
       kategoriIndikator: z.enum(["IKK", "IKU", "SPM", "INDIKATOR_PROGRAM"]),
-      jenisThreshold: z
-        .enum(["PERSENTASE_TARGET", "NILAI_ABSOLUT"])
-        .default("PERSENTASE_TARGET"),
-      thresholdHijauMin: z.number().nonnegative().default(80),
-      thresholdKuningMin: z.number().nonnegative().default(50),
-      thresholdMerahMax: z.number().nonnegative().default(49.9),
       bidangIds: z.array(text).min(1),
     }),
   },
@@ -447,13 +440,6 @@ export class MasterService {
         throw new ForbiddenException("Kegiatan bukan kewenangan bidang Anda.");
     }
     if (kind === "indikator") {
-      if (
-        parsed.thresholdHijauMin <= parsed.thresholdKuningMin ||
-        parsed.thresholdMerahMax >= parsed.thresholdKuningMin
-      )
-        throw new BadRequestException(
-          "Batas hijau harus di atas kuning dan batas merah harus di bawah kuning.",
-        );
       const ids = [...new Set(parsed.bidangIds)];
       delete parsed.bidangIds;
       parsed.bidang = {

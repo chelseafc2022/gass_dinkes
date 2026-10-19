@@ -3,6 +3,7 @@ import {
   BadRequestException,
   ForbiddenException,
   NotFoundException,
+  ConflictException,
 } from "@nestjs/common";
 import { z } from "zod";
 import { PrismaService } from "../prisma/prisma.service";
@@ -14,7 +15,9 @@ import {
   percentage,
   periodOpen,
   status,
+  scoringQuarter,
 } from "../common/policy";
+import { ThresholdService } from "../master/threshold.service";
 export const filters = z.object({
   tahun: z.coerce
     .number()
@@ -26,15 +29,20 @@ export const filters = z.object({
   bidangId: z.string().optional(),
   bulan: z.coerce.number().int().min(1).max(12).optional(),
   triwulan: z.coerce.number().int().min(1).max(4).optional(),
-  kategori: z
-    .enum(["SPM", "IKU", "IKK", "INDIKATOR_PROGRAM"])
-    .optional(),
+  kategori: z.enum(["SPM", "IKU", "IKK", "INDIKATOR_PROGRAM"]).optional(),
   search: z.string().optional(),
 });
 export type Filter = z.infer<typeof filters>;
+const monthlyInclude = {
+  orderBy: { bulan: "asc" as const },
+  include: { verifiedBy: { select: { id: true, name: true } } },
+};
 @Injectable()
 export class ReportsService {
-  constructor(private db: PrismaService) {}
+  constructor(
+    private db: PrismaService,
+    private thresholds: ThresholdService,
+  ) {}
   private indicatorWhere(u: Actor, q: Filter) {
     const b = u.role === "AKUN_BIDANG" ? u.bidangId : q.bidangId;
     if (u.role === "AKUN_BIDANG" && !b)
@@ -101,6 +109,7 @@ export class ReportsService {
             where,
             include: {
               faskes: true,
+              verifikasiBulanan: monthlyInclude,
               indikator: {
                 include: {
                   satuan: true,
@@ -117,13 +126,20 @@ export class ReportsService {
             where,
             include: {
               faskes: true,
+              verifikasiBulanan: monthlyInclude,
               subKegiatan: {
                 include: { kegiatan: { include: { program: true } } },
               },
             },
             orderBy: { updatedAt: "desc" },
           });
-    const data = rows.map((r) => this.summarize(r, kind, q));
+    const rules = kind === "kinerja" ? await this.thresholds.rules() : [];
+    const threshold = rules.find((rule) => rule.triwulan === scoringQuarter(q));
+    // Lists are already scoped to the responsible bidang via indicatorWhere/subWhere.
+    const data = rows.map((r) => ({
+      ...this.summarize(r, kind, q, threshold),
+      canVerify: ["ADMIN_DINKES", "AKUN_BIDANG"].includes(u.role),
+    }));
     const available =
       kind === "kinerja"
         ? await this.db.indikator.findMany({
@@ -132,7 +148,10 @@ export class ReportsService {
           })
         : await this.db.subKegiatan.findMany({
             where: this.subWhere(u, q),
-            include: { kegiatan: true },
+            include: {
+              kegiatan: true,
+              indikator: { select: { kategoriIndikator: true } },
+            },
           });
     return {
       data: q.search
@@ -143,10 +162,18 @@ export class ReportsService {
           )
         : data,
       available,
+      ...(threshold
+        ? {
+            threshold,
+            thresholdRules: rules,
+            cumulativeThrough: q.bulan ?? scoringQuarter(q) * 3,
+          }
+        : {}),
       ...(await this.periods(u, q.tahun)),
     };
   }
-  private selectedMonths(q: Filter) {
+  private selectedMonths(q: Filter, cumulative = false) {
+    if (cumulative) return MONTHS.slice(0, q.bulan ?? scoringQuarter(q) * 3);
     return MONTHS.filter((_, i) =>
       q.bulan
         ? i === q.bulan - 1
@@ -155,18 +182,35 @@ export class ReportsService {
           : true,
     );
   }
-  private summarize(r: any, kind: string, q: Filter) {
+  private summarize(
+    r: any,
+    kind: string,
+    q: Filter,
+    threshold?: { hijauMin: number; kuningMin: number | null },
+  ) {
+    const monthly = r.verifikasiBulanan ?? [];
     const target = Number(
         kind === "kinerja" ? r.targetKinerja : r.targetKeuangan,
       ),
-      realisasi = this.selectedMonths(q).reduce((s, k) => s + Number(r[k]), 0);
+      realisasi = this.selectedMonths(q, kind === "kinerja").reduce(
+        (s, k) => s + Number(r[k]),
+        0,
+      );
     return {
       ...r,
+      verifikasiBulanan: monthly,
+      submittedMonths: monthly.length,
+      verifiedMonths: monthly.filter(
+        (m: { isValidated: boolean }) => m.isValidated,
+      ).length,
+      isValidated:
+        monthly.length > 0 &&
+        monthly.every((m: { isValidated: boolean }) => m.isValidated),
       ...Object.fromEntries(MONTHS.map((k) => [k, Number(r[k])])),
       target,
       realisasi,
       persentase: percentage(realisasi, target),
-      status: status(realisasi, target, r.indikator),
+      status: status(realisasi, target, threshold),
       label: r.indikator?.namaIndikator ?? r.subKegiatan.namaSubKegiatan,
     };
   }
@@ -232,10 +276,31 @@ export class ReportsService {
               tahun: b.tahun,
             },
           },
+          include: { verifikasiBulanan: true },
         });
-        if (before?.isValidated && u.role === "OPERATOR_PUSKESMAS")
+        const monthlyModel =
+          kind === "kinerja"
+            ? "verifikasiKinerjaBulanan"
+            : "verifikasiKeuanganBulanan";
+        const previousMonth = before?.verifikasiBulanan.find(
+          (m: any) => m.bulan === b.bulan,
+        );
+        const targetChanged =
+          b.target !== undefined &&
+          Number(before?.[targetKey] ?? 0) !== b.target;
+        const monthChanged =
+          b.bulan !== undefined &&
+          (!previousMonth || Number(before?.[MONTHS[b.bulan - 1]]) !== b.nilai);
+        if (
+          u.role === "OPERATOR_PUSKESMAS" &&
+          ((monthChanged && previousMonth?.isValidated) ||
+            (targetChanged &&
+              before?.verifikasiBulanan.some((m: any) => m.isValidated)))
+        )
           throw new ForbiddenException(
-            "Laporan sudah diverifikasi dan dikunci. Hubungi bidang atau Admin Dinkes untuk membuka kembali atau melakukan koreksi.",
+            targetChanged
+              ? "Target tahunan memengaruhi bulan yang sudah diverifikasi. Hubungi penanggung jawab indikator atau Admin Dinkes."
+              : "Bulan ini sudah diverifikasi dan dikunci. Hubungi penanggung jawab indikator atau Admin Dinkes untuk koreksi.",
           );
         const item = await (tx as any)[model].upsert({
           where: {
@@ -253,6 +318,31 @@ export class ReportsService {
           },
           update: data,
         });
+        if (targetChanged) {
+          await (tx as any)[monthlyModel].updateMany({
+            where: { capaianId: item.id },
+            data: {
+              isValidated: false,
+              verifiedById: null,
+              verifiedAt: null,
+              legacyVerification: false,
+            },
+          });
+        }
+        if (b.bulan && monthChanged) {
+          const monthlyData = {
+            submittedAt: new Date(),
+            isValidated: false,
+            verifiedAt: null,
+            verifiedById: null,
+            legacyVerification: false,
+          };
+          await (tx as any)[monthlyModel].upsert({
+            where: { capaianId_bulan: { capaianId: item.id, bulan: b.bulan } },
+            create: { capaianId: item.id, bulan: b.bulan, ...monthlyData },
+            update: monthlyData,
+          });
+        }
         await tx.auditLog.create({
           data: {
             userId: u.id,
@@ -271,32 +361,92 @@ export class ReportsService {
     kind: "kinerja" | "keuangan",
     id: string,
     u: Actor,
-    validated: boolean,
+    body: unknown,
   ) {
     if (!["ADMIN_DINKES", "AKUN_BIDANG"].includes(u.role))
-      throw new ForbiddenException("Verifikasi hanya oleh pembina.");
+      throw new ForbiddenException(
+        "Verifikasi hanya oleh Admin Dinkes atau penanggung jawab indikator.",
+      );
+    const b = z
+      .object({
+        bulan: z.number().int().min(1).max(12),
+        validated: z.boolean(),
+        nilai: z.number().finite().min(0).max(1e14),
+        target: z.number().finite().min(0).max(1e14),
+      })
+      .strict()
+      .parse(body);
     const model = kind === "kinerja" ? "capaianKinerja" : "capaianKeuangan";
-    const row = await (this.db as any)[model].findUnique({ where: { id } });
-    if (!row) throw new NotFoundException();
-    const allowed = (
-      await this.list(kind, u, { tahun: row.tahun, faskesId: row.faskesId })
-    ).data.some((r) => r.id === id);
-    if (!allowed) throw new ForbiddenException();
-    return this.db.$transaction(async (tx) => {
-      const r = await (tx as any)[model].update({
-        where: { id },
-        data: { isValidated: validated },
-      });
-      await tx.auditLog.create({
-        data: {
-          userId: u.id,
-          action: validated ? "VERIFY" : "UNVERIFY",
-          entity: model,
-          entityId: id,
-        },
-      });
-      return r;
-    });
+    const monthlyModel =
+      kind === "kinerja"
+        ? "verifikasiKinerjaBulanan"
+        : "verifikasiKeuanganBulanan";
+    return this.db.$transaction(
+      async (tx) => {
+        if (u.role === "AKUN_BIDANG" && !u.bidangId)
+          throw new ForbiddenException("Bidang belum ditetapkan.");
+        const responsibility = { bidang: { some: { bidangId: u.bidangId! } } };
+        const row = await (tx as any)[model].findFirst({
+          where: {
+            id,
+            ...(u.role === "AKUN_BIDANG"
+              ? kind === "kinerja"
+                ? { indikator: responsibility }
+                : { subKegiatan: { indikator: { some: responsibility } } }
+              : {}),
+          },
+          include: { verifikasiBulanan: true },
+        });
+        if (!row)
+          throw new ForbiddenException(
+            "Laporan tidak ditemukan atau bukan tanggung jawab bidang Anda.",
+          );
+        const previous = row.verifikasiBulanan.find(
+          (m: any) => m.bulan === b.bulan,
+        );
+        if (!previous)
+          throw new BadRequestException(
+            "Bulan ini belum diinput oleh fasilitas kesehatan.",
+          );
+        const targetKey =
+          kind === "kinerja" ? "targetKinerja" : "targetKeuangan";
+        if (
+          Number(row[MONTHS[b.bulan - 1]]) !== b.nilai ||
+          Number(row[targetKey]) !== b.target
+        )
+          throw new ConflictException(
+            "Nilai atau target berubah. Muat ulang laporan sebelum melakukan verifikasi.",
+          );
+        const r = await (tx as any)[monthlyModel].update({
+          where: { capaianId_bulan: { capaianId: id, bulan: b.bulan } },
+          data: {
+            isValidated: b.validated,
+            verifiedById: b.validated ? u.id : null,
+            verifiedAt: b.validated ? new Date() : null,
+            legacyVerification: false,
+          },
+          include: { verifiedBy: { select: { id: true, name: true } } },
+        });
+        await tx.auditLog.create({
+          data: {
+            userId: u.id,
+            action: b.validated ? "VERIFY" : "UNVERIFY",
+            entity: model,
+            entityId: id,
+            details: JSON.stringify({
+              bulan: b.bulan,
+              tahun: row.tahun,
+              nilai: b.nilai,
+              target: b.target,
+              before: previous,
+              after: r,
+            }),
+          },
+        });
+        return r;
+      },
+      { isolationLevel: "Serializable" },
+    );
   }
   async remove(kind: "kinerja" | "keuangan", id: string, u: Actor) {
     if (u.role !== "ADMIN_DINKES")
@@ -373,7 +523,7 @@ export class ReportsService {
           rows.reduce(
             (s, r) =>
               s +
-              MONTHS.slice((triwulan - 1) * 3, triwulan * 3).reduce(
+              MONTHS.slice(0, triwulan * 3).reduce(
                 (v, m) => v + Number(r[m]),
                 0,
               ),
@@ -390,7 +540,7 @@ export class ReportsService {
         target,
         realisasi,
         persentase: percentage(realisasi, target),
-        status: status(realisasi, target, ind),
+        status: status(realisasi, target, k.threshold),
         tercapai: ranking.filter((r) => r.reported && r.status === "HIJAU")
           .length,
         totalFaskes: facilities.length,
@@ -416,6 +566,9 @@ export class ReportsService {
       realisasi = f.data.reduce((s, r) => s + r.realisasi, 0);
     return {
       tahun: q.tahun,
+      threshold: k.threshold,
+      thresholdRules: k.thresholdRules,
+      cumulativeThrough: k.cumulativeThrough,
       indicators,
       programs: [...programs.values()].map((p) => ({
         ...p,
@@ -432,8 +585,23 @@ export class ReportsService {
         targetKeuangan: target,
         realisasiKeuangan: realisasi,
         serapan: percentage(realisasi, target),
-        tervalidasi: k.data.filter((r) => r.isValidated).length,
-        jumlahLaporan: k.data.length,
+        tervalidasi: k.data.reduce(
+          (sum, r) =>
+            sum +
+            r.verifikasiBulanan.filter(
+              (m: any) =>
+                m.isValidated && m.bulan <= (q.bulan ?? scoringQuarter(q) * 3),
+            ).length,
+          0,
+        ),
+        jumlahLaporan: k.data.reduce(
+          (sum, r) =>
+            sum +
+            r.verifikasiBulanan.filter(
+              (m: any) => m.bulan <= (q.bulan ?? scoringQuarter(q) * 3),
+            ).length,
+          0,
+        ),
       },
       settings: k.settings,
     };

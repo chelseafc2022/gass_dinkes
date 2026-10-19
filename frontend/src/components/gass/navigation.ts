@@ -14,6 +14,7 @@ import {
   Users,
   ShieldCheck,
   History,
+  Gauge,
 } from "lucide-react";
 export const navigation = [
   {
@@ -63,6 +64,13 @@ export const navigation = [
     title: "Indikator",
     href: "/master/indikator",
     icon: Target,
+    group: "DATA MASTER",
+  },
+  {
+    key: "master_threshold",
+    title: "Threshold triwulan",
+    href: "/master/threshold",
+    icon: Gauge,
     group: "DATA MASTER",
   },
   {

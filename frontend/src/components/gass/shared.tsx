@@ -96,11 +96,13 @@ export function GlobalFilters({
   onChange,
   period = true,
   excludeRumahSakit = false,
+  cumulative = false,
 }: {
   value: Filters;
   onChange: (f: Filters) => void;
   period?: boolean;
   excludeRumahSakit?: boolean;
+  cumulative?: boolean;
 }) {
   const { user } = useAuth();
   const { data } = useQuery({
@@ -189,7 +191,7 @@ export function GlobalFilters({
               value={value.triwulan}
               onChange={(e) => set("triwulan", e.target.value)}
             >
-              <option value="">Semua triwulan</option>
+              <option value="">{cumulative ? "Tahunan (TW IV)" : "Semua triwulan"}</option>
               {[1, 2, 3, 4].map((n) => (
                 <option key={n} value={n}>
                   Triwulan {n}

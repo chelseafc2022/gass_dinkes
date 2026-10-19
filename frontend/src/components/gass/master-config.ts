@@ -100,7 +100,7 @@ export const masterConfig: Record<
   indikator: {
     title: "Indikator",
     description:
-      "Tolok ukur kinerja, ambang capaian, dan penanggung jawab bidang.",
+      "Tolok ukur kinerja dan penanggung jawab bidang. Penilaian mengikuti master threshold triwulan.",
     name: "namaIndikator",
     fields: [
       {
@@ -129,35 +129,6 @@ export const masterConfig: Record<
         type: "select",
         options: ["IKK", "IKU", "SPM", "INDIKATOR_PROGRAM"],
         default: "SPM",
-        required: true,
-      },
-      {
-        key: "jenisThreshold",
-        label: "Basis threshold",
-        type: "select",
-        options: ["PERSENTASE_TARGET", "NILAI_ABSOLUT"],
-        default: "PERSENTASE_TARGET",
-        required: true,
-      },
-      {
-        key: "thresholdHijauMin",
-        label: "Batas bawah hijau",
-        type: "number",
-        default: 80,
-        required: true,
-      },
-      {
-        key: "thresholdKuningMin",
-        label: "Batas bawah kuning",
-        type: "number",
-        default: 50,
-        required: true,
-      },
-      {
-        key: "thresholdMerahMax",
-        label: "Batas atas merah",
-        type: "number",
-        default: 49.9,
         required: true,
       },
       {

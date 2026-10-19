@@ -4,6 +4,7 @@ import {
   periodOpen,
   percentage,
   status,
+  scoringQuarter,
   Actor,
 } from "./policy";
 const settings = { batasTanggalInput: 5, isOtomatisAktif: true };
@@ -72,14 +73,13 @@ describe("Data scope and scoring", () => {
     expect(hardPermission(u.role, "master_program")).toBe(true));
   test("zero target never produces infinity", () =>
     expect(percentage(100, 0)).toBe(0));
-  test("uses absolute threshold when configured", () =>
+  test("uses the global percentage rule", () =>
     expect(
       status(90, 1000, {
-        jenisThreshold: "NILAI_ABSOLUT",
-        thresholdHijauMin: 80,
-        thresholdKuningMin: 50,
+        hijauMin: 100,
+        kuningMin: 25,
       }),
-    ).toBe("HIJAU"));
+    ).toBe("MERAH"));
   test.each([
     [49.99, "MERAH"],
     [50, "KUNING"],
@@ -88,4 +88,33 @@ describe("Data scope and scoring", () => {
   ])("classifies boundary %s", (value, color) =>
     expect(status(Number(value), 100)).toBe(color),
   );
+});
+
+describe("Quarterly global threshold boundaries", () => {
+  test.each([1, 2, 3])("quarter %s includes its yellow boundary and excludes green", (quarter) => {
+    const rule = { hijauMin: 100, kuningMin: quarter * 25 };
+    expect(status(quarter * 25 - 0.001, 100, rule)).toBe("MERAH");
+    expect(status(quarter * 25, 100, rule)).toBe("KUNING");
+    expect(status(99.999, 100, rule)).toBe("KUNING");
+    expect(status(100, 100, rule)).toBe("HIJAU");
+    expect(status(125, 100, rule)).toBe("HIJAU");
+  });
+  test("annual evaluation has no yellow band", () => {
+    const rule = { hijauMin: 100, kuningMin: null };
+    expect(status(99.999, 100, rule)).toBe("MERAH");
+    expect(status(100, 100, rule)).toBe("HIJAU");
+    expect(status(100, 0, rule)).toBe("MERAH");
+  });
+  test("zero targets stay red even if the yellow boundary is zero", () => {
+    expect(status(100, 0, { hijauMin: 100, kuningMin: 0 })).toBe("MERAH");
+  });
+  test("annual defaults to IV, month determines its own quarter", () => {
+    expect(scoringQuarter({})).toBe(4);
+    expect(scoringQuarter({ triwulan: 2 })).toBe(2);
+    expect(scoringQuarter({ bulan: 7 })).toBe(3);
+    expect(scoringQuarter({ bulan: 3, triwulan: 4 })).toBe(1);
+  });
+  test.each(["AKUN_BIDANG", "OPERATOR_PUSKESMAS", "KEPALA_DINAS"])("%s cannot receive threshold management permission", (role) => {
+    expect(hardPermission(role, "master_threshold")).toBe(false);
+  });
 });

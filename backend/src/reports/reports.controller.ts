@@ -8,7 +8,6 @@ import {
   Put,
   Query,
 } from "@nestjs/common";
-import { z } from "zod";
 import { CurrentUser, Menu } from "../auth/security";
 import type { Actor } from "../common/policy";
 import { ReportsService, filters } from "./reports.service";
@@ -44,24 +43,14 @@ export class ReportsController {
     @Param("id") id: string,
     @Body() b: unknown,
   ) {
-    return this.service.verify(
-      "kinerja",
-      id,
-      u,
-      z.object({ validated: z.boolean() }).strict().parse(b).validated,
-    );
+    return this.service.verify("kinerja", id, u, b);
   }
   @Menu("capaian_keuangan") @Post("capaian/keuangan/:id/verify") verifyF(
     @CurrentUser() u: Actor,
     @Param("id") id: string,
     @Body() b: unknown,
   ) {
-    return this.service.verify(
-      "keuangan",
-      id,
-      u,
-      z.object({ validated: z.boolean() }).strict().parse(b).validated,
-    );
+    return this.service.verify("keuangan", id, u, b);
   }
   @Menu("capaian_kinerja") @Delete("capaian/kinerja/:id") deleteK(
     @CurrentUser() u: Actor,
@@ -82,10 +71,7 @@ export class ReportsController {
     return this.service.dashboard(u, filters.parse(q));
   }
   @Get("periode-status")
-  periodeStatus(
-    @CurrentUser() u: Actor,
-    @Query("tahun") tahun?: string,
-  ) {
+  periodeStatus(@CurrentUser() u: Actor, @Query("tahun") tahun?: string) {
     const year = tahun ? Number(tahun) : new Date().getFullYear();
     return this.service.periods(u, year);
   }
