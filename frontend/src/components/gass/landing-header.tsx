@@ -37,7 +37,11 @@ export function LandingHeader() {
     <header className={styles.header}>
       <div className={`${styles.container} ${styles.headerInner}`}>
         <a href="#beranda" className={styles.brand} onClick={() => setOpen(false)} aria-label="Beranda GASS — Dinas Kesehatan Konawe Selatan">
-          <Image src="/branding/logo-konsel.png" alt="Lambang Kabupaten Konawe Selatan" width={678} height={800} sizes="40px" priority />
+          <span className={styles.brandMarks}>
+            <Image className={styles.konselLogo} src="/branding/logo-konsel.png" alt="Lambang Kabupaten Konawe Selatan" width={678} height={800} sizes="40px" priority />
+            <span className={styles.brandDivider} aria-hidden="true" />
+            <Image className={styles.kemenkesLogo} src="/branding/kemenkes_logo.webp" alt="Kementerian Kesehatan Republik Indonesia" width={3840} height={1739} sizes="90px" priority />
+          </span>
           <span><strong>DINAS KESEHATAN</strong><small>KABUPATEN KONAWE SELATAN</small></span>
         </a>
         <nav className={styles.desktopNav} aria-label="Navigasi utama">{links.map((link) => <a key={link.href} href={link.href}>{link.label}</a>)}</nav>

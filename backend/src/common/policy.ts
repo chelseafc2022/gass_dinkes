@@ -55,10 +55,10 @@ export function defaultPermission(role: string, menu: string) {
   );
 }
 export function hardPermission(role: string, menu: string) {
-  if (role === "OPERATOR_PUSKESMAS" || role === "KEPALA_DINAS")
-    return ["dashboard", "capaian_kinerja", "capaian_keuangan"].includes(menu);
-  if (role === "AKUN_BIDANG") return defaultPermission(role, menu);
-  return role === "ADMIN_DINKES";
+  // Admin Dinkes selalu memiliki akses penuh (anti-lockout)
+  if (role === "ADMIN_DINKES") return true;
+  // Seluruh role dapat diatur secara dinamis oleh Admin Dinkes
+  return true;
 }
 export function assertWriter(u: Actor) {
   if (u.role === "KEPALA_DINAS")

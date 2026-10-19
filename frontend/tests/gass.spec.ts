@@ -11,7 +11,22 @@ test("login renders on desktop and mobile with accessible fields", async ({
   await expect(
     page.getByRole("heading", { name: "Selamat Datang" }),
   ).toBeVisible();
-  await expect(page.getByLabel("Username atau NIP")).toBeVisible();
+  await expect(page.getByLabel(/^Username/)).toBeVisible();
+  await expect(
+    page.getByAltText("Kementerian Kesehatan Republik Indonesia"),
+  ).toBeVisible();
+  await expect(page.getByRole("link", { name: "Profil GASS" })).toHaveAttribute(
+    "href",
+    "/#profil",
+  );
+  await page.waitForFunction(() =>
+    Array.from(document.images).every((image) => image.complete),
+  );
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollHeight <= window.innerHeight,
+    ),
+  ).toBe(true);
   await page.screenshot({
     path: "test-results/login-desktop.png",
     fullPage: true,
@@ -29,11 +44,23 @@ test("login renders on desktop and mobile with accessible fields", async ({
       () => document.documentElement.scrollWidth <= window.innerWidth,
     ),
   ).toBe(true);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollHeight <= window.innerHeight,
+    ),
+  ).toBe(true);
   await page.screenshot({
     path: "test-results/login-mobile.png",
     fullPage: true,
     animations: "disabled",
   });
+  await page.getByRole("link", { name: "Profil GASS" }).click();
+  await expect(page).toHaveURL(/\/#profil$/);
+  await expect(
+    page.getByRole("heading", {
+      name: "Layanan kesehatan yang bergerak menjangkau.",
+    }),
+  ).toBeVisible();
 });
 test.describe("Authenticated GASS workflows", () => {
   test.skip(

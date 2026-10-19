@@ -173,7 +173,10 @@ export function Shell({ children }: { children: React.ReactNode }) {
     }
   };
   return (
-    <SidebarProvider className="gass-app-shell">
+    <SidebarProvider
+      className="gass-app-shell"
+      style={{ "--sidebar-width-icon": "4rem" } as React.CSSProperties}
+    >
       <MobileSidebarRouteSync path={path} />
       <Sidebar
         variant={config.variant}
@@ -199,7 +202,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
             </div>
           </Link>
         </SidebarHeader>
-        <SidebarContent className="px-2">
+        <SidebarContent className="px-2 group-data-[collapsible=icon]:px-0">
           {["MONITORING", "DATA MASTER", "ADMINISTRASI"].map((group) => {
             const items = nav.filter((n) => n.group === group);
             return (
@@ -216,11 +219,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
                             asChild
                             isActive={path === n.href}
                             tooltip={n.title}
-                            className="h-10 rounded-lg border-l-2 border-transparent px-3 text-emerald-50/75 hover:bg-white/8 hover:text-white data-[active=true]:border-[#F472B6] data-[active=true]:bg-white/12 data-[active=true]:font-bold data-[active=true]:text-white data-[active=true]:shadow-sm transition-all"
+                            className="h-10 rounded-lg border-l-2 border-transparent px-3 text-emerald-50/75 hover:bg-white/8 hover:text-white data-[active=true]:border-[#F472B6] data-[active=true]:bg-white/12 data-[active=true]:font-bold data-[active=true]:text-white data-[active=true]:shadow-sm transition-all group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:size-10! group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:border-r-2 group-data-[collapsible=icon]:border-r-transparent group-data-[collapsible=icon]:p-0!"
                           >
                             <Link href={n.href}>
                               <n.icon className="size-4" />
-                              <span>{n.title}</span>
+                              <span className="group-data-[collapsible=icon]:hidden">{n.title}</span>
                               {path === n.href && (
                                 <span className="ml-auto size-1.5 rounded-full bg-[#F472B6] shadow-[0_0_9px_#DB2777] group-data-[collapsible=icon]:hidden" />
                               )}
@@ -239,7 +242,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
             );
           })}
         </SidebarContent>
-        <SidebarFooter className="gass-sidebar-footer p-3 border-t border-sidebar-border">
+        <SidebarFooter className="gass-sidebar-footer p-3 border-t border-sidebar-border group-data-[collapsible=icon]:px-2">
           <DropdownMenu>
             <DropdownMenuTrigger className="flex w-full items-center gap-3 p-2 rounded-lg hover:bg-sidebar-accent text-sidebar-foreground transition-colors group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:p-1">
               <Avatar className="size-9 border border-emerald-200/20">

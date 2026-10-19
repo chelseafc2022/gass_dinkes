@@ -358,9 +358,8 @@ function Permissions() {
       <div className="rounded-lg bg-primary/5 border border-primary/15 p-4 flex gap-3 mb-5">
         <ShieldCheck className="size-5 text-primary shrink-0" />
         <p className="text-xs text-muted-foreground leading-6">
-          Perubahan langsung disimpan. Akses master bagi operator faskes, mode
-          baca Kepala Dinas, dan kewenangan bidang tetap mengikuti batas
-          keamanan peran.
+          Perubahan langsung disimpan. Sebagai Admin Dinkes, Anda memiliki kontrol penuh
+          untuk menentukan dan mencentang hak akses menu bagi seluruh role.
         </p>
       </div>
       <div className="rounded-xl border bg-card overflow-hidden">

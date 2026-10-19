@@ -271,7 +271,6 @@ body {font-family:Arial,Helvetica,sans-serif;}
 
 .gass-main-sidebar [data-sidebar="sidebar"],
 [data-slot="sidebar"][data-mobile="true"] {
-  position: relative;
   overflow: hidden;
   background:
     radial-gradient(circle at 15% 3%, rgba(52, 211, 153, .22), transparent 13rem),
@@ -280,11 +279,13 @@ body {font-family:Arial,Helvetica,sans-serif;}
 }
 
 .gass-main-sidebar [data-sidebar="sidebar"] {
+  position: relative;
   border: 1px solid rgba(209, 250, 229, .12);
   border-radius: 1.35rem;
 }
 
 [data-slot="sidebar"][data-mobile="true"] {
+  position: fixed;
   z-index: 60;
   top: .5rem;
   bottom: .5rem;
@@ -334,14 +335,14 @@ body {font-family:Arial,Helvetica,sans-serif;}
 }
 
 .group[data-collapsible="icon"] .gass-sidebar-logo-wrap {
-  width: 2.35rem;
-  height: 2.35rem;
+  width: 2.5rem;
+  height: 2.5rem;
   border-radius: .75rem;
 }
 
 .group[data-collapsible="icon"] .gass-sidebar-logo {
-  width: 2.1rem;
-  height: 2.1rem;
+  width: 2.25rem;
+  height: 2.25rem;
 }
 
 .gass-workspace {
@@ -429,10 +430,11 @@ body {font-family:Arial,Helvetica,sans-serif;}
   --text-secondary: #64748B;
   --border: #E2E8F0;
   --white: #FFFFFF;
+  height: 100svh;
   min-height: 100svh;
   width: 100%;
   position: relative;
-  overflow-x: hidden;
+  overflow: hidden;
   background:
     radial-gradient(circle at 100% 0%, rgba(16,185,129,.2), transparent 34rem),
     linear-gradient(135deg, #ffffff 0%, var(--background) 44%, var(--mint) 100%);
@@ -533,11 +535,30 @@ body {font-family:Arial,Helvetica,sans-serif;}
   text-transform: uppercase;
 }
 
+.gass-agency__marks {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: .72rem;
+}
+
+.gass-agency__divider {
+  width: 1px;
+  height: 2.45rem;
+  background: #d9e6e1;
+}
+
 .gass-agency__crest {
   width: 2.6rem;
   height: 3.08rem;
   object-fit: contain;
   filter: drop-shadow(0 5px 8px rgba(6,78,59,.13));
+}
+
+.gass-agency__kemenkes {
+  width: 5.9rem;
+  height: 2.7rem;
+  object-fit: contain;
 }
 
 .gass-agency span,
@@ -648,13 +669,40 @@ body {font-family:Arial,Helvetica,sans-serif;}
   z-index: 3;
   display: flex;
   min-width: 0;
-  min-height: 100svh;
+  height: 100%;
+  min-height: 0;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 1.25rem;
   background: transparent;
 }
+
+.gass-profile-link {
+  display: inline-flex;
+  min-height: 2rem;
+  align-items: center;
+  gap: .4rem;
+  border-radius: .25rem;
+  padding: .35rem 0;
+  color: var(--text-secondary);
+  font-size: .7rem;
+  font-weight: 600;
+  text-underline-offset: .2em;
+  transition: color .2s ease;
+}
+
+.gass-profile-link:hover {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+.gass-profile-link:focus-visible {
+  outline: 3px solid rgba(16, 185, 129, .3);
+  outline-offset: 2px;
+}
+
+.gass-profile-link svg { width: .95rem; height: .95rem; }
 
 .gass-form-panel::before {
   content: "";
@@ -702,6 +750,11 @@ body {font-family:Arial,Helvetica,sans-serif;}
 .gass-agency--compact .gass-agency__crest {
   width: 2.8rem;
   height: 3.3rem;
+}
+
+.gass-agency--compact .gass-agency__kemenkes {
+  width: 5.6rem;
+  height: 2.55rem;
 }
 
 .gass-agency--compact span { font-size: .78rem; }
@@ -896,7 +949,8 @@ body {font-family:Arial,Helvetica,sans-serif;}
 .gass-setara-brand {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
+  gap: 1rem;
   margin-top: 1.25rem;
   padding-top: 1rem;
   border-top: 1px solid #edf2f0;
@@ -945,26 +999,45 @@ body {font-family:Arial,Helvetica,sans-serif;}
 }
 
 @media (max-width: 520px) {
-  .gass-form-panel { justify-content: flex-start; padding: 1rem; }
+  .gass-form-panel { justify-content: flex-start; padding: .75rem 1rem; }
   .gass-form-panel::before { width: 8rem; height: 8rem; }
-  .gass-mobile-brand { width: 6.4rem; margin-top: .1rem; margin-bottom: .65rem; }
-  .gass-login-card { border-radius: 1.35rem; padding: 1.35rem; }
-  .gass-agency--compact { padding-bottom: 1.1rem; }
-  .gass-agency--compact .gass-agency__crest { width: 2.35rem; height: 2.8rem; }
+  .gass-mobile-brand { width: 5.4rem; margin-top: 0; margin-bottom: .4rem; }
+  .gass-login-card { border-radius: 1.35rem; padding: 1.1rem 1.35rem; }
+  .gass-agency--compact { padding-bottom: .8rem; }
+  .gass-agency--compact .gass-agency__marks { gap: .5rem; }
+  .gass-agency--compact .gass-agency__crest { width: 2.1rem; height: 2.5rem; }
+  .gass-agency--compact .gass-agency__divider { height: 2rem; }
+  .gass-agency--compact .gass-agency__kemenkes { width: 4.4rem; height: 2.05rem; }
   .gass-agency--compact span { font-size: .68rem; }
   .gass-agency--compact small { font-size: .56rem; }
-  .gass-heading { margin: 1.3rem 0 1.25rem; }
+  .gass-heading { margin: 1rem 0; }
   .gass-heading h1 { font-size: 1.9rem; }
   .gass-heading p { font-size: .82rem; }
-  .gass-access-note { margin-top: 1.05rem; }
+  .gass-login-form { gap: .85rem; }
+  .gass-access-note { margin-top: .85rem; padding: .68rem .8rem; }
+  .gass-setara-brand { margin-top: .8rem; padding-top: .7rem; }
+  .gass-setara-logo { height: 1.8rem; }
+  .gass-copyright { margin-top: .55rem; }
 }
 
 @media (max-height: 760px) and (min-width: 900px) {
   .gass-brand-panel__content { padding-top: 1.5rem; }
   .gass-brand-copy p { margin-top: .45rem; }
-  .gass-login-card { padding-top: 1.75rem; padding-bottom: 1.75rem; }
-  .gass-heading { margin-top: 1.2rem; margin-bottom: 1.2rem; }
-  .gass-access-note { margin-top: 1rem; }
+  .gass-login-card { padding-top: 1.35rem; padding-bottom: 1.35rem; }
+  .gass-agency--compact { padding-bottom: 1rem; }
+  .gass-heading { margin-top: .85rem; margin-bottom: .85rem; }
+  .gass-login-form { gap: .8rem; }
+  .gass-access-note { margin-top: .8rem; padding-block: .65rem; }
+  .gass-setara-brand { margin-top: .75rem; padding-top: .65rem; }
+  .gass-setara-logo { height: 1.8rem; }
+  .gass-copyright { margin-top: .55rem; }
+}
+
+@media (max-height: 620px) {
+  .gass-login-page {
+    height: auto;
+    overflow-y: auto;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

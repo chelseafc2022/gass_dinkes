@@ -1,11 +1,13 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
+  ArrowLeft,
   Eye,
   EyeOff,
   Leaf,
@@ -28,14 +30,25 @@ type FieldErrors = Partial<Record<keyof Credentials, string>>;
 function GovernmentIdentity({ compact = false }: { compact?: boolean }) {
   return (
     <div className={compact ? "gass-agency gass-agency--compact" : "gass-agency"}>
-      <Image
-        src="/branding/logo-konsel.png"
-        alt="Lambang Kabupaten Konawe Selatan"
-        width={678}
-        height={800}
-        className="gass-agency__crest"
-        priority
-      />
+      <div className="gass-agency__marks">
+        <Image
+          src="/branding/logo-konsel.png"
+          alt="Lambang Kabupaten Konawe Selatan"
+          width={678}
+          height={800}
+          className="gass-agency__crest"
+          priority
+        />
+        <span className="gass-agency__divider" aria-hidden="true" />
+        <Image
+          src="/branding/kemenkes_logo.webp"
+          alt="Kementerian Kesehatan Republik Indonesia"
+          width={3840}
+          height={1739}
+          className="gass-agency__kemenkes"
+          priority
+        />
+      </div>
       <div>
         <span>Dinas Kesehatan</span>
         <small>Kabupaten Konawe Selatan</small>
@@ -76,7 +89,7 @@ function LoginForm() {
     const errors: FieldErrors = {};
 
     if (!credentials.identifier) {
-      errors.identifier = "Username atau NIP wajib diisi.";
+      errors.identifier = "Username wajib diisi.";
     }
     if (!credentials.password) {
       errors.password = "Password wajib diisi.";
@@ -90,14 +103,14 @@ function LoginForm() {
   return (
     <form className="gass-login-form" onSubmit={handleSubmit} noValidate>
       <div className="gass-field">
-        <label htmlFor="identifier">Username atau NIP</label>
+        <label htmlFor="identifier">Username</label>
         <div className="gass-input-wrap">
           <UserRound aria-hidden="true" />
           <input
             id="identifier"
             name="identifier"
             type="text"
-            placeholder="Masukkan username atau NIP"
+            placeholder="Masukkan username"
             autoComplete="username"
             autoCapitalize="none"
             spellCheck={false}
@@ -265,8 +278,12 @@ export default function LoginPage() {
           </div>
 
           <div className="gass-setara-brand">
+            <Link href="/#profil" className="gass-profile-link">
+              <ArrowLeft aria-hidden="true" />
+              Profil GASS
+            </Link>
             <Image
-              src="/branding/logo-setara.png"
+              src="/branding/new_logo_Setara.png"
               alt="Logo SETARA"
               width={160}
               height={52}

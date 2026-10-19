@@ -155,7 +155,7 @@ export class AdminController {
           canAccess:
             rows.find((r) => r.role === role && r.menuKey === menuKey)
               ?.canAccess ?? defaultPermission(role, menuKey),
-          locked: role === "ADMIN_DINKES" || !hardPermission(role, menuKey),
+          locked: role === "ADMIN_DINKES",
         })),
       ),
     };
@@ -173,12 +173,9 @@ export class AdminController {
       })
       .strict()
       .parse(body);
-    if (
-      b.role === "ADMIN_DINKES" ||
-      (b.canAccess && !hardPermission(b.role, b.menuKey))
-    )
+    if (b.role === "ADMIN_DINKES")
       throw new ForbiddenException(
-        "Batas otoritas peran ini tidak dapat diubah.",
+        "Batas otoritas peran Admin Dinkes tidak dapat diubah.",
       );
     return this.db.$transaction(async (tx) => {
       const r = await tx.menuPermission.upsert({

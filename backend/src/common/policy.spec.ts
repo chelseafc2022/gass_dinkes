@@ -66,10 +66,10 @@ describe("Data scope and scoring", () => {
     expect(facilityScope(u)).toBe("a"));
   test("unassigned operator fails closed", () =>
     expect(() => facilityScope({ ...u, faskesId: null })).toThrow());
-  test("operator master permissions cannot be elevated by matrix", () =>
-    expect(hardPermission(u.role, "master_program")).toBe(false));
-  test("head of department cannot administer accounts", () =>
-    expect(hardPermission("KEPALA_DINAS", "pengguna")).toBe(false));
+  test("admin dinkes always has full permission", () =>
+    expect(hardPermission("ADMIN_DINKES", "pengguna")).toBe(true));
+  test("roles can be configured dynamically by matrix", () =>
+    expect(hardPermission(u.role, "master_program")).toBe(true));
   test("zero target never produces infinity", () =>
     expect(percentage(100, 0)).toBe(0));
   test("uses absolute threshold when configured", () =>

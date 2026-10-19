@@ -437,12 +437,21 @@ integration("GASS API with isolated PostgreSQL", () => {
       })
       .expect(200);
   });
-  test("matrix cannot grant operator master access", async () => {
+  test("matrix allows admin dinkes to grant operator master access", async () => {
     await call("put", "/admin/permissions")
       .send({
         role: "OPERATOR_PUSKESMAS",
         menuKey: "master_program",
         canAccess: true,
+      })
+      .expect(200);
+  });
+  test("matrix prevents modifying admin dinkes permissions", async () => {
+    await call("put", "/admin/permissions")
+      .send({
+        role: "ADMIN_DINKES",
+        menuKey: "pengguna",
+        canAccess: false,
       })
       .expect(403);
   });

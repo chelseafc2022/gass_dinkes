@@ -93,6 +93,15 @@ export default function Home() {
               <div className={styles.profileStamp}><HeartPulse size={26} aria-hidden="true" /><span>Dekat dengan warga.<br /><strong>Nyata dalam aksi.</strong></span></div>
             </div>
             <div className={styles.profileCopy}>
+              <div className={styles.profileSetara}>
+                <Image
+                  src="/branding/new_logo_Setara.png"
+                  alt="SETARA — Sehat, Cerdas dan Sejahtera"
+                  width={8042}
+                  height={4157}
+                  sizes="150px"
+                />
+              </div>
               <p className={styles.eyebrow}><span />PROFIL INOVASI GASS</p>
               <h2 id="profile-title">Layanan kesehatan<br />yang bergerak menjangkau.</h2>
               <p>GASS adalah model inovasi tata kelola pelayanan kesehatan berbasis kolaborasi. Pemerintah daerah, puskesmas, desa, dan masyarakat bekerja bersama agar setiap sasaran ditemukan, dilayani, dipantau, dan ditindaklanjuti.</p>
