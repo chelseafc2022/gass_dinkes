@@ -113,7 +113,10 @@ function InlineCell({
 
   if (disabled) {
     return (
-      <span className="block text-center text-xs font-mono font-medium text-muted-foreground select-none">
+      <span
+        className={`inline-flex items-center justify-center w-full h-7 text-center text-xs font-mono font-medium text-muted-foreground/60 select-none rounded bg-muted/40 border border-dashed border-border/70 cursor-not-allowed ${className ?? ""}`}
+        title="Kolom ini terkunci atau bulan laporan telah ditutup"
+      >
         {hasValue ? value ?? 0 : "—"}
       </span>
     );
@@ -137,13 +140,13 @@ function InlineCell({
       placeholder={placeholder}
       className={`w-full h-7 text-center text-xs font-mono font-semibold rounded transition-all select-all
         [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
-        border ${
+        border shadow-2xs ${
           success
             ? "border-emerald-500 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold"
             : saving
             ? "border-primary/40 bg-primary/10 animate-pulse text-muted-foreground"
-            : "border-transparent bg-muted/30 hover:border-border hover:bg-muted/60 focus:border-primary focus:bg-background focus:ring-1 focus:ring-primary focus:outline-none"
-        } ${className}`}
+            : "border-slate-300/80 dark:border-slate-700 bg-background text-foreground hover:border-primary/60 hover:bg-primary/[0.02] focus:border-primary focus:bg-background focus:ring-1 focus:ring-primary focus:outline-none"
+        } ${className ?? ""}`}
     />
   );
 }
@@ -158,6 +161,7 @@ export default function Capaian({
     valid = ["kinerja", "keuangan"].includes(kind),
     { user } = useAuth(),
     client = useQueryClient();
+  const canReview = user?.role === "ADMIN_DINKES" || user?.role === "AKUN_BIDANG";
   const [filters, setFilters] = useState(initialFilters),
     [search, setSearch] = useState(""),
     [category, setCategory] = useState(""),
@@ -479,7 +483,15 @@ export default function Capaian({
               <span id="capaian-scroll-help">Geser tabel ke kanan untuk melihat seluruh bulan dan tindakan.</span>
             </div>
             <Table
-              className={`w-full table-fixed text-xs ${money ? "min-w-[3080px]" : "min-w-[1872px]"}`}
+              className={`w-full table-fixed text-xs ${
+                money
+                  ? canReview
+                    ? "min-w-[3080px]"
+                    : "min-w-[2936px]"
+                  : canReview
+                  ? "min-w-[1872px]"
+                  : "min-w-[1728px]"
+              }`}
               containerProps={{
                 role: "region",
                 "aria-label": `Tabel capaian ${kind}`,
@@ -494,7 +506,7 @@ export default function Capaian({
                 {monthKeys.map((key) => <col key={key} className={money ? "w-[176px]" : "w-[88px]"} />)}
                 <col className={money ? "w-[180px]" : "w-[120px]"} />
                 <col className="w-36" />
-                <col className="w-36" />
+                {canReview && <col className="w-36" />}
               </colgroup>
               <TableHeader className="sticky top-0 z-20 bg-card shadow-sm">
                 <TableRow className="bg-muted/50 hover:bg-muted/50">
@@ -514,20 +526,34 @@ export default function Capaian({
                   <TableHead scope="col" rowSpan={2} className="px-3 py-3 text-center text-xs whitespace-normal leading-5 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-950 dark:text-emerald-200 border-r border-emerald-200/50 dark:border-emerald-800/40 font-semibold">
                     Realisasi<span className="block font-normal">{money ? "(Rp)" : "kumulatif"}</span>
                   </TableHead>
-                  <TableHead scope="col" rowSpan={2} className="border-r px-3 py-3 text-center text-xs font-semibold whitespace-normal leading-5">
+                  <TableHead
+                    scope="col"
+                    rowSpan={2}
+                    className={`${canReview ? "border-r" : ""} px-3 py-3 text-center text-xs font-semibold whitespace-normal leading-5`}
+                  >
                     Capaian (%)<span className="block font-normal">Threshold{money ? "" : ` TW ${q.data?.threshold?.triwulan ?? 4}`}</span>
                   </TableHead>
-                  <TableHead scope="col" rowSpan={2} className="px-3 py-3 text-center text-xs font-semibold whitespace-normal leading-5">
-                    Verifikasi<span className="block font-normal">bulanan</span>
-                  </TableHead>
+                  {canReview && (
+                    <TableHead scope="col" rowSpan={2} className="px-3 py-3 text-center text-xs font-semibold whitespace-normal leading-5">
+                      Verifikasi<span className="block font-normal">bulanan</span>
+                    </TableHead>
+                  )}
                 </TableRow>
                 <TableRow className="bg-muted/30 hover:bg-muted/30">
                   {monthNames.map((m, i) => (
-                    <TableHead key={m} scope="col" className={`px-2 py-2.5 text-center text-xs whitespace-normal ${i % 3 === 2 ? "border-r" : ""}`}>
+                    <TableHead
+                      key={m}
+                      scope="col"
+                      className={`px-2 py-2.5 text-center text-xs whitespace-normal ${
+                        i % 3 === 2 ? "border-r" : ""
+                      } ${!q.data.months[i].open ? "bg-muted/30" : ""}`}
+                    >
                       <div className="font-semibold text-xs leading-5">{m.slice(0, 3)}</div>
                       <span
                         className={`inline-flex items-center justify-center text-[10px] font-medium leading-4 ${
-                          q.data.months[i].open ? "text-primary" : "text-muted-foreground"
+                          q.data.months[i].open
+                            ? "text-primary font-semibold"
+                            : "text-muted-foreground/60"
                         }`}
                       >
                         {q.data.months[i].open ? "BUKA" : "TUTUP"}
@@ -540,7 +566,7 @@ export default function Capaian({
                 {q.data.data.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={17}
+                      colSpan={canReview ? 17 : 16}
                       className="h-52 text-left whitespace-normal text-muted-foreground"
                     >
                       <p className="sticky left-0 w-72 max-w-full px-4 leading-6">
@@ -554,25 +580,33 @@ export default function Capaian({
                     <TableRow key={r.id} className="group hover:bg-muted/20">
                       <TableCell className="sm:sticky sm:left-0 z-10 border-r bg-card px-4 py-4 align-top whitespace-normal [overflow-wrap:anywhere]">
                         <div className="flex items-start justify-between gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => setSheetRow(r)}
-                            className="text-left font-semibold text-sm leading-5 hover:text-primary transition-colors hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded cursor-pointer"
-                            title={`Klik untuk membuka panel detail & verifikasi ${r.label}`}
-                          >
-                            {r.label}
-                          </button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="size-6 shrink-0 text-muted-foreground hover:text-primary"
-                            title={`Buka detail & verifikasi ${r.label}`}
-                            aria-label={`Detail ${r.label}`}
-                            onClick={() => setSheetRow(r)}
-                          >
-                            <Eye className="size-3.5" />
-                          </Button>
+                          {canReview ? (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => setSheetRow(r)}
+                                className="text-left font-semibold text-sm leading-5 hover:text-primary transition-colors hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded cursor-pointer"
+                                title={`Klik untuk membuka panel detail & verifikasi ${r.label}`}
+                              >
+                                {r.label}
+                              </button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="size-6 shrink-0 text-muted-foreground hover:text-primary"
+                                title={`Buka detail & verifikasi ${r.label}`}
+                                aria-label={`Detail ${r.label}`}
+                                onClick={() => setSheetRow(r)}
+                              >
+                                <Eye className="size-3.5" />
+                              </Button>
+                            </>
+                          ) : (
+                            <p className="text-sm font-semibold leading-5 text-foreground">
+                              {r.label}
+                            </p>
+                          )}
                         </div>
                         <p className="text-xs text-muted-foreground leading-5 mt-1.5" title={r.indikator?.subKegiatan.namaSubKegiatan ?? r.subKegiatan.kegiatan.namaKegiatan}>
                           {r.indikator?.subKegiatan.namaSubKegiatan ??
@@ -582,63 +616,90 @@ export default function Capaian({
                           {shortFaskes(r.faskes.namaFaskes)}
                         </Badge>
                       </TableCell>
-                      <TableCell className="px-2 py-3 text-center align-middle bg-sky-500/[0.035] dark:bg-sky-500/[0.06] border-r border-sky-100/60 dark:border-sky-900/30 tabular-nums">
-                        {money ? (
-                          <button
-                            disabled={
-                              readOnly ||
-                              (user?.role === "OPERATOR_PUSKESMAS" &&
-                                (r.verifikasiBulanan?.some((m: any) => m.isValidated) ||
-                                  q.data.months.some((p: any) => !p.open)))
-                            }
-                            onClick={() => open(r)}
-                            className="text-xs font-mono font-medium hover:underline disabled:cursor-default"
-                          >
-                            {fmt(r.target)}
-                          </button>
-                        ) : (
-                          <InlineCell
-                            value={r.target}
-                            disabled={
-                              readOnly ||
-                              (user?.role === "OPERATOR_PUSKESMAS" &&
-                                (r.verifikasiBulanan?.some((m: any) => m.isValidated) ||
-                                  q.data.months.some((p: any) => !p.open)))
-                            }
-                            max={999}
-                            className="bg-transparent hover:bg-sky-500/10"
-                            onSave={(val) =>
-                              saveInline({
-                                entityId: r.indikatorId ?? r.subKegiatanId,
-                                faskesId: r.faskesId,
-                                tahun: filters.tahun,
-                                target: val,
-                              })
-                            }
-                          />
-                        )}
-                      </TableCell>
+                      {(() => {
+                        const targetDisabled =
+                          readOnly ||
+                          (user?.role === "OPERATOR_PUSKESMAS" &&
+                            (r.verifikasiBulanan?.some((m: any) => m.isValidated) ||
+                              q.data.months.some((p: any) => !p.open)));
+                        return (
+                          <TableCell className={`px-2 py-3 text-center align-middle border-r border-sky-100/60 dark:border-sky-900/30 tabular-nums ${
+                            targetDisabled
+                              ? "bg-sky-500/[0.015] dark:bg-sky-500/[0.03]"
+                              : "bg-sky-500/[0.045] dark:bg-sky-500/[0.08]"
+                          }`}>
+                            {money ? (
+                              <button
+                                disabled={targetDisabled}
+                                onClick={() => open(r)}
+                                className={`w-full h-7 text-xs font-mono rounded transition-all flex items-center justify-center tabular-nums ${
+                                  targetDisabled
+                                    ? "bg-muted/40 border border-dashed border-sky-200/60 dark:border-sky-900/40 text-muted-foreground/60 cursor-not-allowed font-medium"
+                                    : "bg-background border border-sky-300/80 dark:border-sky-700 text-sky-950 dark:text-sky-200 font-semibold shadow-2xs hover:border-sky-500 hover:bg-sky-50/50 dark:hover:bg-sky-950/40 cursor-pointer"
+                                }`}
+                                title={targetDisabled ? "Target terkunci" : "Klik untuk mengubah target tahunan"}
+                              >
+                                {fmt(r.target)}
+                              </button>
+                            ) : (
+                              <InlineCell
+                                value={r.target}
+                                disabled={targetDisabled}
+                                max={999}
+                                className={
+                                  targetDisabled
+                                    ? "border-sky-200/60 dark:border-sky-900/40"
+                                    : "border-sky-300/80 dark:border-sky-700 text-sky-950 dark:text-sky-200 hover:border-sky-500 hover:bg-sky-50/50"
+                                }
+                                onSave={(val) =>
+                                  saveInline({
+                                    entityId: r.indikatorId ?? r.subKegiatanId,
+                                    faskesId: r.faskesId,
+                                    tahun: filters.tahun,
+                                    target: val,
+                                  })
+                                }
+                              />
+                            )}
+                          </TableCell>
+                        );
+                      })()}
                       {monthKeys.map((key, i) => {
                         const monthly = r.verifikasiBulanan?.find((m: any) => m.bulan === i + 1);
                         const verified = !!monthly?.isValidated;
+                        const cellDisabled =
+                          readOnly ||
+                          !q.data.months[i].open ||
+                          (user?.role === "OPERATOR_PUSKESMAS" && verified);
                         const verificationTitle = verified
                           ? monthly.legacyVerification
                             ? "Verifikasi dari laporan lama; nama pemeriksa dan tanggal bulanan belum tersedia."
                             : `Diverifikasi oleh ${monthly.verifiedBy?.name ?? "pemeriksa"}${monthly.verifiedAt ? ` pada ${new Date(monthly.verifiedAt).toLocaleString("id-ID")}` : ""}`
                           : monthly ? "Menunggu verifikasi Admin Dinkes atau penanggung jawab indikator." : "Belum diinput. Nilai 0 juga perlu disimpan jika memang tidak ada realisasi.";
                         return (
-                        <TableCell key={key} className={`px-2 py-3 text-center align-middle tabular-nums ${i % 3 === 2 ? "border-r" : ""}`}>
+                        <TableCell
+                          key={key}
+                          className={`px-2 py-3 text-center align-middle tabular-nums transition-colors ${
+                            i % 3 === 2 ? "border-r" : ""
+                          } ${cellDisabled ? "bg-muted/[0.14]" : ""}`}
+                        >
                           {money ? (
                             <button
-                              className="text-xs text-center w-full rounded px-1 py-1 hover:bg-primary/5 disabled:text-muted-foreground disabled:hover:bg-transparent"
+                              className={`w-full h-7 text-xs font-mono rounded transition-all flex items-center justify-center tabular-nums ${
+                                cellDisabled
+                                  ? "bg-muted/40 border border-dashed border-border/70 text-muted-foreground/60 cursor-not-allowed font-medium"
+                                  : "bg-background border border-slate-300/80 dark:border-slate-700 text-foreground font-semibold shadow-2xs hover:border-primary/60 hover:bg-primary/[0.02] cursor-pointer"
+                              }`}
                               aria-label={`Edit ${monthNames[i]} ${r.label}`}
-                              disabled={
-                                readOnly ||
-                                !q.data.months[i].open ||
-                                (user?.role === "OPERATOR_PUSKESMAS" &&
-                                  verified)
-                              }
+                              disabled={cellDisabled}
                               onClick={() => open(r, i + 1)}
+                              title={
+                                cellDisabled
+                                  ? verified
+                                    ? "Laporan telah diverifikasi dan terkunci"
+                                    : "Bulan laporan ditutup"
+                                  : `Klik untuk input realisasi ${monthNames[i]}`
+                              }
                             >
                               {monthly ? fmt(r[key]) : "—"}
                             </button>
@@ -648,12 +709,7 @@ export default function Capaian({
                               hasValue={!!monthly}
                               label={`Realisasi ${monthNames[i]} ${r.label}`}
                               placeholder="—"
-                              disabled={
-                                readOnly ||
-                                !q.data.months[i].open ||
-                                (user?.role === "OPERATOR_PUSKESMAS" &&
-                                  verified)
-                              }
+                              disabled={cellDisabled}
                               max={999}
                               onSave={(val) =>
                                 saveInline({
@@ -666,30 +722,39 @@ export default function Capaian({
                               }
                             />
                           )}
-                          <div className="mt-2 flex flex-col items-center gap-1.5" title={verificationTitle}>
-                            <span className={`text-[10px] leading-4 ${verified ? "text-emerald-700 dark:text-emerald-300" : "text-muted-foreground"}`}>
-                              {verified ? "Terverifikasi" : monthly ? "Menunggu" : "Belum diisi"}
-                            </span>
-                            {r.canVerify && monthly && (
-                              <Button
-                                variant={verified ? "secondary" : "outline"}
-                                size="sm"
-                                className="h-7 w-full gap-1 px-1 text-[11px]"
-                                aria-label={`${verified ? "Batalkan verifikasi" : "Verifikasi"} ${monthNames[i]} ${r.label} ${r.faskes.namaFaskes}`}
-                                disabled={verify.isPending}
-                                onClick={() => verify.mutate({ row: r, bulan: i + 1, validated: !verified })}
-                              >
-                                <CheckCheck className="size-3 shrink-0" />
-                                {verified ? "Batal" : "Verif"}
-                              </Button>
+                          <div className="mt-1.5 flex items-center justify-center" title={verificationTitle}>
+                            {verified ? (
+                              <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded-md">
+                                <CheckCircle2 className="size-2.5 shrink-0" />
+                                Sah
+                              </span>
+                            ) : monthly ? (
+                              <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded-md">
+                                <Clock className="size-2.5 shrink-0" />
+                                Menunggu
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-muted-foreground/40">—</span>
                             )}
                           </div>
                         </TableCell>
                       ); })}
-                      <TableCell className="px-3 py-3 text-center align-middle font-mono font-bold text-xs tabular-nums bg-emerald-500/[0.035] dark:bg-emerald-500/[0.06] border-r border-emerald-100/60 dark:border-emerald-900/30 text-emerald-950 dark:text-emerald-100">
-                        {fmt(r.realisasi)}
+                      <TableCell
+                        className="px-3 py-3 text-center align-middle font-mono font-bold text-xs tabular-nums bg-emerald-500/[0.035] dark:bg-emerald-500/[0.06] border-r border-emerald-100/60 dark:border-emerald-900/30 text-emerald-950 dark:text-emerald-100"
+                        title={
+                          r.realisasiGross > r.realisasi
+                            ? `Realisasi sah (terverifikasi): ${fmt(r.realisasi)} · Menunggu verifikasi: ${fmt(r.realisasiGross - r.realisasi)}`
+                            : undefined
+                        }
+                      >
+                        <div>{fmt(r.realisasi)}</div>
+                        {r.realisasiGross > r.realisasi && (
+                          <div className="text-[9px] font-sans font-normal text-amber-600 dark:text-amber-400 leading-tight mt-0.5">
+                            +{fmt(r.realisasiGross - r.realisasi)} draf
+                          </div>
+                        )}
                       </TableCell>
-                      <TableCell className="border-r px-3 py-3 text-center align-middle">
+                      <TableCell className={`${canReview ? "border-r" : ""} px-3 py-3 text-center align-middle`}>
                         <div className="flex flex-col items-center justify-center gap-2">
                           <span className="font-mono text-xs font-bold leading-tight">
                             {number(r.persentase)}%
@@ -697,33 +762,35 @@ export default function Capaian({
                           <StatusBadge status={r.status} compact />
                         </div>
                       </TableCell>
-                      <TableCell className="px-3 py-3 text-center align-middle">
-                        <div className="flex flex-col gap-2 items-center justify-center whitespace-normal">
-                          <span className="font-semibold">{r.verifiedMonths ?? 0}/{r.submittedMonths ?? 0} bulan</span>
-                          <span className="text-[11px] text-muted-foreground">terverifikasi dari bulan yang diinput</span>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-7 w-full gap-1 text-[11px] font-medium border-primary/30 text-primary hover:bg-primary/5"
-                            onClick={() => setSheetRow(r)}
-                            aria-label={`Detail dan verifikasi ${r.label}`}
-                          >
-                            <Eye className="size-3 shrink-0" />
-                            Panel Verif
-                          </Button>
-                          {user?.role === "ADMIN_DINKES" && (
+                      {canReview && (
+                        <TableCell className="px-3 py-3 text-center align-middle">
+                          <div className="flex flex-col gap-2 items-center justify-center whitespace-normal">
+                            <span className="font-semibold">{r.verifiedMonths ?? 0}/{r.submittedMonths ?? 0} bulan</span>
+                            <span className="text-[11px] text-muted-foreground">terverifikasi dari bulan yang diinput</span>
                             <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
-                              aria-label="Hapus laporan"
-                              onClick={() => setDeleting(r)}
+                              variant="outline"
+                              size="sm"
+                              className="h-7 w-full gap-1 text-[11px] font-medium border-primary/30 text-primary hover:bg-primary/5"
+                              onClick={() => setSheetRow(r)}
+                              aria-label={`Detail dan verifikasi ${r.label}`}
                             >
-                              <Trash2 className="size-3" />
+                              <Eye className="size-3 shrink-0" />
+                              Panel Verif
                             </Button>
-                          )}
-                        </div>
-                      </TableCell>
+                            {user?.role === "ADMIN_DINKES" && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+                                aria-label="Hapus laporan"
+                                onClick={() => setDeleting(r)}
+                              >
+                                <Trash2 className="size-3" />
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      )}
                     </TableRow>
                   ))
                 )}
@@ -731,7 +798,10 @@ export default function Capaian({
             </Table>
           </div>
           <p className="text-[10px] text-muted-foreground mt-2">
-            * Verifikasi dilakukan per bulan. Bulan terverifikasi terkunci bagi faskes. Koreksi realisasi membatalkan verifikasi bulan tersebut; perubahan target tahunan membatalkan seluruh verifikasi bulan.
+            * Realisasi kumulatif dan persentase capaian hanya mengakumulasi data bulanan yang telah terverifikasi.
+            {canReview
+              ? ' Gunakan tombol "Panel Verif" untuk memeriksa dan menyetujui laporan bulanan.'
+              : " Hubungi Dinas Kesehatan / penanggung jawab indikator untuk verifikasi laporan."}
           </p>
         </>
       )}
@@ -1149,7 +1219,8 @@ export default function Capaian({
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <Sheet open={!!sheetRow} onOpenChange={(v) => !v && setSheetRow(null)}>
+      {canReview && (
+        <Sheet open={!!sheetRow} onOpenChange={(v) => !v && setSheetRow(null)}>
         <SheetContent
           side="right"
           className="w-full sm:max-w-xl md:max-w-2xl overflow-y-auto p-0 flex flex-col gap-0 border-l bg-card"
@@ -1332,6 +1403,7 @@ export default function Capaian({
           )}
         </SheetContent>
       </Sheet>
+      )}
     </>
   );
 }

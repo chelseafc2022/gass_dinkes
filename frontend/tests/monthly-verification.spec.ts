@@ -118,30 +118,37 @@ async function mockReports(page: Page, role: string, kind: string) {
 }
 
 for (const kind of ["kinerja", "keuangan"]) {
-  test(`${kind}: reviewer verifies one month and can reopen it`, async ({
+  test(`${kind}: reviewer verifies one month and can reopen it via verification panel`, async ({
     page,
   }) => {
     const requests = await mockReports(page, "AKUN_BIDANG", kind);
     await page.goto(`/capaian/${kind}`);
     await expect(page.getByText("1/2 bulan", { exact: true })).toBeVisible();
+
+    // Verifikasi bahwa tombol verifikasi di dalam sel tabel sudah ditiadakan (tabel bersih dan rapi)
     await expect(
-      page.getByRole("button", { name: /^Verifikasi Maret/ }),
+      page.getByRole("button", { name: /^Verifikasi / }),
     ).toHaveCount(0);
-    await page.getByRole("button", { name: /^Verifikasi Februari/ }).click();
+
+    // Buka Panel Verif
+    await page.getByRole("button", { name: /^Detail dan verifikasi/ }).click();
+    const sheet = page.locator('[data-slot="sheet-content"]');
+    await expect(sheet).toBeVisible();
+
+    // Verifikasi Februari di dalam panel
+    const febRow = sheet.getByTestId("sheet-month-2");
+    await febRow.getByRole("button", { name: /Verifikasi/ }).click();
     await expect(page.getByText("2/2 bulan", { exact: true })).toBeVisible();
     expect(requests[0]).toEqual({
       path: `/api/capaian/${kind}/report/verify`,
       body: { bulan: 2, validated: true, nilai: 0, target: 100 },
     });
-    await page
-      .getByRole("button", { name: /^Batalkan verifikasi Januari/ })
-      .click();
-    await expect(
-      page.getByRole("button", { name: /^Verifikasi Januari/ }),
-    ).toBeVisible();
-    await expect(
-      page.getByRole("button", { name: /^Batalkan verifikasi Februari/ }),
-    ).toBeVisible();
+
+    // Batalkan verifikasi Januari di dalam panel
+    const janRow = sheet.getByTestId("sheet-month-1");
+    await janRow.getByRole("button", { name: /Batalkan/ }).click();
+    await expect(janRow.getByRole("button", { name: /Verifikasi/ })).toBeVisible();
+    await expect(febRow.getByRole("button", { name: /Batalkan/ })).toBeVisible();
     expect(requests[1].body.bulan).toBe(1);
     expect(requests[1].body.validated).toBe(false);
     await page.screenshot({
@@ -159,6 +166,21 @@ test("faskes can submit zero in an empty month while a different month stays loc
   await expect(page.getByRole("button", { name: /^Verifikasi / })).toHaveCount(
     0,
   );
+  // Pastikan kolom verifikasi, tombol Panel Verif, dan trigger sheet tidak ditampilkan untuk operator faskes
+  await expect(
+    page.getByRole("columnheader", { name: /Verifikasi/ }),
+  ).toHaveCount(0);
+  await expect(page.getByRole("button", { name: /Panel Verif/ })).toHaveCount(
+    0,
+  );
+  await expect(
+    page.getByRole("button", { name: /^Detail dan verifikasi/ }),
+  ).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Indikator Uji" })).toHaveCount(
+    0,
+  );
+  await expect(page.getByText("Indikator Uji", { exact: true })).toBeVisible();
+
   await expect(page.getByLabel("Realisasi Januari Indikator Uji")).toHaveCount(
     0,
   );
@@ -169,7 +191,7 @@ test("faskes can submit zero in an empty month while a different month stays loc
   await expect(march).toHaveValue("");
   await march.fill("0");
   await march.press("Enter");
-  await expect(page.getByText("1/3 bulan", { exact: true })).toBeVisible();
+  await expect(march).toHaveValue("0");
   expect(requests[0].body).toEqual({
     entityId: "indicator",
     faskesId: "facility",

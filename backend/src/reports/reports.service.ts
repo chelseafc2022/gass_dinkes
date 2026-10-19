@@ -191,11 +191,17 @@ export class ReportsService {
     const monthly = r.verifikasiBulanan ?? [];
     const target = Number(
         kind === "kinerja" ? r.targetKinerja : r.targetKeuangan,
-      ),
-      realisasi = this.selectedMonths(q, kind === "kinerja").reduce(
-        (s, k) => s + Number(r[k]),
-        0,
       );
+    const months = this.selectedMonths(q, kind === "kinerja");
+    const realisasi = months.reduce((s, k) => {
+      const monthNum = MONTHS.indexOf(k) + 1;
+      const isVerified = monthly.some(
+        (m: { bulan: number; isValidated: boolean }) =>
+          m.bulan === monthNum && m.isValidated,
+      );
+      return isVerified ? s + Number(r[k]) : s;
+    }, 0);
+    const realisasiGross = months.reduce((s, k) => s + Number(r[k]), 0);
     return {
       ...r,
       verifikasiBulanan: monthly,
@@ -209,6 +215,7 @@ export class ReportsService {
       ...Object.fromEntries(MONTHS.map((k) => [k, Number(r[k])])),
       target,
       realisasi,
+      realisasiGross,
       persentase: percentage(realisasi, target),
       status: status(realisasi, target, threshold),
       label: r.indikator?.namaIndikator ?? r.subKegiatan.namaSubKegiatan,
@@ -523,10 +530,14 @@ export class ReportsService {
           rows.reduce(
             (s, r) =>
               s +
-              MONTHS.slice(0, triwulan * 3).reduce(
-                (v, m) => v + Number(r[m]),
-                0,
-              ),
+              MONTHS.slice(0, triwulan * 3).reduce((v, m) => {
+                const monthNum = MONTHS.indexOf(m) + 1;
+                const isVerified = r.verifikasiBulanan?.some(
+                  (vb: { bulan: number; isValidated: boolean }) =>
+                    vb.bulan === monthNum && vb.isValidated,
+                );
+                return isVerified ? v + Number(r[m]) : v;
+              }, 0),
             0,
           ),
           target,

@@ -58,20 +58,26 @@ describe("Global threshold across reports and dashboard", () => {
       { rules: async () => rules } as ThresholdService,
     );
   });
-  test.each([1, 2, 3, 4])(
-    "TW %s uses Jan-to-quarter cumulative values, not legacy indicator rules",
-    async (triwulan) => {
+  test.each([
+    { triwulan: 1, expectedRealisasi: 25, expectedStatus: "KUNING" },
+    { triwulan: 2, expectedRealisasi: 50, expectedStatus: "KUNING" },
+    { triwulan: 3, expectedRealisasi: 50, expectedStatus: "MERAH" },
+    { triwulan: 4, expectedRealisasi: 50, expectedStatus: "MERAH" },
+  ])(
+    "TW $triwulan uses Jan-to-quarter verified cumulative values (realisasi: $expectedRealisasi)",
+    async ({ triwulan, expectedRealisasi, expectedStatus }) => {
       const reports = await service.list("kinerja", actor, {
         tahun: 2026,
         triwulan,
       });
-      expect(reports.data[0].realisasi).toBe(triwulan * 25);
-      expect(reports.data[0].status).toBe(triwulan === 4 ? "HIJAU" : "KUNING");
+      expect(reports.data[0].realisasi).toBe(expectedRealisasi);
+      expect(reports.data[0].status).toBe(expectedStatus);
       expect(reports.threshold?.triwulan).toBe(triwulan);
       const dashboard = await service.dashboard(actor, {
         tahun: 2026,
         triwulan,
       });
+      expect(dashboard.indicators[0].realisasi).toBe(expectedRealisasi);
       expect(dashboard.indicators[0].status).toBe(reports.data[0].status);
       expect(dashboard.summary.jumlahLaporan).toBe(triwulan);
       expect(dashboard.summary.tervalidasi).toBe(Math.min(2, triwulan));
@@ -79,14 +85,15 @@ describe("Global threshold across reports and dashboard", () => {
         reports.data[0].status,
       );
       expect(dashboard.indicators[0].trend.map((t) => t.value)).toEqual([
-        25, 50, 75, 100,
+        25, 50, 50, 50,
       ]);
     },
   );
-  test("annual view uses IV and monthly view accumulates through selected month", async () => {
+  test("annual view uses IV and monthly view accumulates through verified selected month", async () => {
     const annual = await service.list("kinerja", actor, { tahun: 2026 });
     expect(annual.threshold?.triwulan).toBe(4);
-    expect(annual.data[0].realisasi).toBe(100);
+    expect(annual.data[0].realisasi).toBe(50);
+    expect(annual.data[0].realisasiGross).toBe(100);
     const monthly = await service.list("kinerja", actor, {
       tahun: 2026,
       bulan: 5,
