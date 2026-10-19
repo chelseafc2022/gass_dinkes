@@ -14,6 +14,7 @@ import {
   X,
   CheckCircle2,
   Clock,
+  Lock,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -64,28 +65,58 @@ const indicatorCategories = [
   { value: "INDIKATOR_PROGRAM", label: "Indikator Program" },
 ];
 
+function formatTerbilangRingkas(val: number): string {
+  if (!val || isNaN(val) || val <= 0) return "";
+  if (val >= 1_000_000_000_000) {
+    const t = val / 1_000_000_000_000;
+    return `${new Intl.NumberFormat("id-ID", { maximumFractionDigits: 2 }).format(t)} Triliun`;
+  }
+  if (val >= 1_000_000_000) {
+    const m = val / 1_000_000_000;
+    return `${new Intl.NumberFormat("id-ID", { maximumFractionDigits: 2 }).format(m)} Miliar`;
+  }
+  if (val >= 1_000_000) {
+    const jt = val / 1_000_000;
+    return `${new Intl.NumberFormat("id-ID", { maximumFractionDigits: 2 }).format(jt)} Juta`;
+  }
+  if (val >= 1_000) {
+    const rb = val / 1_000;
+    return `${new Intl.NumberFormat("id-ID", { maximumFractionDigits: 2 }).format(rb)} Ribu`;
+  }
+  return "";
+}
+
 function InlineCell({
   value,
   hasValue = true,
   label,
   disabled,
+  status,
+  variant,
+  title,
   onSave,
   className = "",
   placeholder = "0",
   max = 999999999,
+  isCurrency = false,
 }: {
-  value: number;
+  value?: number;
   hasValue?: boolean;
   label?: string;
   disabled?: boolean;
+  status?: "verified" | "waiting";
+  variant?: "target";
+  title?: string;
   onSave: (val: number) => Promise<void> | void;
   className?: string;
   placeholder?: string;
   max?: number;
+  isCurrency?: boolean;
 }) {
   const [val, setVal] = useState<string>(hasValue ? String(value ?? 0) : "");
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [editing, setEditing] = useState(false);
 
   useEffect(() => {
     setVal(hasValue ? String(value ?? 0) : "");
@@ -111,43 +142,101 @@ function InlineCell({
     }
   };
 
+  const statusBorderAndBg =
+    variant === "target"
+      ? "border-sky-300/90 dark:border-sky-700 bg-sky-100/90 dark:bg-sky-950/60 text-sky-950 dark:text-sky-100 font-bold"
+      : status === "verified"
+      ? "border-emerald-500/40 dark:border-emerald-500/30 bg-emerald-500/[0.09] dark:bg-emerald-500/[0.15] text-emerald-900 dark:text-emerald-200"
+      : status === "waiting"
+      ? "border-amber-400 dark:border-amber-500/60 bg-amber-500/[0.09] dark:bg-amber-500/[0.15] text-amber-950 dark:text-amber-200"
+      : "border-slate-300/80 dark:border-slate-700 bg-background text-foreground";
+
   if (disabled) {
+    const disabledStyle =
+      variant === "target"
+        ? "border-sky-300 dark:border-sky-700 bg-sky-100 dark:bg-sky-900/60 text-sky-950 dark:text-sky-100 font-bold shadow-2xs cursor-not-allowed"
+        : status === "verified"
+        ? "border-emerald-500/40 dark:border-emerald-500/30 bg-emerald-500/[0.09] dark:bg-emerald-500/[0.15] text-emerald-900 dark:text-emerald-200 font-semibold cursor-not-allowed"
+        : status === "waiting"
+        ? "border-amber-400 dark:border-amber-500/60 bg-amber-500/[0.09] dark:bg-amber-500/[0.15] text-amber-950 dark:text-amber-200 font-semibold cursor-not-allowed"
+        : "text-muted-foreground/60 bg-muted/40 border border-dashed border-border/70 cursor-not-allowed";
+
     return (
       <span
-        className={`inline-flex items-center justify-center w-full h-7 text-center text-xs font-mono font-medium text-muted-foreground/60 select-none rounded bg-muted/40 border border-dashed border-border/70 cursor-not-allowed ${className ?? ""}`}
-        title="Kolom ini terkunci atau bulan laporan telah ditutup"
+        className={`inline-flex items-center justify-center w-full h-6 text-center text-[10.5px] font-mono tracking-tight select-none rounded px-0.5 border shadow-2xs ${disabledStyle} ${className}`}
+        title={title || "Kolom ini terkunci atau bulan laporan telah ditutup"}
       >
-        {hasValue ? value ?? 0 : "—"}
+        {hasValue ? (isCurrency ? rupiah(value ?? 0) : value ?? 0) : "—"}
       </span>
     );
   }
 
+  if (isCurrency && !editing) {
+    return (
+      <button
+        type="button"
+        aria-label={label}
+        onClick={() => setEditing(true)}
+        className={`w-full h-6 text-center text-[10.5px] font-mono tracking-tight font-semibold rounded transition-all select-none px-0.5
+          border shadow-2xs flex items-center justify-center cursor-text ${statusBorderAndBg} hover:border-primary/60 hover:bg-primary/[0.02] focus:border-primary focus:bg-background focus:ring-1 focus:ring-primary focus:outline-none ${className}`}
+        title={title || "Klik untuk langsung mengisi nilai keuangan"}
+      >
+        {hasValue ? rupiah(value ?? 0) : placeholder || "—"}
+      </button>
+    );
+  }
+
   return (
-    <input
-      type="number"
-      aria-label={label}
-      min={0}
-      max={max}
-      value={val}
-      onChange={(e) => setVal(e.target.value)}
-      onBlur={commit}
-      onKeyDown={(e) => {
-        if (e.key === "Enter") {
-          e.currentTarget.blur();
-        }
-      }}
-      disabled={saving}
-      placeholder={placeholder}
-      className={`w-full h-7 text-center text-xs font-mono font-semibold rounded transition-all select-all
-        [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
-        border shadow-2xs ${
-          success
-            ? "border-emerald-500 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold"
-            : saving
-            ? "border-primary/40 bg-primary/10 animate-pulse text-muted-foreground"
-            : "border-slate-300/80 dark:border-slate-700 bg-background text-foreground hover:border-primary/60 hover:bg-primary/[0.02] focus:border-primary focus:bg-background focus:ring-1 focus:ring-primary focus:outline-none"
-        } ${className ?? ""}`}
-    />
+    <div className="relative w-full">
+      <input
+        type="number"
+        autoFocus={isCurrency && editing}
+        aria-label={label}
+        title={title}
+        min={0}
+        max={max}
+        step={isCurrency ? "0.01" : "any"}
+        value={val}
+        onChange={(e) => setVal(e.target.value)}
+        onBlur={() => {
+          if (isCurrency) setEditing(false);
+          commit();
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.currentTarget.blur();
+          } else if (e.key === "Escape") {
+            setVal(hasValue ? String(value ?? 0) : "");
+            if (isCurrency) setEditing(false);
+          }
+        }}
+        disabled={saving}
+        placeholder={placeholder}
+        className={`w-full h-6 text-center text-[10.5px] font-mono tracking-tight font-semibold rounded transition-all select-all px-0.5
+          [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none
+          border shadow-2xs ${
+            success
+              ? "border-emerald-500 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold"
+              : saving
+              ? "border-primary/40 bg-primary/10 animate-pulse text-muted-foreground"
+              : isCurrency && editing
+              ? "border-primary bg-background text-foreground ring-1 ring-primary focus:outline-none"
+              : variant === "target"
+              ? "border-sky-400 dark:border-sky-600 bg-sky-100/90 dark:bg-sky-950/60 text-sky-950 dark:text-sky-100 font-bold hover:border-sky-500 focus:border-sky-500 focus:bg-background focus:ring-1 focus:ring-sky-500"
+              : `${statusBorderAndBg} hover:border-primary/60 hover:bg-primary/[0.02] focus:border-primary focus:bg-background focus:ring-1 focus:ring-primary focus:outline-none`
+          } ${className}`}
+      />
+      {isCurrency && editing && val !== "" && !isNaN(Number(val)) && (
+        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-1 z-40 pointer-events-none rounded-md bg-popover text-popover-foreground text-[10.5px] font-mono font-bold px-2 py-0.5 shadow-lg border border-border/80 whitespace-nowrap flex items-center gap-1 animate-in fade-in zoom-in-95">
+          <span className="text-emerald-600 dark:text-emerald-400">{rupiah(Number(val))}</span>
+          {formatTerbilangRingkas(Number(val)) && (
+            <span className="text-[9.5px] text-muted-foreground font-sans font-normal">
+              ({formatTerbilangRingkas(Number(val))})
+            </span>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -486,11 +575,11 @@ export default function Capaian({
               className={`w-full table-fixed text-xs ${
                 money
                   ? canReview
-                    ? "min-w-[3080px]"
-                    : "min-w-[2936px]"
+                    ? "min-w-[1572px]"
+                    : "min-w-[1474px]"
                   : canReview
-                  ? "min-w-[1872px]"
-                  : "min-w-[1728px]"
+                  ? "min-w-[1074px]"
+                  : "min-w-[976px]"
               }`}
               containerProps={{
                 role: "region",
@@ -501,65 +590,65 @@ export default function Capaian({
               }}
             >
               <colgroup>
-                <col className="w-[320px]" />
-                <col className={money ? "w-[180px]" : "w-[88px]"} />
-                {monthKeys.map((key) => <col key={key} className={money ? "w-[176px]" : "w-[88px]"} />)}
-                <col className={money ? "w-[180px]" : "w-[120px]"} />
-                <col className="w-36" />
-                {canReview && <col className="w-36" />}
+                <col className="w-[210px]" />
+                <col className={money ? "w-[92px]" : "w-[54px]"} />
+                {monthKeys.map((key) => <col key={key} className={money ? "w-[84px]" : "w-[48px]"} />)}
+                <col className={money ? "w-[92px]" : "w-[64px]"} />
+                <col className="w-[72px]" />
+                {canReview && <col className="w-[98px]" />}
               </colgroup>
               <TableHeader className="sticky top-0 z-20 bg-card shadow-sm">
                 <TableRow className="bg-muted/50 hover:bg-muted/50">
-                  <TableHead scope="col" rowSpan={2} className="sm:sticky sm:left-0 z-30 bg-card border-r px-4 py-3 text-sm font-semibold whitespace-normal leading-5 text-left">
+                  <TableHead scope="col" rowSpan={2} className="sm:sticky sm:left-0 z-30 bg-card border-r px-2 py-1.5 text-xs font-semibold whitespace-normal leading-4 text-left">
                     {money
                       ? "Sub kegiatan & kegiatan"
                       : "Indikator & sub kegiatan"}
                   </TableHead>
-                  <TableHead scope="col" rowSpan={2} className="px-2 py-3 text-center text-xs whitespace-normal leading-5 bg-sky-500/10 dark:bg-sky-500/15 text-sky-950 dark:text-sky-200 border-r border-sky-200/50 dark:border-sky-800/40 font-semibold">
-                    Target<span className="block font-normal">{money ? "tahunan (Rp)" : "tahunan"}</span>
+                  <TableHead scope="col" rowSpan={2} className="px-1 py-1.5 text-center text-[11px] whitespace-normal leading-tight bg-sky-500/10 dark:bg-sky-500/15 text-sky-950 dark:text-sky-200 border-r border-sky-200/50 dark:border-sky-800/40 font-semibold">
+                    Target<span className="block font-normal text-[10px]">{money ? "tahunan (Rp)" : "tahunan"}</span>
                   </TableHead>
                   {["I", "II", "III", "IV"].map((quarter) => (
-                    <TableHead key={quarter} scope="colgroup" colSpan={3} className="border-r px-2 py-2 text-center text-xs font-semibold whitespace-normal">
+                    <TableHead key={quarter} scope="colgroup" colSpan={3} className="border-r px-1 py-1 text-center text-[11px] font-semibold whitespace-normal leading-tight">
                       Triwulan {quarter}
                     </TableHead>
                   ))}
-                  <TableHead scope="col" rowSpan={2} className="px-3 py-3 text-center text-xs whitespace-normal leading-5 bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-950 dark:text-emerald-200 border-r border-emerald-200/50 dark:border-emerald-800/40 font-semibold">
-                    Realisasi<span className="block font-normal">{money ? "(Rp)" : "kumulatif"}</span>
+                  <TableHead scope="col" rowSpan={2} className="px-1 py-1.5 text-center text-[11px] whitespace-normal leading-tight bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-950 dark:text-emerald-200 border-r border-emerald-200/50 dark:border-emerald-800/40 font-semibold">
+                    Realisasi<span className="block font-normal text-[10px]">{money ? "(Rp)" : "kumulatif"}</span>
                   </TableHead>
                   <TableHead
                     scope="col"
                     rowSpan={2}
-                    className={`${canReview ? "border-r" : ""} px-3 py-3 text-center text-xs font-semibold whitespace-normal leading-5`}
+                    className={`${canReview ? "border-r" : ""} px-1 py-1.5 text-center text-[11px] font-semibold whitespace-normal leading-tight`}
                   >
-                    Capaian (%)<span className="block font-normal">Threshold{money ? "" : ` TW ${q.data?.threshold?.triwulan ?? 4}`}</span>
+                    Capaian (%)<span className="block font-normal text-[10px]">Threshold{money ? "" : ` TW ${q.data?.threshold?.triwulan ?? 4}`}</span>
                   </TableHead>
                   {canReview && (
-                    <TableHead scope="col" rowSpan={2} className="px-3 py-3 text-center text-xs font-semibold whitespace-normal leading-5">
-                      Verifikasi<span className="block font-normal">bulanan</span>
+                    <TableHead scope="col" rowSpan={2} className="px-1 py-1.5 text-center text-[11px] font-semibold whitespace-normal leading-tight">
+                      Verifikasi<span className="block font-normal text-[10px]">bulanan</span>
                     </TableHead>
                   )}
                 </TableRow>
                 <TableRow className="bg-muted/30 hover:bg-muted/30">
-                  {monthNames.map((m, i) => (
-                    <TableHead
-                      key={m}
-                      scope="col"
-                      className={`px-2 py-2.5 text-center text-xs whitespace-normal ${
-                        i % 3 === 2 ? "border-r" : ""
-                      } ${!q.data.months[i].open ? "bg-muted/30" : ""}`}
-                    >
-                      <div className="font-semibold text-xs leading-5">{m.slice(0, 3)}</div>
-                      <span
-                        className={`inline-flex items-center justify-center text-[10px] font-medium leading-4 ${
-                          q.data.months[i].open
-                            ? "text-primary font-semibold"
-                            : "text-muted-foreground/60"
-                        }`}
+                  {monthNames.map((m, i) => {
+                    const isOpen = q.data.months[i].open;
+                    return (
+                      <TableHead
+                        key={m}
+                        scope="col"
+                        className={`px-0.5 py-1.5 text-center text-[11px] whitespace-normal leading-tight ${
+                          i % 3 === 2 ? "border-r" : ""
+                        } ${!isOpen ? "bg-muted/40 text-muted-foreground" : ""}`}
+                        title={isOpen ? `Bulan ${m}` : `Bulan ${m} (Terkunci)`}
                       >
-                        {q.data.months[i].open ? "BUKA" : "TUTUP"}
-                      </span>
-                    </TableHead>
-                  ))}
+                        <div className="flex items-center justify-center gap-0.5 font-semibold">
+                          <span>{m.slice(0, 3)}</span>
+                          {!isOpen && (
+                            <Lock className="size-2.5 text-muted-foreground/70 shrink-0" aria-label="Terkunci" />
+                          )}
+                        </div>
+                      </TableHead>
+                    );
+                  })}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -578,14 +667,14 @@ export default function Capaian({
                 ) : (
                   q.data.data.map((r: any) => (
                     <TableRow key={r.id} className="group hover:bg-muted/20">
-                      <TableCell className="sm:sticky sm:left-0 z-10 border-r bg-card px-4 py-4 align-top whitespace-normal [overflow-wrap:anywhere]">
-                        <div className="flex items-start justify-between gap-1.5">
+                      <TableCell className="sm:sticky sm:left-0 z-10 border-r bg-card px-2.5 py-2 align-top whitespace-normal [overflow-wrap:anywhere]">
+                        <div className="flex items-start justify-between gap-1">
                           {canReview ? (
                             <>
                               <button
                                 type="button"
                                 onClick={() => setSheetRow(r)}
-                                className="text-left font-semibold text-sm leading-5 hover:text-primary transition-colors hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded cursor-pointer"
+                                className="text-left font-semibold text-xs leading-4 hover:text-primary transition-colors hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded cursor-pointer"
                                 title={`Klik untuk membuka panel detail & verifikasi ${r.label}`}
                               >
                                 {r.label}
@@ -594,25 +683,25 @@ export default function Capaian({
                                 type="button"
                                 variant="ghost"
                                 size="icon"
-                                className="size-6 shrink-0 text-muted-foreground hover:text-primary"
+                                className="size-5 shrink-0 text-muted-foreground hover:text-primary"
                                 title={`Buka detail & verifikasi ${r.label}`}
                                 aria-label={`Detail ${r.label}`}
                                 onClick={() => setSheetRow(r)}
                               >
-                                <Eye className="size-3.5" />
+                                <Eye className="size-3" />
                               </Button>
                             </>
                           ) : (
-                            <p className="text-sm font-semibold leading-5 text-foreground">
+                            <p className="text-xs font-semibold leading-4 text-foreground">
                               {r.label}
                             </p>
                           )}
                         </div>
-                        <p className="text-xs text-muted-foreground leading-5 mt-1.5" title={r.indikator?.subKegiatan.namaSubKegiatan ?? r.subKegiatan.kegiatan.namaKegiatan}>
+                        <p className="text-[11px] text-muted-foreground leading-snug mt-1" title={r.indikator?.subKegiatan.namaSubKegiatan ?? r.subKegiatan.kegiatan.namaKegiatan}>
                           {r.indikator?.subKegiatan.namaSubKegiatan ??
                             r.subKegiatan.kegiatan.namaKegiatan}
                         </p>
-                        <Badge variant="outline" className="max-w-full whitespace-normal text-left text-[11px] leading-4 mt-2 px-2 py-0.5 h-auto font-normal" title={r.faskes.namaFaskes}>
+                        <Badge variant="outline" className="max-w-full whitespace-normal text-left text-[10px] leading-tight mt-1 px-1.5 py-0.5 h-auto font-normal" title={r.faskes.namaFaskes}>
                           {shortFaskes(r.faskes.namaFaskes)}
                         </Badge>
                       </TableCell>
@@ -623,44 +712,29 @@ export default function Capaian({
                             (r.verifikasiBulanan?.some((m: any) => m.isValidated) ||
                               q.data.months.some((p: any) => !p.open)));
                         return (
-                          <TableCell className={`px-2 py-3 text-center align-middle border-r border-sky-100/60 dark:border-sky-900/30 tabular-nums ${
-                            targetDisabled
-                              ? "bg-sky-500/[0.015] dark:bg-sky-500/[0.03]"
-                              : "bg-sky-500/[0.045] dark:bg-sky-500/[0.08]"
-                          }`}>
-                            {money ? (
-                              <button
-                                disabled={targetDisabled}
-                                onClick={() => open(r)}
-                                className={`w-full h-7 text-xs font-mono rounded transition-all flex items-center justify-center tabular-nums ${
-                                  targetDisabled
-                                    ? "bg-muted/40 border border-dashed border-sky-200/60 dark:border-sky-900/40 text-muted-foreground/60 cursor-not-allowed font-medium"
-                                    : "bg-background border border-sky-300/80 dark:border-sky-700 text-sky-950 dark:text-sky-200 font-semibold shadow-2xs hover:border-sky-500 hover:bg-sky-50/50 dark:hover:bg-sky-950/40 cursor-pointer"
-                                }`}
-                                title={targetDisabled ? "Target terkunci" : "Klik untuk mengubah target tahunan"}
-                              >
-                                {fmt(r.target)}
-                              </button>
-                            ) : (
-                              <InlineCell
-                                value={r.target}
-                                disabled={targetDisabled}
-                                max={999}
-                                className={
-                                  targetDisabled
-                                    ? "border-sky-200/60 dark:border-sky-900/40"
-                                    : "border-sky-300/80 dark:border-sky-700 text-sky-950 dark:text-sky-200 hover:border-sky-500 hover:bg-sky-50/50"
-                                }
-                                onSave={(val) =>
-                                  saveInline({
-                                    entityId: r.indikatorId ?? r.subKegiatanId,
-                                    faskesId: r.faskesId,
-                                    tahun: filters.tahun,
-                                    target: val,
-                                  })
-                                }
-                              />
-                            )}
+                          <TableCell className="px-1 py-1.5 text-center align-middle border-r border-sky-200/70 dark:border-sky-800/50 tabular-nums bg-sky-500/[0.08] dark:bg-sky-500/[0.12]">
+                            <InlineCell
+                              value={r.target}
+                              disabled={targetDisabled}
+                              variant="target"
+                              isCurrency={money}
+                              max={money ? 100000000000000 : 999}
+                              label={`Target tahunan ${r.label}`}
+                              title={
+                                targetDisabled
+                                  ? "Target tahunan telah ditetapkan & terkunci karena telah ada verifikasi bulanan"
+                                  : "Target tahunan (klik untuk mengisi)"
+                              }
+                              placeholder={money ? "Rp 0" : "0"}
+                              onSave={(val) =>
+                                saveInline({
+                                  entityId: r.indikatorId ?? r.subKegiatanId,
+                                  faskesId: r.faskesId,
+                                  tahun: filters.tahun,
+                                  target: val,
+                                })
+                              }
+                            />
                           </TableCell>
                         );
                       })()}
@@ -673,74 +747,40 @@ export default function Capaian({
                           (user?.role === "OPERATOR_PUSKESMAS" && verified);
                         const verificationTitle = verified
                           ? monthly.legacyVerification
-                            ? "Verifikasi dari laporan lama; nama pemeriksa dan tanggal bulanan belum tersedia."
-                            : `Diverifikasi oleh ${monthly.verifiedBy?.name ?? "pemeriksa"}${monthly.verifiedAt ? ` pada ${new Date(monthly.verifiedAt).toLocaleString("id-ID")}` : ""}`
-                          : monthly ? "Menunggu verifikasi Admin Dinkes atau penanggung jawab indikator." : "Belum diinput. Nilai 0 juga perlu disimpan jika memang tidak ada realisasi.";
+                            ? "Laporan telah diverifikasi sah (terkunci)"
+                            : `Diverifikasi sah oleh ${monthly.verifiedBy?.name ?? "pemeriksa"}${monthly.verifiedAt ? ` pada ${new Date(monthly.verifiedAt).toLocaleString("id-ID")}` : ""}`
+                          : monthly ? "Menunggu verifikasi Admin Dinkes atau penanggung jawab indikator." : !q.data.months[i].open ? "Bulan ditutup." : "Belum diinput.";
                         return (
                         <TableCell
                           key={key}
-                          className={`px-2 py-3 text-center align-middle tabular-nums transition-colors ${
+                          className={`px-0.5 py-1.5 text-center align-middle tabular-nums transition-colors ${
                             i % 3 === 2 ? "border-r" : ""
-                          } ${cellDisabled ? "bg-muted/[0.14]" : ""}`}
+                          }`}
                         >
-                          {money ? (
-                            <button
-                              className={`w-full h-7 text-xs font-mono rounded transition-all flex items-center justify-center tabular-nums ${
-                                cellDisabled
-                                  ? "bg-muted/40 border border-dashed border-border/70 text-muted-foreground/60 cursor-not-allowed font-medium"
-                                  : "bg-background border border-slate-300/80 dark:border-slate-700 text-foreground font-semibold shadow-2xs hover:border-primary/60 hover:bg-primary/[0.02] cursor-pointer"
-                              }`}
-                              aria-label={`Edit ${monthNames[i]} ${r.label}`}
-                              disabled={cellDisabled}
-                              onClick={() => open(r, i + 1)}
-                              title={
-                                cellDisabled
-                                  ? verified
-                                    ? "Laporan telah diverifikasi dan terkunci"
-                                    : "Bulan laporan ditutup"
-                                  : `Klik untuk input realisasi ${monthNames[i]}`
-                              }
-                            >
-                              {monthly ? fmt(r[key]) : "—"}
-                            </button>
-                          ) : (
-                            <InlineCell
-                              value={r[key]}
-                              hasValue={!!monthly}
-                              label={`Realisasi ${monthNames[i]} ${r.label}`}
-                              placeholder="—"
-                              disabled={cellDisabled}
-                              max={999}
-                              onSave={(val) =>
-                                saveInline({
-                                  entityId: r.indikatorId ?? r.subKegiatanId,
-                                  faskesId: r.faskesId,
-                                  tahun: filters.tahun,
-                                  bulan: i + 1,
-                                  nilai: val,
-                                })
-                              }
-                            />
-                          )}
-                          <div className="mt-1.5 flex items-center justify-center" title={verificationTitle}>
-                            {verified ? (
-                              <span className="inline-flex items-center gap-0.5 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded-md">
-                                <CheckCircle2 className="size-2.5 shrink-0" />
-                                Sah
-                              </span>
-                            ) : monthly ? (
-                              <span className="inline-flex items-center gap-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded-md">
-                                <Clock className="size-2.5 shrink-0" />
-                                Menunggu
-                              </span>
-                            ) : (
-                              <span className="text-[10px] text-muted-foreground/40">—</span>
-                            )}
-                          </div>
+                          <InlineCell
+                            value={r[key]}
+                            hasValue={!!monthly}
+                            isCurrency={money}
+                            status={verified ? "verified" : monthly ? "waiting" : undefined}
+                            title={verificationTitle}
+                            label={`Realisasi ${monthNames[i]} ${r.label}`}
+                            placeholder="—"
+                            disabled={cellDisabled}
+                            max={money ? 100000000000000 : 999}
+                            onSave={(val) =>
+                              saveInline({
+                                entityId: r.indikatorId ?? r.subKegiatanId,
+                                faskesId: r.faskesId,
+                                tahun: filters.tahun,
+                                bulan: i + 1,
+                                nilai: val,
+                              })
+                            }
+                          />
                         </TableCell>
                       ); })}
                       <TableCell
-                        className="px-3 py-3 text-center align-middle font-mono font-bold text-xs tabular-nums bg-emerald-500/[0.035] dark:bg-emerald-500/[0.06] border-r border-emerald-100/60 dark:border-emerald-900/30 text-emerald-950 dark:text-emerald-100"
+                        className="px-1 py-1.5 text-center align-middle font-mono font-bold text-[11px] tabular-nums bg-emerald-500/[0.035] dark:bg-emerald-500/[0.06] border-r border-emerald-100/60 dark:border-emerald-900/30 text-emerald-950 dark:text-emerald-100"
                         title={
                           r.realisasiGross > r.realisasi
                             ? `Realisasi sah (terverifikasi): ${fmt(r.realisasi)} · Menunggu verifikasi: ${fmt(r.realisasiGross - r.realisasi)}`
@@ -749,43 +789,43 @@ export default function Capaian({
                       >
                         <div>{fmt(r.realisasi)}</div>
                         {r.realisasiGross > r.realisasi && (
-                          <div className="text-[9px] font-sans font-normal text-amber-600 dark:text-amber-400 leading-tight mt-0.5">
+                          <div className="text-[8.5px] font-sans font-normal text-amber-600 dark:text-amber-400 leading-tight mt-0.5">
                             +{fmt(r.realisasiGross - r.realisasi)} draf
                           </div>
                         )}
                       </TableCell>
-                      <TableCell className={`${canReview ? "border-r" : ""} px-3 py-3 text-center align-middle`}>
-                        <div className="flex flex-col items-center justify-center gap-2">
-                          <span className="font-mono text-xs font-bold leading-tight">
+                      <TableCell className={`${canReview ? "border-r" : ""} px-1 py-1.5 text-center align-middle`}>
+                        <div className="flex flex-col items-center justify-center gap-1">
+                          <span className="font-mono text-[11px] font-bold leading-tight">
                             {number(r.persentase)}%
                           </span>
                           <StatusBadge status={r.status} compact />
                         </div>
                       </TableCell>
                       {canReview && (
-                        <TableCell className="px-3 py-3 text-center align-middle">
-                          <div className="flex flex-col gap-2 items-center justify-center whitespace-normal">
-                            <span className="font-semibold">{r.verifiedMonths ?? 0}/{r.submittedMonths ?? 0} bulan</span>
-                            <span className="text-[11px] text-muted-foreground">terverifikasi dari bulan yang diinput</span>
+                        <TableCell className="px-1 py-1.5 text-center align-middle">
+                          <div className="flex flex-col gap-1 items-center justify-center whitespace-normal">
+                            <span className="font-semibold text-[11px] leading-tight">{r.verifiedMonths ?? 0}/{r.submittedMonths ?? 0} bulan</span>
+                            <span className="text-[9.5px] text-muted-foreground leading-tight">terverifikasi</span>
                             <Button
                               variant="outline"
                               size="sm"
-                              className="h-7 w-full gap-1 text-[11px] font-medium border-primary/30 text-primary hover:bg-primary/5"
+                              className="h-6 w-full gap-0.5 text-[10px] font-medium border-primary/30 text-primary hover:bg-primary/5 px-1"
                               onClick={() => setSheetRow(r)}
                               aria-label={`Detail dan verifikasi ${r.label}`}
                             >
-                              <Eye className="size-3 shrink-0" />
+                              <Eye className="size-2.5 shrink-0" />
                               Panel Verif
                             </Button>
                             {user?.role === "ADMIN_DINKES" && (
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+                                className="h-5 w-5 shrink-0 text-muted-foreground hover:text-destructive"
                                 aria-label="Hapus laporan"
                                 onClick={() => setDeleting(r)}
                               >
-                                <Trash2 className="size-3" />
+                                <Trash2 className="size-2.5" />
                               </Button>
                             )}
                           </div>
@@ -1087,6 +1127,7 @@ export default function Capaian({
                   disabled={form.mode === "target" ? !!targetLocked : !!monthLocked}
                   max="100000000000000"
                   step={money ? "0.01" : "any"}
+                  placeholder={money ? "Contoh: 150000000" : "0"}
                   value={form.mode === "target" ? form.target : form.nilai}
                   onChange={(e) =>
                     setForm({
@@ -1096,6 +1137,27 @@ export default function Capaian({
                     })
                   }
                 />
+                {money && (
+                  <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 dark:bg-emerald-500/15 p-2.5 flex items-center justify-between text-xs transition-all">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[11px] font-medium text-muted-foreground">
+                        Nominal terbaca (Rupiah):
+                      </span>
+                      {formatTerbilangRingkas(Number(form.mode === "target" ? form.target : form.nilai) || 0) ? (
+                        <span className="text-[11px] text-emerald-800 dark:text-emerald-300 font-semibold">
+                          {formatTerbilangRingkas(Number(form.mode === "target" ? form.target : form.nilai) || 0)} Rupiah
+                        </span>
+                      ) : (
+                        <span className="text-[11px] text-muted-foreground italic">
+                          (Nol Rupiah)
+                        </span>
+                      )}
+                    </div>
+                    <span className="font-mono font-bold text-sm sm:text-base text-emerald-700 dark:text-emerald-300">
+                      {rupiah(Number(form.mode === "target" ? form.target : form.nilai) || 0)}
+                    </span>
+                  </div>
+                )}
               </div>
               {(form.mode === "target" ? targetLocked : monthLocked) && (
                 <p role="status" className="text-xs text-muted-foreground">Data sudah diverifikasi. Hubungi Admin Dinkes atau penanggung jawab indikator untuk koreksi.</p>
