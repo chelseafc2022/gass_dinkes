@@ -11,6 +11,7 @@ import {
   ArrowUpRight,
   HeartPulse,
   ShieldCheck,
+  Home,
 } from "lucide-react";
 import {
   Sidebar,
@@ -296,6 +297,18 @@ export function Shell({ children }: { children: React.ReactNode }) {
           </span>
           <div className="ml-auto flex items-center gap-2">
             <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="border-emerald-900/10 bg-white/80 dark:bg-card text-muted-foreground shadow-xs hover:border-primary/25 hover:bg-white dark:hover:bg-accent hover:text-primary gap-1.5 h-8 px-2.5 font-medium transition-colors"
+              title="Kembali ke Halaman Awal / Beranda Publik GASS"
+            >
+              <Link href="/">
+                <Home className="size-3.5 text-primary shrink-0" />
+                <span className="hidden sm:inline text-xs">Halaman Awal</span>
+              </Link>
+            </Button>
+            <Button
               variant="outline"
               size="sm"
               onClick={() => setCommand(true)}
@@ -332,7 +345,16 @@ export function Shell({ children }: { children: React.ReactNode }) {
         <CommandInput placeholder="Cari halaman atau menu…" />
         <CommandList>
           <CommandEmpty>Menu tidak ditemukan.</CommandEmpty>
-          <CommandGroup heading="Navigasi">
+          <CommandGroup heading="Navigasi & Portal">
+            <CommandItem
+              onSelect={() => {
+                router.push("/");
+                setCommand(false);
+              }}
+            >
+              <Home className="size-4" />
+              Halaman Awal (Portal Publik GASS)
+            </CommandItem>
             {nav.map((n) => (
               <CommandItem
                 key={n.key}
