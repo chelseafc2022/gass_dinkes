@@ -428,6 +428,60 @@ export class EgovService implements OnModuleDestroy {
     });
   }
 
+  async getKepalaDinas() {
+    try {
+      const rows = await this.read(
+        `SELECT 
+          b.nip, 
+          b.nama, 
+          b.gelar_depan AS "gelarDepan", 
+          b.gelar_belakang AS "gelarBelakang", 
+          j.jabatan,
+          g.pangkat,
+          g.gol,
+          g.ruang,
+          g.keterangan AS "golonganKeterangan"
+        FROM simpeg.biodata b
+        JOIN simpeg.jabatan j ON b.jabatan = j._id
+        JOIN simpeg.unit_kerja k ON b.unit_kerja = k.id
+        LEFT JOIN simpeg.jns_golongan g ON b.gol = g.jns_golongan_id
+        WHERE k.instansi = ? AND k.unit_kerja = 'DINAS KESEHATAN'
+          AND j.jabatan LIKE '%KEPALA DINAS%'
+        ORDER BY b.id ASC
+        LIMIT 1`,
+        [DINKES_INSTANSI_ID],
+      );
+
+      if (rows && rows.length > 0) {
+        const r = rows[0];
+        const namaLengkap = this.formatNamaLengkap(r as any);
+        const nip = String(r.nip || "").replace(/\s+/g, "");
+        const pangkatGol =
+          r.pangkat && r.gol && r.ruang
+            ? `${r.pangkat}, Gol. ${r.gol}/${r.ruang}`
+            : r.golonganKeterangan
+              ? String(r.golonganKeterangan).replace(/,\s*([IV]+)/, ", Gol. $1")
+              : "Pembina Utama Muda, Gol. IV/c";
+
+        return {
+          nama: namaLengkap || "NURLITA JAYA AS, S.Sos., M.Kes",
+          nip: nip || "197501042003122003",
+          jabatan: "Kepala Dinas Kesehatan Kabupaten Konawe Selatan",
+          pangkat: pangkatGol,
+        };
+      }
+    } catch {
+      // Fallback aman jika koneksi SIMPEG sedang offline
+    }
+
+    return {
+      nama: "NURLITA JAYA AS, S.Sos., M.Kes",
+      nip: "197501042003122003",
+      jabatan: "Kepala Dinas Kesehatan Kabupaten Konawe Selatan",
+      pangkat: "Pembina Utama Muda, Gol. IV/c",
+    };
+  }
+
   private formatNamaBidang(jabatan: string): { kode: string; nama: string } {
     const upper = jabatan.toUpperCase().trim();
     if (upper.includes("SEKRETARIS")) {

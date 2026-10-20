@@ -3,7 +3,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
-  ArrowDownToLine,
   Activity,
   Building2,
   Wallet,
@@ -12,7 +11,12 @@ import {
   CheckCheck,
   ChevronDown,
   ChevronUp,
+  Printer,
+  FileSpreadsheet,
 } from "lucide-react";
+import { toast } from "sonner";
+import { DashboardPrintDialog } from "@/components/gass/dashboard-print-dialog";
+import { exportDashboardToXlsx } from "@/lib/export-excel";
 import {
   ComposedChart,
   Line,
@@ -56,24 +60,12 @@ import {
   Loading,
   StatusBadge,
 } from "@/components/gass/shared";
-import { api, exportCsv, number, percent, queryString, rupiah, shortFaskes } from "@/lib/api";
+import { api, number, percent, queryString, rupiah, shortFaskes } from "@/lib/api";
 const colors: Record<string, string> = {
   HIJAU: "#0c9586",
   KUNING: "#e4af54",
   MERAH: "#dd7775",
 };
-const trendPalette = [
-  "#0c9586",
-  "#2563eb",
-  "#d97706",
-  "#7c3aed",
-  "#db2777",
-  "#059669",
-  "#0891b2",
-  "#ea580c",
-  "#4f46e5",
-  "#0d9488",
-];
 function Trend({
   indicators,
   category,
@@ -496,7 +488,10 @@ export default function Dashboard() {
     [selected, setSelected] = useState<string>("all"),
     [showAllSpmCards, setShowAllSpmCards] = useState<boolean>(false),
     [showAllPuskesmas, setShowAllPuskesmas] = useState<boolean>(false),
-    [rankingSort, setRankingSort] = useState<"asc" | "desc">("asc");
+    [rankingSort, setRankingSort] = useState<"asc" | "desc">("asc"),
+    [printModalOpen, setPrintModalOpen] = useState<boolean>(false),
+    [isExportingXlsx, setIsExportingXlsx] = useState<boolean>(false);
+
   const optionsQuery = useQuery({
     queryKey: ["options"],
     queryFn: () => api("/options"),
@@ -520,7 +515,10 @@ export default function Dashboard() {
     queryFn: () => api(`/dashboard?${queryString(effectiveFilters as any)}`),
   });
   const d = q.data;
-  const spm = d?.indicators.filter((i: any) => i.kategori === "SPM") ?? [];
+  const spm = useMemo(
+    () => d?.indicators.filter((i: any) => i.kategori === "SPM") ?? [],
+    [d?.indicators]
+  );
   const isAll = !selected || selected === "all";
   const detail = isAll ? null : spm.find((i: any) => i.id === selected) ?? null;
 
@@ -662,6 +660,28 @@ export default function Dashboard() {
       }))
       .sort((a: any, b: any) => a.persentase - b.persentase);
   }, [isAll, overallPuskesmasRanking, detail]);
+
+  const handleExportXlsx = async () => {
+    if (!d) return;
+    try {
+      setIsExportingXlsx(true);
+      toast.loading("Membuat dokumen Excel (.xlsx)...", { id: "export-xlsx" });
+      await exportDashboardToXlsx({
+        tahun: filters.tahun,
+        faskesName: activeFaskesName,
+        summary: d.summary,
+        indicators: d.indicators,
+        overallPuskesmasRanking,
+        programs: d.programs,
+      });
+      toast.success("Laporan Excel (.xlsx) berhasil diunduh!", { id: "export-xlsx" });
+    } catch (err: any) {
+      console.error("Gagal ekspor Excel:", err);
+      toast.error("Gagal mengunduh laporan Excel.", { id: "export-xlsx" });
+    } finally {
+      setIsExportingXlsx(false);
+    }
+  };
   return (
     <div>
       <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
@@ -675,27 +695,31 @@ export default function Dashboard() {
             perkembangan program kesehatan.
           </p>
         </div>
-        <Button
-          variant="outline"
-          className="bg-card text-xs"
-          disabled={!d}
-          onClick={() =>
-            exportCsv(
-              `ringkasan-gass-${filters.tahun}`,
-              ["Indikator", "Kategori", "Target", "Realisasi", "Capaian (%)"],
-              d.indicators.map((i: any) => [
-                i.nama,
-                i.kategori,
-                i.target,
-                i.realisasi,
-                i.persentase,
-              ]),
-            )
-          }
-        >
-          <ArrowDownToLine className="size-3.5" />
-          Unduh rekap
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="bg-card text-xs gap-1.5 border-emerald-600/30 text-emerald-800 dark:text-emerald-200 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 shadow-xs"
+            disabled={!d || isExportingXlsx}
+            onClick={handleExportXlsx}
+            title="Unduh laporan lengkap dalam format Excel Spreadsheet (.xlsx)"
+          >
+            <FileSpreadsheet className="size-3.5 text-emerald-600 dark:text-emerald-400" />
+            Laporan Excel (XLSX)
+          </Button>
+
+          <Button
+            variant="outline"
+            size="sm"
+            className="bg-card text-xs gap-1.5 border-primary/30 text-primary hover:bg-primary/5 shadow-xs"
+            disabled={!d}
+            onClick={() => setPrintModalOpen(true)}
+            title="Pratinjau dan cetak laporan resmi ke format PDF"
+          >
+            <Printer className="size-3.5" />
+            Cetak PDF
+          </Button>
+        </div>
       </div>
       <GlobalFilters
         value={filters}
@@ -1559,6 +1583,16 @@ export default function Dashboard() {
           </>
         )
       )}
+      <DashboardPrintDialog
+        open={printModalOpen}
+        onOpenChange={setPrintModalOpen}
+        data={d}
+        filters={filters}
+        faskesName={activeFaskesName}
+        overallPuskesmasRanking={overallPuskesmasRanking}
+        user={user}
+        onExportXlsx={handleExportXlsx}
+      />
     </div>
   );
 }

@@ -1046,3 +1046,126 @@ body {font-family:Arial,Helvetica,sans-serif;}
   .gass-input-wrap input { transition: none; }
   .gass-spinner { animation-duration: 1.5s; }
 }
+
+@media print {
+  /* Sembunyikan elemen aplikasi utama ketika laporan cetak aktif */
+  body:has(#printable-report) > *:not([data-slot="dialog-portal"]):not([data-radix-portal]) {
+    display: none !important;
+  }
+
+  /* Sembunyikan backdrop, tombol tutup, kontrol dialog, dan elemen no-print */
+  [data-slot="dialog-overlay"],
+  [data-slot="dialog-close"],
+  .no-print,
+  button {
+    display: none !important;
+  }
+
+  /* Reset kanvas HTML dan BODY untuk kertas cetak */
+  html,
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Netralkan Radix Portal agar tidak fixed/terpotong */
+  [data-radix-portal],
+  [data-slot="dialog-portal"] {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* Netralkan Dialog Content: hilangkan transform translate, fixed positioning, dan batasan ukuran */
+  [data-slot="dialog-content"] {
+    position: static !important;
+    transform: none !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    display: block !important;
+    background: #ffffff !important;
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* Netralkan wrapper scroll di dalam dialog */
+  [data-slot="dialog-content"] > div {
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+    background: transparent !important;
+    display: block !important;
+  }
+
+  /* Dokumen laporan mengisi 100% lebar cetak halaman A4 */
+  #printable-report {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 10pt !important;
+    line-height: 1.4 !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 12mm 14mm 15mm 14mm;
+  }
+
+  .page-break-before {
+    page-break-before: always;
+    break-before: page;
+  }
+
+  table {
+    page-break-inside: auto;
+    width: 100% !important;
+  }
+
+  tr {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  th,
+  td {
+    word-break: normal;
+  }
+}
+

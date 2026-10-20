@@ -18,6 +18,7 @@ import {
   scoringQuarter,
 } from "../common/policy";
 import { ThresholdService } from "../master/threshold.service";
+import { EgovService } from "../auth/egov.service";
 export const filters = z.object({
   tahun: z.coerce
     .number()
@@ -42,6 +43,7 @@ export class ReportsService {
   constructor(
     private db: PrismaService,
     private thresholds: ThresholdService,
+    private egov?: EgovService,
   ) {}
   private indicatorWhere(u: Actor, q: Filter) {
     const b = u.role === "AKUN_BIDANG" ? u.bidangId : q.bidangId;
@@ -700,6 +702,14 @@ export class ReportsService {
         ),
       },
       settings: k.settings,
+      kepalaDinas: this.egov
+        ? await this.egov.getKepalaDinas()
+        : {
+            nama: "NURLITA JAYA AS, S.Sos., M.Kes",
+            nip: "197501042003122003",
+            jabatan: "Kepala Dinas Kesehatan Kabupaten Konawe Selatan",
+            pangkat: "Pembina Utama Muda, Gol. IV/c",
+          },
     };
   }
 }
