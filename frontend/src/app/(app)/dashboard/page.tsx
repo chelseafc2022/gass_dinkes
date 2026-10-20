@@ -1,17 +1,15 @@
 "use client";
-// import { ThresholdLegend } from "@/components/gass/threshold-legend";
+
 import { useEffect, useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowDownToLine,
-  ArrowUpRight,
   Activity,
   Building2,
   Wallet,
   Target,
   ArrowRight,
   CheckCheck,
-  CalendarDays,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
@@ -705,7 +703,6 @@ export default function Dashboard() {
         excludeRumahSakit
         cumulative
       />
-      {/* <ThresholdLegend rule={d?.threshold} through={d?.cumulativeThrough} /> */}
       {q.isPending ? (
         <Loading />
       ) : q.error ? (
@@ -802,121 +799,6 @@ export default function Dashboard() {
                 </Card>
               ))}
             </div>
-            <Card className="mb-7 overflow-hidden">
-              <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-4 border-b bg-muted/20">
-                <div>
-                  <CardTitle className="text-base">
-                    Perbandingan Capaian Kinerja dan Keuangan
-                  </CardTitle>
-                  <CardDescription className="mt-1.5 text-xs">
-                    Rata-rata capaian kinerja dibandingkan dengan persentase
-                    serapan keuangan tahun {filters.tahun}
-                    {activeFaskesName ? ` · ${activeFaskesName}` : ""}.
-                  </CardDescription>
-                </div>
-                <div className="flex flex-wrap gap-2 text-[10px]">
-                  <Badge
-                    variant="outline"
-                    className="border-primary/25 bg-primary/5 text-primary"
-                  >
-                    Kinerja {percent(d.summary.capaian)}%
-                  </Badge>
-                  <Badge
-                    variant="outline"
-                    className="border-blue-500/25 bg-blue-500/5 text-blue-700 dark:text-blue-300"
-                  >
-                    Keuangan {percent(d.summary.serapan)}%
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-5">
-                <ResponsiveContainer width="100%" height={270}>
-                  <BarChart
-                    data={[
-                      {
-                        name: "Capaian kinerja",
-                        value: d.summary.capaian,
-                        fill: "#0F766E",
-                      },
-                      {
-                        name: "Serapan keuangan",
-                        value: d.summary.serapan,
-                        fill: "#DB2777",
-                      },
-                    ]}
-                    margin={{ top: 22, right: 16, left: -8, bottom: 4 }}
-                  >
-                    <CartesianGrid
-                      vertical={false}
-                      strokeDasharray="3 4"
-                      stroke="var(--border)"
-                    />
-                    <XAxis
-                      dataKey="name"
-                      fontSize={11}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <YAxis
-                      unit="%"
-                      fontSize={10}
-                      axisLine={false}
-                      tickLine={false}
-                      domain={[
-                        0,
-                        (dataMax: number) =>
-                          Math.max(100, Math.ceil(dataMax / 10) * 10),
-                      ]}
-                    />
-                    <Tooltip
-                      formatter={(value: any) => [
-                        `${percent(Number(value))}%`,
-                        "Capaian",
-                      ]}
-                      contentStyle={{
-                        background: "var(--card)",
-                        borderRadius: 12,
-                        border: "1px solid var(--border)",
-                        fontSize: 11,
-                      }}
-                    />
-                    <ReferenceLine
-                      y={100}
-                      stroke="var(--muted-foreground)"
-                      strokeDasharray="4 4"
-                      opacity={0.55}
-                      label={{
-                        value: "Target 100%",
-                        position: "insideTopRight",
-                        fontSize: 10,
-                        fill: "var(--muted-foreground)",
-                      }}
-                    />
-                    <Bar
-                      isAnimationActive={false}
-                      dataKey="value"
-                      radius={[7, 7, 0, 0]}
-                      maxBarSize={92}
-                    >
-                      <LabelList
-                        dataKey="value"
-                        position="top"
-                        formatter={(value: any) =>
-                          `${percent(Number(value))}%`
-                        }
-                        className="fill-foreground text-xs font-semibold"
-                      />
-                      {[
-                        { fill: "#0F766E" },
-                        { fill: "#DB2777" },
-                      ].map((item, index) => (
-                        <Cell key={index} fill={item.fill} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
             <Tabs defaultValue="spm">
               <div className="mb-6 flex flex-col items-stretch justify-between gap-3 lg:flex-row lg:items-center">
                 <TabsList className="grid h-auto w-full grid-cols-1 gap-2 bg-transparent p-0 sm:grid-cols-3 lg:w-auto">
@@ -1478,18 +1360,133 @@ export default function Dashboard() {
                   </CardContent>
                 </Card>
               </TabsContent>
-              <TabsContent value="keuangan">
-                <Card>
-                  <CardHeader>
+              <TabsContent value="keuangan" className="space-y-6">
+                <Card className="overflow-hidden">
+                  <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-4 border-b bg-muted/20">
+                    <div>
+                      <CardTitle className="text-base">
+                        Perbandingan Capaian Kinerja dan Keuangan
+                      </CardTitle>
+                      <CardDescription className="mt-1.5 text-xs">
+                        Rata-rata capaian kinerja dibandingkan dengan persentase
+                        serapan keuangan tahun {filters.tahun}
+                        {activeFaskesName ? ` · ${activeFaskesName}` : ""}.
+                      </CardDescription>
+                    </div>
+                    <div className="flex flex-wrap gap-2 text-[10px]">
+                      <Badge
+                        variant="outline"
+                        className="border-primary/25 bg-primary/5 text-primary"
+                      >
+                        Kinerja {percent(d.summary.capaian)}%
+                      </Badge>
+                      <Badge
+                        variant="outline"
+                        className="border-blue-500/25 bg-blue-500/5 text-blue-700 dark:text-blue-300"
+                      >
+                        Keuangan {percent(d.summary.serapan)}%
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-5">
+                    <ResponsiveContainer width="100%" height={270}>
+                      <BarChart
+                        data={[
+                          {
+                            name: "Capaian kinerja",
+                            value: d.summary.capaian,
+                            fill: "#0F766E",
+                          },
+                          {
+                            name: "Serapan keuangan",
+                            value: d.summary.serapan,
+                            fill: "#DB2777",
+                          },
+                        ]}
+                        margin={{ top: 22, right: 16, left: -8, bottom: 4 }}
+                      >
+                        <CartesianGrid
+                          vertical={false}
+                          strokeDasharray="3 4"
+                          stroke="var(--border)"
+                        />
+                        <XAxis
+                          dataKey="name"
+                          fontSize={11}
+                          axisLine={false}
+                          tickLine={false}
+                        />
+                        <YAxis
+                          unit="%"
+                          fontSize={10}
+                          axisLine={false}
+                          tickLine={false}
+                          domain={[
+                            0,
+                            (dataMax: number) =>
+                              Math.max(100, Math.ceil(dataMax / 10) * 10),
+                          ]}
+                        />
+                        <Tooltip
+                          formatter={(value: any) => [
+                            `${percent(Number(value))}%`,
+                            "Capaian",
+                          ]}
+                          contentStyle={{
+                            background: "var(--card)",
+                            borderRadius: 12,
+                            border: "1px solid var(--border)",
+                            fontSize: 11,
+                          }}
+                        />
+                        <ReferenceLine
+                          y={100}
+                          stroke="var(--muted-foreground)"
+                          strokeDasharray="4 4"
+                          opacity={0.55}
+                          label={{
+                            value: "Target 100%",
+                            position: "insideTopRight",
+                            fontSize: 10,
+                            fill: "var(--muted-foreground)",
+                          }}
+                        />
+                        <Bar
+                          isAnimationActive={false}
+                          dataKey="value"
+                          radius={[7, 7, 0, 0]}
+                          maxBarSize={92}
+                        >
+                          <LabelList
+                            dataKey="value"
+                            position="top"
+                            formatter={(value: any) =>
+                              `${percent(Number(value))}%`
+                            }
+                            className="fill-foreground text-xs font-semibold"
+                          />
+                          {[
+                            { fill: "#0F766E" },
+                            { fill: "#DB2777" },
+                          ].map((item, index) => (
+                            <Cell key={index} fill={item.fill} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+                <Card className="overflow-hidden">
+                  <CardHeader className="border-b bg-muted/20">
                     <CardTitle className="text-base">
                       Serapan anggaran per program
                     </CardTitle>
-                    <CardDescription>
+                    <CardDescription className="mt-1 text-xs">
                       {rupiah(d.summary.realisasiKeuangan)} terealisasi dari{" "}
                       {rupiah(d.summary.targetKeuangan)}
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="pt-5">
                     {d.programs.length === 0 ? (
                       <div className="empty-state border-0">
                         <Wallet />

@@ -133,7 +133,7 @@ test("operator cannot open the threshold editor", async ({ page }) => {
   ).toHaveCount(0);
 });
 
-for (const path of ["/capaian/kinerja", "/dashboard"]) {
+for (const path of ["/capaian/kinerja"]) {
   test(`${path} shows the active quarterly threshold and cumulative period`, async ({
     page,
   }) => {
