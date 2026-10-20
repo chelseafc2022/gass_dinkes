@@ -1,5 +1,5 @@
 "use client";
-import { ThresholdLegend } from "@/components/gass/threshold-legend";
+// import { ThresholdLegend } from "@/components/gass/threshold-legend";
 import { useEffect, useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -541,6 +541,8 @@ export default function Dashboard() {
           capped: number;
           status: string;
           reported: boolean;
+          target: number;
+          realisasi: number;
         }[];
       }
     >();
@@ -569,6 +571,8 @@ export default function Dashboard() {
           capped: Math.min(100, r.persentase),
           status: r.status,
           reported: r.reported,
+          target: r.target ?? 0,
+          realisasi: r.realisasi ?? 0,
         });
       }
     }
@@ -578,6 +582,8 @@ export default function Dashboard() {
 
     return [...faskesMap.values()].map((f) => {
       const sumCapped = f.items.reduce((s, x) => s + x.capped, 0);
+      const sumTarget = f.items.reduce((s, x) => s + x.target, 0);
+      const sumRealisasi = f.items.reduce((s, x) => s + x.realisasi, 0);
       const avg = sumCapped / spm.length;
       const statusStr =
         avg >= currentThreshold
@@ -591,6 +597,8 @@ export default function Dashboard() {
         namaFaskes: f.namaFaskes,
         namaRingkas: f.namaRingkas,
         persentase: avg,
+        target: sumTarget,
+        realisasi: sumRealisasi,
         status: statusStr,
         reported: f.items.some((x) => x.reported),
         tercapaiCount: f.items.filter((x) => x.status === "HIJAU").length,
@@ -662,7 +670,7 @@ export default function Dashboard() {
         <div>
           <p className="eyebrow mb-2">MONITORING & EVALUASI</p>
           <h1 className="page-heading">
-            Ringkasan kinerja kesehatan<span className="text-primary">.</span>
+            Dashboard Kinerja Kesehatan<span className="text-primary">.</span>
           </h1>
           <p className="page-description">
             Selamat datang, {user?.name}. Pantau capaian layanan dan
@@ -697,7 +705,7 @@ export default function Dashboard() {
         excludeRumahSakit
         cumulative
       />
-      <ThresholdLegend rule={d?.threshold} through={d?.cumulativeThrough} />
+      {/* <ThresholdLegend rule={d?.threshold} through={d?.cumulativeThrough} /> */}
       {q.isPending ? (
         <Loading />
       ) : q.error ? (
@@ -705,7 +713,7 @@ export default function Dashboard() {
       ) : (
         d && (
           <>
-            <div className="flex items-center justify-between gap-3 text-xs rounded-lg border border-primary/15 bg-primary/5 px-4 py-3 mb-6">
+            {/* <div className="flex items-center justify-between gap-3 text-xs rounded-lg border border-primary/15 bg-primary/5 px-4 py-3 mb-6">
               <div className="flex gap-2 items-center">
                 <span className="size-1.5 rounded-full bg-primary" />
                 <span>
@@ -724,7 +732,7 @@ export default function Dashboard() {
                 </span>
               </div>
               <CalendarDays className="size-4 text-primary" />
-            </div>
+            </div> */}
             <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-7">
               {[
                 {
@@ -1174,15 +1182,81 @@ export default function Dashboard() {
                                 ]}
                               />
                               <Tooltip
-                                formatter={(v: any, _n: any, item: any) => [
-                                  `${percent(Number(v))}%`,
-                                  item?.payload?.namaFaskes || "Capaian",
-                                ]}
-                                contentStyle={{
-                                  background: "var(--card)",
-                                  borderRadius: 12,
-                                  border: "1px solid var(--border)",
-                                  fontSize: 11,
+                                cursor={{ fill: "var(--muted)", opacity: 0.15 }}
+                                content={({ active, payload }) => {
+                                  if (!active || !payload || !payload.length) return null;
+                                  const item = payload[0]?.payload;
+                                  if (!item) return null;
+                                  const satuan =
+                                    !isAll && detail?.satuan && detail.satuan.toLowerCase() !== "persen"
+                                      ? detail.satuan.toLowerCase()
+                                      : "orang";
+                                  const statusColor = colors[item.status] || "#0c9586";
+
+                                  return (
+                                    <div className="rounded-xl border border-border/80 bg-card p-3 shadow-xl text-xs space-y-2 min-w-[210px] pointer-events-none">
+                                      <div className="flex items-start justify-between gap-2">
+                                        <div>
+                                          <p className="font-semibold text-foreground text-xs leading-snug">
+                                            {item.namaFaskes}
+                                          </p>
+                                          {item.namaRingkas && item.namaRingkas !== item.namaFaskes && (
+                                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                                              {item.namaRingkas}
+                                            </p>
+                                          )}
+                                        </div>
+                                        <span
+                                          className="size-2 rounded-full shrink-0 mt-1"
+                                          style={{ backgroundColor: statusColor }}
+                                          title={`Status: ${item.status}`}
+                                        />
+                                      </div>
+
+                                      <div className="space-y-1.5 pt-1.5 border-t border-border/60">
+                                        <div className="flex items-center justify-between gap-4">
+                                          <span className="text-muted-foreground text-[11px]">
+                                            {isAll ? "Rata-rata Capaian:" : "Capaian:"}
+                                          </span>
+                                          <span
+                                            className="font-mono font-bold text-xs"
+                                            style={{ color: statusColor }}
+                                          >
+                                            {percent(item.persentase)}%
+                                          </span>
+                                        </div>
+
+                                        <div className="flex items-center justify-between gap-4">
+                                          <span className="text-muted-foreground text-[11px]">
+                                            Jumlah Realisasi:
+                                          </span>
+                                          <span className="font-mono font-semibold text-foreground">
+                                            {number(item.realisasi ?? 0)} {satuan}
+                                          </span>
+                                        </div>
+
+                                        {(item.target ?? 0) > 0 && (
+                                          <div className="flex items-center justify-between gap-4">
+                                            <span className="text-muted-foreground text-[11px]">
+                                              Target Sasaran:
+                                            </span>
+                                            <span className="font-mono text-muted-foreground">
+                                              {number(item.target ?? 0)} {satuan}
+                                            </span>
+                                          </div>
+                                        )}
+
+                                        {isAll && item.tercapaiCount !== undefined && (
+                                          <div className="flex items-center justify-between gap-4 pt-1 border-t border-border/40 text-[10.5px]">
+                                            <span className="text-muted-foreground">Indikator Tercapai:</span>
+                                            <span className="font-semibold text-foreground">
+                                              {item.tercapaiCount}/{item.totalIndikator || 12} SPM
+                                            </span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  );
                                 }}
                               />
                               <ReferenceLine

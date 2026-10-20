@@ -9,9 +9,7 @@ import {
   Trash2,
   CalendarDays,
   AlertTriangle,
-  ClipboardList,
   Eye,
-  X,
   CheckCircle2,
   Clock,
   Lock,
@@ -56,7 +54,7 @@ import { useAuth } from "@/components/gass/providers";
 import { monthKeys, monthNames } from "@/components/gass/navigation";
 import { api, write, queryString, number, percent, rupiah, exportCsv, shortFaskes } from "@/lib/api";
 import { useDebounced } from "@/hooks/use-debounced";
-// import { ThresholdLegend } from "@/components/gass/threshold-legend";
+import { ThresholdLegend } from "@/components/gass/threshold-legend";
 
 const indicatorCategories = [
   { value: "SPM", label: "Standar Pelayanan Minimal (SPM)" },
@@ -334,9 +332,7 @@ export default function Capaian({
       null
     );
   }, [
-    form?.existing,
-    form?.entityId,
-    form?.faskesId,
+    form,
     formOptions.data?.data,
     q.data?.data,
   ]);
@@ -513,7 +509,7 @@ export default function Capaian({
         </div>
       </div>
       <GlobalFilters value={filters} onChange={setFilters} period={!money} cumulative={!money} />
-      {/* {!money && <ThresholdLegend rule={q.data?.threshold} through={q.data?.cumulativeThrough} />} */}
+      {!money && <ThresholdLegend rule={q.data?.threshold} through={q.data?.cumulativeThrough} />}
       {q.data?.settings && (
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs rounded-xl border border-primary/20 bg-primary/5 px-4 py-2.5 mb-4 mt-2 shadow-xs">
           <div className="flex items-center gap-2.5 min-w-0">
@@ -597,7 +593,7 @@ export default function Capaian({
           <div className="min-w-0 max-w-full rounded-xl border bg-card overflow-hidden w-full">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3 text-xs text-muted-foreground">
               <span>{q.data.data.length} laporan · Tahun {filters.tahun}</span>
-              {/* <span id="capaian-scroll-help">Geser tabel ke kanan untuk melihat seluruh bulan dan tindakan.</span> */}
+              <span id="capaian-scroll-help" className="text-[11px] text-muted-foreground/80 hidden sm:inline">Geser tabel ke kanan untuk melihat seluruh bulan dan tindakan.</span>
             </div>
             <Table
               className={`w-full table-fixed text-xs ${
@@ -832,27 +828,32 @@ export default function Capaian({
                       </TableCell>
                       {canReview && (
                         <TableCell className="px-2 py-1.5 text-center align-middle whitespace-nowrap">
-                          <div className="flex items-center justify-center gap-1.5">
-                            <button
-                              type="button"
-                              onClick={() => setSheetRow(r)}
-                              title={`Buka detail & verifikasi ${r.label}`}
-                              aria-label={`Detail dan verifikasi ${r.label}`}
-                              className="size-7 inline-flex items-center justify-center rounded-lg border border-emerald-600/30 dark:border-emerald-500/30 bg-gradient-to-b from-emerald-50 to-emerald-100/80 dark:from-emerald-950/60 dark:to-emerald-900/40 text-emerald-800 dark:text-emerald-200 shadow-xs hover:from-emerald-100 hover:to-emerald-200/90 dark:hover:from-emerald-900/70 dark:hover:to-emerald-850 hover:border-emerald-600/50 hover:shadow-sm active:scale-95 transition-all duration-150 cursor-pointer"
-                            >
-                              <Eye className="size-3.5 stroke-[2.2]" />
-                            </button>
-                            {user?.role === "ADMIN_DINKES" && (
+                          <div className="flex flex-col items-center justify-center gap-1">
+                            <span className="font-semibold text-[10.5px] leading-tight text-muted-foreground">
+                              <strong className="text-foreground font-mono">{r.verifiedMonths ?? 0}/{r.submittedMonths ?? 0}</strong> bulan
+                            </span>
+                            <div className="flex items-center justify-center gap-1.5">
                               <button
                                 type="button"
-                                onClick={() => setDeleting(r)}
-                                title={`Hapus laporan ${r.label}`}
-                                aria-label="Hapus laporan"
-                                className="size-7 inline-flex items-center justify-center rounded-lg border border-red-500/25 dark:border-red-500/30 bg-gradient-to-b from-red-50 to-red-100/80 dark:from-red-950/60 dark:to-red-900/40 text-red-700 dark:text-red-300 shadow-xs hover:from-red-100 hover:to-red-200/90 dark:hover:from-red-900/70 dark:hover:to-red-850 hover:border-red-500/45 hover:shadow-sm active:scale-95 transition-all duration-150 cursor-pointer"
+                                onClick={() => setSheetRow(r)}
+                                title={`Buka detail & verifikasi ${r.label}`}
+                                aria-label={`Detail dan verifikasi ${r.label}`}
+                                className="size-7 inline-flex items-center justify-center rounded-lg border border-emerald-600/30 dark:border-emerald-500/30 bg-gradient-to-b from-emerald-50 to-emerald-100/80 dark:from-emerald-950/60 dark:to-emerald-900/40 text-emerald-800 dark:text-emerald-200 shadow-xs hover:from-emerald-100 hover:to-emerald-200/90 dark:hover:from-emerald-900/70 dark:hover:to-emerald-850 hover:border-emerald-600/50 hover:shadow-sm active:scale-95 transition-all duration-150 cursor-pointer"
                               >
-                                <Trash2 className="size-3.5 stroke-[2.2]" />
+                                <Eye className="size-3.5 stroke-[2.2]" />
                               </button>
-                            )}
+                              {user?.role === "ADMIN_DINKES" && (
+                                <button
+                                  type="button"
+                                  onClick={() => setDeleting(r)}
+                                  title={`Hapus laporan ${r.label}`}
+                                  aria-label="Hapus laporan"
+                                  className="size-7 inline-flex items-center justify-center rounded-lg border border-red-500/25 dark:border-red-500/30 bg-gradient-to-b from-red-50 to-red-100/80 dark:from-red-950/60 dark:to-red-900/40 text-red-700 dark:text-red-300 shadow-xs hover:from-red-100 hover:to-red-200/90 dark:hover:from-red-900/70 dark:hover:to-red-850 hover:border-red-500/45 hover:shadow-sm active:scale-95 transition-all duration-150 cursor-pointer"
+                                >
+                                  <Trash2 className="size-3.5 stroke-[2.2]" />
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </TableCell>
                       )}
@@ -1316,15 +1317,15 @@ export default function Capaian({
             <>
               <SheetHeader className="border-b p-5 pb-4 bg-muted/20">
                 <div className="flex flex-wrap items-center gap-2 mb-1">
-                  {/* <Badge variant="secondary" className="text-[10px] uppercase font-semibold tracking-wider">
+                  <Badge variant="secondary" className="text-[10px] uppercase font-semibold tracking-wider">
                     PANEL VERIFIKASI & DETAIL
-                  </Badge> */}
+                  </Badge>
                   <Badge variant="outline" className="text-[10px]">
                     {shortFaskes(activeSheetRow.faskes?.namaFaskes)}
                   </Badge>
-                  {/* <Badge variant="outline" className="text-[10px]">
+                  <Badge variant="outline" className="text-[10px]">
                     Tahun {filters.tahun}
-                  </Badge> */}
+                  </Badge>
                 </div>
                 <SheetTitle className="text-base sm:text-lg font-bold leading-snug text-foreground">
                   {activeSheetRow.label}
