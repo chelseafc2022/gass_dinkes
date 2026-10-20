@@ -133,23 +133,3 @@ test("operator cannot open the threshold editor", async ({ page }) => {
   ).toHaveCount(0);
 });
 
-for (const path of ["/capaian/kinerja"]) {
-  test(`${path} shows the active quarterly threshold and cumulative period`, async ({
-    page,
-  }) => {
-    await mockApi(page);
-    await page.goto(path);
-    const legend = page.getByLabel("Aturan threshold kinerja");
-    await expect(legend).toContainText("Triwulan IV (tahun)");
-    await expect(legend).not.toContainText("Kuning:");
-    await expect(legend).toContainText("Merah: <100%");
-    await page.getByLabel("Triwulan", { exact: true }).selectOption("2");
-    await expect(legend).toContainText("Triwulan II");
-    await expect(legend).toContainText("Kuning: 50%–<100%");
-    await expect(legend).toContainText("Januari–Juni");
-    await page.getByLabel("Bulan", { exact: true }).selectOption("7");
-    await expect(legend).toContainText("Triwulan III");
-    await expect(legend).toContainText("Januari–Juli");
-    await expect(legend).toContainText("Kuning: 75%–<100%");
-  });
-}

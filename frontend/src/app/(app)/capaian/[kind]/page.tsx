@@ -7,7 +7,6 @@ import {
   CheckCheck,
   Search,
   Trash2,
-  CalendarDays,
   AlertTriangle,
   Eye,
   CheckCircle2,
@@ -54,7 +53,6 @@ import { useAuth } from "@/components/gass/providers";
 import { monthKeys, monthNames } from "@/components/gass/navigation";
 import { api, write, queryString, number, percent, rupiah, exportCsv, shortFaskes } from "@/lib/api";
 import { useDebounced } from "@/hooks/use-debounced";
-import { ThresholdLegend } from "@/components/gass/threshold-legend";
 
 const indicatorCategories = [
   { value: "SPM", label: "Standar Pelayanan Minimal (SPM)" },
@@ -509,49 +507,6 @@ export default function Capaian({
         </div>
       </div>
       <GlobalFilters value={filters} onChange={setFilters} period={!money} cumulative={!money} />
-      {!money && <ThresholdLegend rule={q.data?.threshold} through={q.data?.cumulativeThrough} />}
-      {q.data?.settings && (
-        <div className="flex flex-wrap items-center justify-between gap-3 text-xs rounded-xl border border-primary/20 bg-primary/5 px-4 py-2.5 mb-4 mt-2 shadow-xs">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <span className="flex h-2 w-2 relative shrink-0">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
-            </span>
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-              <strong className="text-foreground">
-                {q.data.settings.isOtomatisAktif
-                  ? `Periode Penginputan Otomatis (Tgl. ${q.data.settings.batasTanggalInput})`
-                  : "Mode Pra-Launching (Semua Bulan Buka)"}
-              </strong>
-              <span className="hidden sm:inline text-muted-foreground/60">·</span>
-              <span className="text-muted-foreground text-[11px]">
-                {q.data.settings.isOtomatisAktif
-                  ? `Batas akhir input tanggal ${q.data.settings.batasTanggalInput} bulan berikutnya. Bulan lewat terkunci otomatis.`
-                  : "Administrator membuka seluruh bulan untuk pengisian data awal & pelaporan historis."}
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-1.5 shrink-0">
-            {(() => {
-              const openMonths = q.data.months?.filter((m: any) => m.open) ?? [];
-              const allOpen = openMonths.length === 12;
-              return (
-                <Badge
-                  variant={allOpen ? "secondary" : "outline"}
-                  className="text-[10px] font-medium h-5 px-2 bg-background/80 flex items-center gap-1"
-                >
-                  <CalendarDays className="size-3 text-primary" />
-                  <span>
-                    {allOpen
-                      ? "12 Bulan Terbuka"
-                      : `${openMonths.length} Bulan Buka · ${12 - openMonths.length} Terkunci`}
-                  </span>
-                </Badge>
-              );
-            })()}
-          </div>
-        </div>
-      )}
       <div className="flex flex-wrap justify-between gap-3 items-center mb-4">
         <div className="flex w-full max-w-2xl flex-col gap-2 sm:flex-row">
           <div className="relative min-w-0 flex-1">
