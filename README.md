@@ -157,3 +157,7 @@ Jalankan migrasi dengan `npm run db:migrate` sebelum menyalakan rilis. Tidak ada
 - [Lisensi template shadcn](frontend/TEMPLATE-LICENSE.md)
 - [Prisma PostgreSQL adapter](https://www.prisma.io/docs/orm/v7/core-concepts/supported-databases/postgresql)
 - [NestJS queues / BullMQ](https://docs.nestjs.com/techniques/queues)
+
+## Aplikasi mobile
+
+Project React Native Android/iOS tersedia di [`mobile/`](mobile/README.md): input bulanan, draf terenkripsi, verifikasi per bulan, dan dashboard sesuai role. Panduan konfigurasi API HTTPS, development build, hasil pemeriksaan, dan batas kesiapan rilis tersedia di README mobile.

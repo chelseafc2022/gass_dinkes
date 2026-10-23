@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "GASS Mobile",
+    "slug": "gass-mobile",
+    "scheme": "gass",
+    "version": "1.0.0",
+    "userInterfaceStyle": "light",
+    "platforms": ["ios", "android"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "id.go.konselkab.gass",
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": false
+        }
+      }
+    },
+    "android": {
+      "package": "id.go.konselkab.gass",
+      "allowBackup": false
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-secure-store",
+        {
+          "configureAndroidBackup": true
+        }
+      ],
+      "expo-image"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

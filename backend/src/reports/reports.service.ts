@@ -19,6 +19,7 @@ import {
 } from "../common/policy";
 import { ThresholdService } from "../master/threshold.service";
 import { EgovService } from "../auth/egov.service";
+import { assertReportVersion } from "./report-version";
 export const filters = z.object({
   tahun: z.coerce
     .number()
@@ -237,6 +238,7 @@ export class ReportsService {
         target: z.number().finite().min(0).max(1e14).optional(),
         bulan: z.number().int().min(1).max(12).optional(),
         nilai: z.number().finite().min(0).max(1e14).optional(),
+        expectedUpdatedAt: z.iso.datetime().nullable().optional(),
       })
       .strict()
       .parse(body);
@@ -291,6 +293,7 @@ export class ReportsService {
           },
           include: { verifikasiBulanan: true },
         });
+        assertReportVersion(b.expectedUpdatedAt, before?.updatedAt);
         const monthlyModel =
           kind === "kinerja"
             ? "verifikasiKinerjaBulanan"
