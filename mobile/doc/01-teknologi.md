@@ -123,3 +123,7 @@ Backend GASS tetap menggunakan NestJS, Prisma, PostgreSQL dan layanan autentikas
 Catatan pengujian implementasi awal, 23 Oktober 2026: 6 tes mobile dan 51 tes backend lolos, 25 tes integrasi database dilewati, typecheck/lint lolos, Expo Doctor 20/20, bundle Android/iOS berhasil diekspor. Belum ada pengujian perangkat nyata, profiling RAM/baterai, atau pentest.
 
 Audit pada implementasi awal mencatat 19 temuan high di rantai dependensi, bersumber dari advisori `braces` dan `node-forge`. Itu adalah hasil pemeriksaan saat tersebut, bukan status keamanan permanen. Jalankan `npm audit` lagi sebelum rilis; rincian ada di [catatan kesiapan rilis](../README.md#batas-kesiapan-rilis).
+
+## Ikon antarmuka
+
+`lucide-react-native` menyediakan ikon resmi Lucide; `react-native-svg` menangani rendering native. Versi terkunci terdapat di package-lock.json. Ikon diimpor secara eksplisit di src/components/ui.tsx, dengan ukuran dan warna dari tema GASS. Logo pemerintah tetap berupa aset asli.

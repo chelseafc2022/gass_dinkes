@@ -199,3 +199,7 @@ Uji alur pada akun uji dan data uji:
 | Draf tidak muncul setelah logout | Logout memang menghapus draf akun; draf juga kedaluwarsa setelah 7 hari |
 
 Jangan menaruh `.env`, password, token, file signing, atau credential database dalam Git maupun tangkapan layar troubleshooting.
+
+### Setelah penambahan ikon Lucide
+
+Dependensi `lucide-react-native` dan `react-native-svg` sudah tercatat di package.json. Jalankan `npm ci`, lalu bangun ulang development client dengan `npm run android`; Fast Refresh saja tidak menambahkan modul native SVG ke APK lama.

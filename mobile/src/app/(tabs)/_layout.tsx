@@ -1,5 +1,6 @@
 import { Tabs } from "expo-router";
-import { Text } from "react-native";
+import { View } from "react-native";
+import { BrandHeader, Icon } from "../../components/ui";
 import { useSession } from "../../core/session";
 import { allowed, canWrite, canVerify } from "../../core/domain";
 import { colors } from "../../core/theme";
@@ -10,17 +11,23 @@ export default function TabsLayout() {
     allowed(user, "capaian_kinerja") || allowed(user, "capaian_keuangan");
   return (
     <Tabs
-      screenOptions={{
+      screenOptions={({ route }) => ({
         headerTintColor: colors.primary,
+        headerTitle: () => <BrandHeader />,
+        headerShadowVisible: false,
+        headerTitleAlign: "left",
         headerStyle: { backgroundColor: colors.white },
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.muted,
-        tabBarStyle: { backgroundColor: colors.white },
+        tabBarStyle: { backgroundColor: colors.white, borderTopColor: colors.border, paddingTop: 8 },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: "600" },
         lazy: true,
-        tabBarIcon: ({ color }) => (
-          <Text style={{ color, fontSize: 18 }}>●</Text>
+        tabBarIcon: ({ color, focused }) => (
+          <View style={{ borderRadius: 12, paddingHorizontal: 14, paddingVertical: 3, backgroundColor: focused ? colors.mint : "transparent" }}>
+            <Icon name={route.name === "index" ? "home" : route.name === "verify" ? "shield" : route.name === "drafts" ? "draft" : route.name === "account" ? "user" : "report"} color={typeof color === "string" ? color : colors.primary} />
+          </View>
         ),
-      }}
+      })}
     >
       <Tabs.Screen
         name="index"

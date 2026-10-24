@@ -18,6 +18,9 @@ import {
 import { write, errorText } from "../../core/api";
 import { queryClient } from "../../core/query";
 import {
+  Badge,
+  EmptyState,
+  Section,
   Button,
   Card,
   Field,
@@ -105,6 +108,8 @@ export default function ReportList({
             : "Input capaian kinerja dan realisasi keuangan."
         }
       />
+      <Card>
+      <Section title="Filter laporan" />
       <Select
         label="Jenis laporan"
         value={kind}
@@ -157,6 +162,7 @@ export default function ReportList({
         onChangeText={setSearch}
         placeholder="Indikator atau nama faskes"
       />
+      </Card>
       {!verification && canWrite(user) && (
         <Button title="+ Input laporan" onPress={() => edit()} />
       )}
@@ -190,7 +196,7 @@ export default function ReportList({
           query.isPending ? (
             <Loading />
           ) : (
-            <Message text="Belum ada laporan yang sesuai filter." />
+            <EmptyState icon={verification ? "shield" : "report"} title={verification ? "Belum ada laporan untuk ditinjau" : "Belum ada laporan"} description="Sesuaikan periode atau kata pencarian untuk menemukan laporan." />
           )
         }
         renderItem={({ item: r }) => {
@@ -201,7 +207,8 @@ export default function ReportList({
               <Card>
                 <Text style={styles.badge}>{r.faskes.namaFaskes}</Text>
                 <Text style={styles.h2}>{r.label}</Text>
-                <Text style={styles.text}>
+                <Badge text={m?.isValidated ? "Terverifikasi" : submitted ? "Menunggu verifikasi" : "Belum dikirim"} tone={m?.isValidated ? "success" : submitted ? "warning" : "neutral"} />
+                <Text style={styles.title}>
                   {months[month - 1]}:{" "}
                   {submitted
                     ? format(r[monthKeys[month - 1]])

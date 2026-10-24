@@ -23,6 +23,8 @@ import {
   type Draft,
 } from "../features/drafts/storage";
 import {
+  Badge,
+  Section,
   Button,
   Card,
   Field,
@@ -228,6 +230,7 @@ export default function ReportForm() {
           title={kind === "kinerja" ? "Capaian kinerja" : "Realisasi keuangan"}
           subtitle={`${months[month - 1]} ${year}`}
         />
+        <Badge text={`${draft ? "DRAF LOKAL" : params.id ? "KOREKSI LAPORAN" : "LAPORAN BARU"} • ${months[month - 1]} ${year}`} />
         {draft ? (
           <Card>
             <Text style={styles.h2}>{label}</Text>
@@ -235,6 +238,7 @@ export default function ReportForm() {
           </Card>
         ) : (
           <Card>
+            <Section title="01 · Identitas laporan" subtitle="Pastikan faskes dan indikator sudah sesuai." />
             {params.id ? (
               <Text style={styles.h2}>{row?.label ?? "Memuat laporan…"}</Text>
             ) : (
@@ -279,6 +283,7 @@ export default function ReportForm() {
           </Card>
         )}
         <Card>
+          <Section title="02 · Nilai capaian" subtitle="Masukkan realisasi untuk bulan yang dipilih." />
           {baseline === null || draft?.input.target !== undefined ? (
             <Field
               label={
@@ -312,6 +317,7 @@ export default function ReportForm() {
             />
           )}
           {!!error && <Message error text={error} />}
+          <Section title="03 · Simpan laporan" subtitle="Periksa nilai sebelum mengirim untuk verifikasi." />
           <Button
             title={mutation.isPending ? "Mengirim…" : "Kirim ke server"}
             onPress={send}

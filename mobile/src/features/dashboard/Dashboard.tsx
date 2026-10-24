@@ -1,5 +1,6 @@
+import { Activity, Building2, ChartNoAxesCombined, ChevronDown, ChevronUp, CircleCheck, SlidersHorizontal, Wallet } from "lucide-react-native";
 import { useState } from "react";
-import { Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { FlashList } from "@shopify/flash-list";
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "../../core/session";
@@ -7,9 +8,11 @@ import { api, errorText } from "../../core/api";
 import { allowed, currentPeriod, format, months } from "../../core/domain";
 import { useOptions } from "../reports/hooks";
 import {
+  Badge,
+  EmptyState,
+  Section,
   Button,
   Card,
-  Heading,
   Loading,
   Message,
   Progress,
@@ -52,6 +55,7 @@ export default function Dashboard() {
   const [month, setMonth] = useState(now.month);
   const [facility, setFacility] = useState("");
   const [category, setCategory] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
   const options = useOptions();
   const query = useQuery({
@@ -73,19 +77,26 @@ export default function Dashboard() {
       <FlashList
         data={query.data?.indicators ?? []}
         keyExtractor={(i) => i.id}
-        contentContainerStyle={{ padding: 20 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: 28 }}
         refreshing={query.isRefetching}
         onRefresh={() => void query.refetch()}
         ListHeaderComponent={
-          <View style={{ gap: 16, paddingBottom: 16 }}>
-            <Text style={styles.badge}>GASS / MONITORING KESEHATAN</Text>
-            <Heading
-              title={`Halo, ${user.name.split(" ")[0]}`}
-              subtitle={
-                user.faskes?.namaFaskes ??
-                "Dinas Kesehatan Kabupaten Konawe Selatan"
-              }
-            />
+          <View style={{ gap: 12, paddingBottom: 12 }}>
+            <View style={compact.header}>
+              <View style={{ flex: 1, gap: 3 }}>
+                <Text style={compact.caption}>Selamat datang, {user.name.split(" ")[0]}</Text>
+                <Text accessibilityRole="header" style={compact.title}>Ringkasan kinerja</Text>
+                <Text style={compact.caption}>{user.faskes?.namaFaskes ?? "Dinas Kesehatan Konawe Selatan"}</Text>
+              </View>
+              <View style={compact.mark}><Activity color={colors.primary} size={22} /></View>
+            </View>
+            <Pressable accessibilityRole="button" accessibilityState={{ expanded: showFilters }} onPress={() => setShowFilters(!showFilters)} style={({ pressed }) => [compact.filter, pressed && { opacity: 0.7 }]}>
+              <SlidersHorizontal size={16} color={colors.teal} />
+              <View style={{ flex: 1 }}><Text style={compact.label}>{months[month - 1]} {year}</Text><Text style={compact.caption}>{facility ? options.data?.faskes.find((f) => f.id === facility)?.namaFaskes ?? "Faskes terpilih" : user.faskes?.namaFaskes ?? "Semua faskes"} · {category ? category.replaceAll("_", " ") : "Semua kategori"}</Text></View>
+              {showFilters ? <ChevronUp size={18} color={colors.muted} /> : <ChevronDown size={18} color={colors.muted} />}
+            </Pressable>
+            {showFilters && <Card>
+            <Section title="Periode pemantauan" subtitle="Sesuaikan ringkasan yang ingin Anda lihat." />
             <View style={styles.row}>
               <View style={{ flex: 1, minWidth: 100 }}>
                 <Select
@@ -136,6 +147,7 @@ export default function Dashboard() {
                 })),
               ]}
             />
+            </Card>}
             {query.isError && (
               <>
                 <Message error text={errorText(query.error)} />
@@ -148,99 +160,66 @@ export default function Dashboard() {
             )}
             {summary && (
               <>
-                <View
-                  style={[
-                    styles.card,
-                    { backgroundColor: colors.primary, borderWidth: 0 },
-                  ]}
-                >
-                  <Text style={{ color: colors.mint, fontSize: 14 }}>
-                    CAPAIAN KINERJA TERVERIFIKASI
-                  </Text>
-                  <Text
-                    style={{ color: "white", fontSize: 44, fontWeight: "800" }}
-                  >
-                    {format(summary.capaian)}%
-                  </Text>
-                  <Text style={{ color: colors.mint }}>
-                    Kumulatif Januari–{months[month - 1]} {year}
-                  </Text>
-                  <Text style={{ color: "white" }}>
-                    {summary.faskes} faskes • {summary.indikator} indikator
-                  </Text>
-                </View>
-                <View style={styles.row}>
-                  <View style={{ flex: 1, minWidth: 145 }}>
-                    <Card>
-                      <Text style={styles.muted}>Verifikasi bulanan</Text>
-                      <Text style={styles.h2}>
-                        {summary.tervalidasi} / {summary.jumlahLaporan}
-                      </Text>
-                      <Progress
-                        value={
-                          summary.jumlahLaporan
-                            ? (summary.tervalidasi / summary.jumlahLaporan) *
-                              100
-                            : 0
-                        }
-                      />
-                    </Card>
+                <View style={compact.grid}>
+                  <View style={[compact.metric, { backgroundColor: colors.primary, borderColor: colors.primary }]}>
+                    <View style={compact.metricTop}><Activity size={17} color={colors.mint} /><Text style={[compact.label, { color: colors.mint }]}>Capaian kinerja</Text></View>
+                    <Text style={[compact.value, { color: colors.white }]}>{format(summary.capaian)}<Text style={{ fontSize: 16 }}> %</Text></Text>
+                    <Text style={[compact.caption, { color: colors.mint }]}>Kumulatif terverifikasi</Text>
                   </View>
-                  <View style={{ flex: 1, minWidth: 145 }}>
-                    <Card>
-                      <Text style={styles.muted}>Serapan bulan ini</Text>
-                      <Text style={styles.h2}>{format(summary.serapan)}%</Text>
-                      <Progress value={summary.serapan} />
-                    </Card>
+                  <View style={compact.metric}>
+                    <View style={compact.metricTop}><Wallet size={17} color={colors.teal} /><Text style={compact.label}>Serapan</Text></View>
+                    <Text style={compact.value}>{format(summary.serapan)}<Text style={{ fontSize: 16 }}> %</Text></Text>
+                    <Text style={compact.caption}>Realisasi bulan ini</Text>
+                  </View>
+                  <View style={compact.metric}>
+                    <View style={compact.metricTop}><CircleCheck size={17} color={colors.teal} /><Text style={compact.label}>Verifikasi</Text></View>
+                    <Text style={compact.value}>{summary.tervalidasi}<Text style={compact.caption}> / {summary.jumlahLaporan}</Text></Text>
+                    <Progress value={summary.jumlahLaporan ? summary.tervalidasi / summary.jumlahLaporan * 100 : 0} />
+                  </View>
+                  <View style={compact.metric}>
+                    <View style={compact.metricTop}><Building2 size={17} color={colors.teal} /><Text style={compact.label}>Cakupan faskes</Text></View>
+                    <Text style={compact.value}>{summary.faskes}</Text>
+                    <Text style={compact.caption}>{summary.indikator} indikator dipantau</Text>
                   </View>
                 </View>
-                <Message
-                  text={`Keuangan ${months[month - 1]}: Rp ${format(summary.realisasiKeuangan)} / pagu Rp ${format(summary.targetKeuangan)}. Hanya realisasi terverifikasi yang dihitung.`}
-                />
-                <Message
-                  text={`Diperbarui ${new Date(query.dataUpdatedAt).toLocaleTimeString("id-ID")} • tarik untuk memperbarui`}
-                />
+                <View style={compact.finance}>
+                  <Text style={compact.label}>Keuangan · {months[month - 1]}</Text>
+                  <View style={compact.spread}><Text style={compact.caption}>Realisasi terverifikasi</Text><Text style={compact.amount}>Rp {format(summary.realisasiKeuangan)}</Text></View>
+                  <View style={compact.spread}><Text style={compact.caption}>Pagu</Text><Text style={compact.amount}>Rp {format(summary.targetKeuangan)}</Text></View>
+                </View>
+                <Text style={compact.caption}>Diperbarui {new Date(query.dataUpdatedAt).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })} · tarik untuk memperbarui</Text>
               </>
             )}
-            <Heading
-              title="Capaian indikator"
-              subtitle="Status mengikuti threshold triwulan resmi dari server."
-            />
+            <View style={[compact.spread, { marginTop: 8 }]}>
+              <Text accessibilityRole="header" style={compact.sectionTitle}>Capaian indikator</Text>
+              <Text style={compact.caption}>{query.data?.indicators.length ?? 0} indikator</Text>
+            </View>
           </View>
         }
         ListEmptyComponent={
           query.isPending ? (
             <Loading />
           ) : (
-            <Message text="Belum ada indikator untuk filter ini." />
+            <EmptyState title="Belum ada indikator" description="Coba pilih periode, faskes, atau kategori lain untuk melihat capaian." />
           )
         }
         renderItem={({ item: i }) => (
-          <View style={{ marginBottom: 12 }}>
-            <Card>
-              <Text style={styles.badge}>
-                {i.kategori} •{" "}
-                {i.status === "HIJAU"
-                  ? "Target tercapai"
-                  : i.status === "KUNING"
-                    ? "Perlu ditingkatkan"
-                    : "Perlu perhatian"}
-              </Text>
-              <Text style={styles.h2}>{i.nama}</Text>
-              <Text style={styles.title}>{format(i.persentase)}%</Text>
+          <View style={compact.indicator}>
+              <View style={compact.spread}>
+                <Text style={compact.eyebrow}>{i.kategori.replaceAll("_", " ")}</Text>
+                <Badge text={i.status === "HIJAU" ? "Tercapai" : i.status === "KUNING" ? "Perlu ditingkatkan" : "Perlu perhatian"} tone={i.status === "HIJAU" ? "success" : i.status === "KUNING" ? "warning" : "danger"} />
+              </View>
+              <Text style={compact.indicatorTitle}>{i.nama}</Text>
+              <View style={compact.spread}>
+                <Text style={compact.caption}>{i.tercapai} / {i.totalFaskes} faskes mencapai target</Text>
+                <Text style={compact.percent}>{format(i.persentase)}%</Text>
+              </View>
               <Progress value={i.persentase} />
-              <Message
-                text={`${i.tercapai} dari ${i.totalFaskes} faskes mencapai target`}
-              />
-              <Button
-                secondary
-                title={
-                  expanded === i.id
-                    ? "Tutup rincian"
-                    : "Lihat tren & 5 faskes prioritas"
-                }
-                onPress={() => setExpanded(expanded === i.id ? null : i.id)}
-              />
+              <Pressable accessibilityRole="button" accessibilityState={{ expanded: expanded === i.id }} accessibilityLabel={`${expanded === i.id ? "Tutup" : "Lihat"} rincian ${i.nama}`} onPress={() => setExpanded(expanded === i.id ? null : i.id)} style={({ pressed }) => [compact.details, pressed && { opacity: 0.6 }]}>
+                <ChartNoAxesCombined size={16} color={colors.teal} />
+                <Text style={[compact.label, { flex: 1, color: colors.teal }]}>{expanded === i.id ? "Tutup rincian" : "Tren & faskes prioritas"}</Text>
+                {expanded === i.id ? <ChevronUp size={16} color={colors.teal} /> : <ChevronDown size={16} color={colors.teal} />}
+              </Pressable>
               {expanded === i.id && (
                 <>
                   <Text style={styles.h2}>Tren kumulatif</Text>
@@ -259,10 +238,31 @@ export default function Dashboard() {
                   ))}
                 </>
               )}
-            </Card>
           </View>
         )}
       />
     </View>
   );
 }
+
+const compact = StyleSheet.create({
+  header: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 4 },
+  title: { fontSize: 22, lineHeight: 28, fontWeight: "700", letterSpacing: -0.5, color: colors.text },
+  caption: { fontSize: 12, lineHeight: 18, color: colors.muted },
+  label: { fontSize: 12, lineHeight: 18, fontWeight: "600", color: colors.text },
+  mark: { width: 42, height: 42, borderRadius: 14, backgroundColor: colors.mint, alignItems: "center", justifyContent: "center" },
+  filter: { flexDirection: "row", alignItems: "center", gap: 10, padding: 12, minHeight: 48, borderWidth: 1, borderColor: colors.border, borderRadius: 12, backgroundColor: colors.white },
+  grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  metric: { flexGrow: 1, flexBasis: "46%", minWidth: 140, padding: 14, gap: 8, borderWidth: 1, borderColor: colors.border, borderRadius: 16, backgroundColor: colors.white },
+  metricTop: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 6 },
+  value: { fontSize: 26, lineHeight: 32, fontWeight: "700", letterSpacing: -0.5, color: colors.text, fontVariant: ["tabular-nums"] },
+  finance: { borderWidth: 1, borderColor: colors.border, borderRadius: 14, padding: 14, gap: 8, backgroundColor: colors.white },
+  spread: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 },
+  amount: { fontSize: 12, lineHeight: 18, fontWeight: "600", color: colors.text, fontVariant: ["tabular-nums"] },
+  sectionTitle: { fontSize: 16, fontWeight: "700", color: colors.text },
+  indicator: { marginBottom: 10, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, borderRadius: 16, padding: 14, gap: 10 },
+  eyebrow: { fontSize: 10, letterSpacing: 0.6, fontWeight: "700", color: colors.teal },
+  indicatorTitle: { fontSize: 14, lineHeight: 21, fontWeight: "600", color: colors.text },
+  percent: { fontSize: 18, fontWeight: "700", color: colors.primary, fontVariant: ["tabular-nums"] },
+  details: { minHeight: 44, flexDirection: "row", alignItems: "center", gap: 8, borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 8 },
+});

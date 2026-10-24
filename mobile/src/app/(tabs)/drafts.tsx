@@ -8,6 +8,8 @@ import { allowed, canWrite, months, format } from "../../core/domain";
 import { errorText } from "../../core/api";
 import { listDrafts, deleteDraft } from "../../features/drafts/storage";
 import {
+  Badge,
+  EmptyState,
   Button,
   Card,
   Heading,
@@ -46,7 +48,7 @@ export default function Drafts() {
               title="Draf lapangan"
               subtitle="Tersimpan di perangkat • belum dikirim"
             />
-            <Message text="Maksimal 30 draf, kedaluwarsa setelah 7 hari. Tinjau setiap laporan sebelum mengirim." />
+            <Card><Badge text={`${query.data?.filter((d) => allowed(user, `capaian_${d.kind}`)).length ?? 0} DRAF DI PERANGKAT`} /><Message text="Draf disimpan hingga 7 hari. Tinjau dan kirim ketika koneksi tersedia." /></Card>
             {query.isError && <Message error text={errorText(query.error)} />}
           </View>
         }
@@ -54,7 +56,7 @@ export default function Drafts() {
           query.isPending ? (
             <Loading />
           ) : (
-            <Message text="Belum ada draf. Simpan draf dari halaman input laporan." />
+            <EmptyState icon="draft" title="Draf Anda masih kosong" description="Simpan laporan sebagai draf saat di lapangan. Lanjutkan pemeriksaan dan pengiriman dari sini." />
           )
         }
         renderItem={({ item: d }) => (
@@ -64,6 +66,7 @@ export default function Drafts() {
                 {d.kind.toUpperCase()} • {months[d.input.bulan - 1]}{" "}
                 {d.input.tahun}
               </Text>
+              <Badge text="Belum dikirim" tone="warning" />
               <Text style={styles.h2}>{d.label}</Text>
               <Text style={styles.text}>
                 Realisasi: {format(d.input.nilai)}
