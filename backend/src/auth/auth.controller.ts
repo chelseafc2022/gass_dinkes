@@ -10,7 +10,12 @@ export class AuthController {
   constructor(private auth: AuthService) {}
   private cookies(
     res: Response,
-    t: { accessToken: string; refreshToken: string; user: unknown },
+    t: {
+      accessToken: string;
+      refreshToken: string;
+      expiresAt: Date;
+      user: unknown;
+    },
   ) {
     const opts = {
       httpOnly: true,
@@ -24,7 +29,7 @@ export class AuthController {
     });
     res.cookie("gass_refresh", t.refreshToken, {
       ...opts,
-      maxAge: 7 * 86400000,
+      maxAge: Math.max(0, t.expiresAt.getTime() - Date.now()),
       path: "/api/auth",
     });
     return { user: t.user };

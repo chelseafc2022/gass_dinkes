@@ -531,6 +531,17 @@ integration("GASS API with isolated PostgreSQL", () => {
       .find((c) => c.startsWith("gass_refresh="))!
       .split(";")[0];
     expect(cookies.every((c) => c.includes("HttpOnly"))).toBe(true);
+    const refreshCookie = cookies.find((c) => c.startsWith("gass_refresh="))!;
+    const maxAge = Number(refreshCookie.match(/Max-Age=(\d+)/)?.[1]);
+    expect(maxAge).toBeGreaterThan(86390);
+    expect(maxAge).toBeLessThanOrEqual(86400);
+    const storedSession = await db.session.findFirstOrThrow({
+      where: { userId: operator.id },
+      orderBy: { createdAt: "desc" },
+    });
+    expect(
+      storedSession.expiresAt.getTime() - storedSession.createdAt.getTime(),
+    ).toBeLessThanOrEqual(86400000);
     const refreshed = await http()
       .post("/api/auth/refresh")
       .set("X-Gass-Client", "web")

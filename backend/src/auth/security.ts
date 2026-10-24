@@ -11,6 +11,7 @@ import { Reflector } from "@nestjs/core";
 import { JwtService } from "@nestjs/jwt";
 import { PrismaService } from "../prisma/prisma.service";
 import { defaultPermission, hardPermission } from "../common/policy";
+import { sessionExpiresAt } from "./auth.service";
 export const Public = () => SetMetadata("public", true);
 export const Menu = (menu: string) => SetMetadata("menu", menu);
 export const CurrentUser = createParamDecorator(
@@ -61,7 +62,7 @@ export class AccessGuard implements CanActivate {
         !session ||
         session.userId !== p.sub ||
         !session.user.isActive ||
-        session.expiresAt <= new Date()
+        sessionExpiresAt(session) <= new Date()
       )
         throw new Error();
       req.user = session.user;

@@ -10,6 +10,17 @@ import { EgovService } from "./egov.service";
 import { defaultPermission, hardPermission, MENUS } from "../common/policy";
 const hash = (token: string) =>
   createHash("sha256").update(token).digest("hex");
+export const SESSION_TTL_MS = 24 * 60 * 60 * 1000;
+export const sessionExpiresAt = (session: {
+  createdAt: Date;
+  expiresAt: Date;
+}) =>
+  new Date(
+    Math.min(
+      session.expiresAt.getTime(),
+      session.createdAt.getTime() + SESSION_TTL_MS,
+    ),
+  );
 @Injectable()
 export class AuthService {
   constructor(
@@ -40,14 +51,15 @@ export class AuthService {
       },
     });
     const refreshToken = randomBytes(48).toString("base64url");
+    const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
     const session = await this.db.session.create({
       data: {
         userId: user.id,
         tokenHash: hash(refreshToken),
-        expiresAt: new Date(Date.now() + 7 * 86400000),
+        expiresAt,
       },
     });
-    return this.tokens(user.id, session.id, refreshToken);
+    return this.tokens(user.id, session.id, refreshToken, expiresAt);
   }
   async refresh(token?: string) {
     if (!token) throw new UnauthorizedException("Sesi telah berakhir.");
@@ -58,7 +70,7 @@ export class AuthService {
         where: { tokenHash },
         include: { user: true },
       });
-      if (!s || s.expiresAt <= new Date() || !s.user.isActive)
+      if (!s || sessionExpiresAt(s) <= new Date() || !s.user.isActive)
         throw new UnauthorizedException("Sesi telah berakhir.");
       const changed = await tx.session.updateMany({
         where: { id: s.id, tokenHash },
@@ -68,9 +80,19 @@ export class AuthService {
         throw new UnauthorizedException("Token sudah digunakan.");
       return s;
     });
-    return this.tokens(session.userId, session.id, next);
+    return this.tokens(
+      session.userId,
+      session.id,
+      next,
+      sessionExpiresAt(session),
+    );
   }
-  private async tokens(userId: string, sid: string, refreshToken: string) {
+  private async tokens(
+    userId: string,
+    sid: string,
+    refreshToken: string,
+    expiresAt: Date,
+  ) {
     const accessToken = await this.jwt.signAsync(
       { sub: userId, sid, type: "access" },
       {
@@ -80,7 +102,12 @@ export class AuthService {
         audience: "gass-web",
       },
     );
-    return { accessToken, refreshToken, user: await this.me(userId) };
+    return {
+      accessToken,
+      refreshToken,
+      expiresAt,
+      user: await this.me(userId),
+    };
   }
   async me(id: string) {
     const user = await this.db.user.findUniqueOrThrow({
