@@ -15,6 +15,10 @@ import { ReportsController } from "./reports/reports.controller";
 import { ReportsService } from "./reports/reports.service";
 import { AdminController } from "./admin/admin.controller";
 import { NotificationsService } from "./notifications/notifications.service";
+import { AiController } from "./ai/ai.controller";
+import { AiService } from "./ai/ai.service";
+import { AiProvider } from "./ai/ai.provider";
+import { AiBudget } from "./ai/ai.budget";
 @Controller("health")
 class HealthController {
   @Public() @Get() health() {
@@ -33,6 +37,7 @@ class HealthController {
     MasterController,
     ReportsController,
     AdminController,
+    AiController,
   ],
   providers: [
     PrismaService,
@@ -42,6 +47,9 @@ class HealthController {
     ThresholdService,
     ReportsService,
     NotificationsService,
+    AiService,
+    AiProvider,
+    AiBudget,
     { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_GUARD, useClass: AccessGuard },
   ],

@@ -15,6 +15,7 @@ import { queryClient } from "../core/query";
 import { SessionProvider, useSession } from "../core/session";
 import { AnimatedSplashScreen } from "../components/AnimatedSplashScreen";
 import { colors } from "../core/theme";
+import { allowed } from "../core/domain";
 export { ErrorBoundary } from "expo-router";
 function Routes() {
   const { user, loading } = useSession();
@@ -100,6 +101,9 @@ function Routes() {
               headerTintColor: colors.primary,
             }}
           />
+        </Stack.Protected>
+        <Stack.Protected guard={!!user && user.role === "KEPALA_DINAS" && allowed(user, "dashboard")}>
+          <Stack.Screen name="ai-chat" options={{ headerShown: true, title: "Asisten Pimpinan", headerTintColor: colors.primary }} />
         </Stack.Protected>
       </Stack>
       {!active && (

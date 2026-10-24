@@ -9,6 +9,8 @@ Disusun pada **23 Oktober 2026**, berdasarkan kode dan konfigurasi project. Vers
 | [01 — Teknologi yang digunakan](01-teknologi.md) | Daftar dependensi, fungsi, struktur aplikasi, caching, penyimpanan dan keamanan | Pengembang dan tim TI |
 | [02 — Langkah instalasi](02-instalasi.md) | Persiapan, konfigurasi API, Android/iOS, build EAS, pemeriksaan dan troubleshooting | Pengembang baru dan pengelola build |
 | [03 — Alasan dan perbandingan](03-alasan-dan-perbandingan.md) | Alasan pemilihan, alternatif sejenis, kekurangan, dan kapan perlu beralih | Pengambil keputusan dan pengembang |
+| [05 — Rencana AI Agent pimpinan](05-rencana-ai-agent-pimpinan.md) | Rencana chat kinerja, target, realisasi, arsitektur, keamanan, tahapan, dan kriteria penerimaan | Pimpinan, pengelola data, dan pengembang |
+| [06 — Implementasi AI Agent](06-implementasi-ai-agent.md) | Alur aktual, teknologi, aktivasi penyedia, batas penggunaan, dan hasil pengujian chat pimpinan | Pimpinan, pengelola data, dan pengembang |
 
 [04 — Desain antarmuka mobile](04-desain-mobile.md) menjelaskan tema, aset, dan komponen UI yang mengikuti frontend.
 

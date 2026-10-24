@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useQuery } from "@tanstack/react-query";
+// AI Agent ditunda. Aktifkan kembali import ini bersama tombol Tanya AI.
+// import { router } from "expo-router";
 import { ChevronDown, ChevronUp, Wallet, CircleCheck } from "lucide-react-native";
 import { useSession } from "../../core/session";
 import { api, errorText } from "../../core/api";
@@ -284,6 +286,10 @@ export default function ExecutiveDashboard() {
           />
         </View>
       </View>
+
+      {/* AI Agent ditunda sampai alur dan konfigurasi siap digunakan.
+      <Button title="Tanya AI • Kinerja, target & realisasi" onPress={() => router.push({ pathname: "/ai-chat", params: { tahun: String(year), ...(quarter ? { triwulan: quarter } : { bulan: String(month) }) } })} />
+      */}
 
       {query.isPending && <Loading />}
       {query.isError && (

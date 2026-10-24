@@ -5,6 +5,8 @@ Aplikasi Android/iOS untuk input capaian bulanan petugas PKM, verifikasi Admin D
 
 Dokumentasi lengkap tersedia di **[folder doc](doc/README.md)**: inventaris teknologi, langkah instalasi, serta alasan dan perbandingan alternatif.
 
+Implementasi chat pimpinan disimpan untuk pengembangan lanjutan. **Tombol Tanya AI di dashboard Kepala Dinas sementara dikomentari dan tidak ditampilkan**, sesuai keputusan menunda penerapan. Backend tetap perlu konfigurasi penyedia AI sebelum chat aktif. Lihat [alur, teknologi, aktivasi, dan hasil pengujian AI Agent](doc/06-implementasi-ai-agent.md). Tidak ada paket mobile tambahan atau migrasi database untuk fitur ini.
+
 ## Menjalankan
 
 Node 24.12+ direkomendasikan (lihat `.nvmrc`).
