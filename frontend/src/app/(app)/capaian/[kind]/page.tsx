@@ -254,7 +254,8 @@ export default function Capaian({
     [deleting, setDeleting] = useState<any>(null),
     [confirmDuplicate, setConfirmDuplicate] = useState(false),
     [sheetRow, setSheetRow] = useState<any>(null),
-    [hideExisting, setHideExisting] = useState(false);
+    [hideExisting, setHideExisting] = useState(false),
+    [statusFilter, setStatusFilter] = useState("");
   const debounced = useDebounced(search);
   const categoryFilter = money ? "" : category;
   const q = useQuery({
@@ -269,6 +270,17 @@ export default function Capaian({
       ),
     enabled: valid && !!user?.permissions.includes(`capaian_${kind}`),
   });
+  const tableRows = useMemo(() => {
+    const all: any[] = q.data?.data ?? [];
+    if (!statusFilter) return all;
+    const month = Number(filters.bulan) || 0;
+    return all.filter((r: any) =>
+      (r.verifikasiBulanan ?? []).some(
+        (m: any) =>
+          (!month || m.bulan === month) && !m.isValidated,
+      ),
+    );
+  }, [q.data?.data, statusFilter, filters.bulan]);
   const opts = useQuery({
     queryKey: ["options"],
     queryFn: () => api("/options"),
@@ -484,7 +496,7 @@ export default function Capaian({
                   "Realisasi",
                   "Capaian (%)",
                 ],
-                q.data.data.map((r: any) => [
+                tableRows.map((r: any) => [
                   r.faskes.namaFaskes,
                   r.label,
                   r.target,
@@ -532,6 +544,15 @@ export default function Capaian({
               ))}
             </select>
           )}
+          <select
+            aria-label="Status verifikasi"
+            className="filter-select w-full sm:w-56"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="">Semua status</option>
+            <option value="menunggu">Menunggu verifikasi</option>
+          </select>
         </div>
         <span className="text-[11px] text-muted-foreground">
           {readOnly
@@ -547,7 +568,7 @@ export default function Capaian({
         <>
           <div className="min-w-0 max-w-full rounded-xl border bg-card overflow-hidden w-full">
             <div className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3 text-xs text-muted-foreground">
-              <span>{q.data.data.length} laporan · Tahun {filters.tahun}</span>
+              <span>{tableRows.length} laporan · Tahun {filters.tahun}</span>
               <span id="capaian-scroll-help" className="text-[11px] text-muted-foreground/80 hidden sm:inline">Geser tabel ke kanan untuk melihat seluruh bulan dan tindakan.</span>
             </div>
             <Table
@@ -631,7 +652,7 @@ export default function Capaian({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {q.data.data.length === 0 ? (
+                {tableRows.length === 0 ? (
                   <TableRow>
                     <TableCell
                       colSpan={canReview ? 17 : 16}
@@ -644,7 +665,7 @@ export default function Capaian({
                     </TableCell>
                   </TableRow>
                 ) : (
-                  q.data.data.map((r: any) => (
+                  tableRows.map((r: any) => (
                     <TableRow key={r.id} className="group hover:bg-muted/20">
                       <TableCell className="sm:sticky sm:left-0 z-10 border-r bg-card px-2.5 py-2 align-top whitespace-normal [overflow-wrap:anywhere]">
                         <div className="flex items-start justify-between gap-1">

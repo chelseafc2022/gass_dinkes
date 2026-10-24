@@ -17,6 +17,7 @@ export function useReports(kind: Kind, year: number, facility = "") {
         { signal },
       ),
     enabled: !!user && allowed(user, `capaian_${kind}`),
+    refetchInterval: 60_000,
   });
 }
 export function useOptions() {

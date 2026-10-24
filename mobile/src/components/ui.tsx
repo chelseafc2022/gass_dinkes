@@ -171,11 +171,13 @@ export function Select({
   value,
   items,
   onChange,
+  compact = false,
 }: {
   label: string;
   value: string;
   items: { label: string; value: string }[];
   onChange: (v: string) => void;
+  compact?: boolean;
 }) {
   return (
     <View style={{ gap: 4 }}>
@@ -193,7 +195,7 @@ export function Select({
           selectedValue={value}
           onValueChange={onChange}
           dropdownIconColor={c.teal}
-          style={{ color: c.text, minHeight: 52 }}
+          style={{ color: c.text, minHeight: compact ? 40 : 52, fontSize: compact ? 13 : undefined }}
         >
           {items.map((i) => (
             <Picker.Item key={i.value} label={i.label} value={i.value} />

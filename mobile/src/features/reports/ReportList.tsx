@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
-import { Alert, Text, View } from "react-native";
+import { Alert, Pressable, Text, View } from "react-native";
+import { colors as c } from "../../core/theme";
 import { FlashList } from "@shopify/flash-list";
 import { router } from "expo-router";
 import { useMutation } from "@tanstack/react-query";
@@ -46,16 +47,25 @@ export default function ReportList({
   const [showFilters, setShowFilters] = useState(false);
   const [search, setSearch] = useState("");
   const [facility, setFacility] = useState("");
+  const [onlyPending, setOnlyPending] = useState(verification);
+  const selectedMonth = month;
+  const other = useReports(kind === "kinerja" ? "keuangan" : "kinerja", year);
+  const countPending = (rows?: Report[]) =>
+    (rows ?? []).reduce(
+      (n, r) =>
+        n + (r.canVerify ? r.verifikasiBulanan.filter((m) => !m.isValidated).length : 0),
+      0,
+    );
   const query = useReports(kind, year, facility);
   const options = useOptions();
   const mutation = useMutation({
-    mutationFn: ({ r, validated }: { r: Report; validated: boolean }) =>
+    mutationFn: ({ r, validated, bulan }: { r: Report; validated: boolean; bulan: number }) =>
       write(
         `/capaian/${kind}/${encodeURIComponent(r.id)}/verify`,
         {
-          bulan: month,
+          bulan,
           validated,
-          nilai: r[monthKeys[month - 1]],
+          nilai: r[monthKeys[bulan - 1]],
           target: r.target,
         },
         "POST",
@@ -77,11 +87,11 @@ export default function ReportList({
               .toLowerCase()
               .includes(search.toLowerCase())) &&
           (!verification ||
-            r.verifikasiBulanan.some(
-              (m) => m.bulan === month && !!m.submittedAt,
-            )),
+            (onlyPending
+              ? r.verifikasiBulanan.some((m) => !m.isValidated)
+              : r.verifikasiBulanan.some((m) => m.bulan === month))),
       ) ?? [],
-    [query.data, search, verification, month],
+    [query.data, search, verification, month, onlyPending],
   );
   if (
     !user ||
@@ -99,72 +109,116 @@ export default function ReportList({
         ...(r ? { id: r.id, facility: r.faskesId } : {}),
       },
     });
+  const chip = (label: string, active: boolean, onPress: () => void) => (
+    <Pressable
+      key={label}
+      accessibilityRole="button"
+      accessibilityState={{ selected: active }}
+      onPress={onPress}
+      style={{
+        paddingHorizontal: 12,
+        paddingVertical: 7,
+        borderRadius: 18,
+        borderWidth: 1,
+        borderColor: active ? c.primary : c.border,
+        backgroundColor: active ? c.primary : c.white,
+      }}
+    >
+      <Text style={{ fontSize: 12, fontWeight: "700", color: active ? c.white : c.text }}>
+        {label}
+      </Text>
+    </Pressable>
+  );
+  const kindCount = (k: Kind) =>
+    verification
+      ? ` (${countPending(k === kind ? query.data?.data : other.data?.data)})`
+      : "";
   const header = (
-    <View style={{ gap: 10, paddingBottom: 12 }}>
+    <View style={{ gap: 10, paddingBottom: 10 }}>
       <Heading
         title={verification ? "Tinjau & verifikasi" : "Laporan bulanan"}
         subtitle={
           verification
-            ? "Periksa nilai bulan terpilih sebelum mengesahkan."
+            ? "Periksa nilai sebelum mengesahkan."
             : "Input capaian kinerja dan realisasi keuangan."
         }
       />
-      <Button secondary title={`${kind === "kinerja" ? "Kinerja" : "Keuangan"} · ${months[month - 1]} ${year} · ${showFilters ? "Tutup" : "Filter"}`} onPress={() => setShowFilters(!showFilters)} />
-      {showFilters && <Card>
-      <Section title="Filter laporan" />
-      <Select
-        label="Jenis laporan"
-        value={kind}
-        onChange={(v) => setKind(v as Kind)}
-        items={(["kinerja", "keuangan"] as const)
+      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+        {(["kinerja", "keuangan"] as const)
           .filter((k) => allowed(user, `capaian_${k}`))
-          .map((k) => ({
-            value: k,
-            label: k === "kinerja" ? "Capaian kinerja" : "Capaian keuangan",
-          }))}
-      />
-      <View style={styles.row}>
-        <View style={{ flex: 1, minWidth: 120 }}>
-          <Select
-            label="Tahun"
-            value={String(year)}
-            onChange={(v) => setYear(Number(v))}
-            items={Array.from({ length: 6 }, (_, i) => ({
-              label: String(initial.year + 1 - i),
-              value: String(initial.year + 1 - i),
-            }))}
-          />
-        </View>
-        <View style={{ flex: 1, minWidth: 150 }}>
-          <Select
-            label="Bulan"
-            value={String(month)}
-            onChange={(v) => setMonth(Number(v))}
-            items={months.map((label, i) => ({ label, value: String(i + 1) }))}
-          />
-        </View>
+          .map((k) =>
+            chip(
+              `${k === "kinerja" ? "Kinerja" : "Keuangan"}${kindCount(k)}`,
+              kind === k,
+              () => setKind(k),
+            ),
+          )}
+        {verification &&
+          chip("Belum diverifikasi", onlyPending, () => setOnlyPending(!onlyPending))}
       </View>
-      {user.role !== "OPERATOR_PUSKESMAS" && (
-        <Select
-          label="Faskes"
-          value={facility}
-          onChange={setFacility}
-          items={[
-            { value: "", label: "Semua faskes" },
-            ...(options.data?.faskes ?? []).map((f) => ({
-              value: f.id,
-              label: f.namaFaskes,
-            })),
-          ]}
-        />
+      <View style={{ flexDirection: "row", gap: 8 }}>
+        <View style={{ flex: 1 }}>
+          <Field
+            label="Cari"
+            value={search}
+            onChangeText={setSearch}
+            placeholder="Indikator atau faskes"
+            style={{ minHeight: 40, paddingVertical: 6 }}
+          />
+        </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Filter periode dan faskes"
+          onPress={() => setShowFilters(!showFilters)}
+          style={{ alignSelf: "flex-end", height: 40, paddingHorizontal: 12, borderRadius: 10, backgroundColor: showFilters ? c.primary : c.mint, justifyContent: "center" }}
+        >
+          <Text style={{ fontSize: 12, fontWeight: "700", color: showFilters ? c.white : c.primary }}>
+            {months[month - 1].slice(0, 3)} {year} ▾
+          </Text>
+        </Pressable>
+      </View>
+      {showFilters && (
+        <View style={[styles.card, { padding: 10, gap: 8 }]}>
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            <View style={{ flex: 1 }}>
+              <Select
+                compact
+                label="Tahun"
+                value={String(year)}
+                onChange={(v) => setYear(Number(v))}
+                items={Array.from({ length: 6 }, (_, i) => ({
+                  label: String(initial.year + 1 - i),
+                  value: String(initial.year + 1 - i),
+                }))}
+              />
+            </View>
+            <View style={{ flex: 1.4 }}>
+              <Select
+                compact
+                label="Bulan"
+                value={String(month)}
+                onChange={(v) => setMonth(Number(v))}
+                items={months.map((label, i) => ({ label, value: String(i + 1) }))}
+              />
+            </View>
+          </View>
+          {user.role !== "OPERATOR_PUSKESMAS" && (
+            <Select
+              compact
+              label="Faskes"
+              value={facility}
+              onChange={setFacility}
+              items={[
+                { value: "", label: "Semua faskes" },
+                ...(options.data?.faskes ?? []).map((f) => ({
+                  value: f.id,
+                  label: f.namaFaskes,
+                })),
+              ]}
+            />
+          )}
+        </View>
       )}
-      </Card>}
-      <Field
-        label="Cari laporan"
-        value={search}
-        onChangeText={setSearch}
-        placeholder="Indikator atau nama faskes"
-      />
       {!verification && canWrite(user) && (
         <Button title="+ Input laporan" onPress={() => edit()} />
       )}
@@ -178,11 +232,7 @@ export default function ReportList({
           />
         </>
       )}
-      {!!query.data && (
-        <Message
-          text={`${rows.length} laporan • tarik ke bawah untuk memperbarui`}
-        />
-      )}
+      {!!query.data && <Message text={`${rows.length} laporan`} />}
     </View>
   );
   return (
@@ -202,72 +252,85 @@ export default function ReportList({
           )
         }
         renderItem={({ item: r }) => {
+          const pendingMonth = verification && onlyPending
+            ? r.verifikasiBulanan.find((x) => !x.isValidated)?.bulan
+            : undefined;
+          const month = pendingMonth ?? selectedMonth;
           const m = r.verifikasiBulanan.find((x) => x.bulan === month);
-          const submitted = !!m?.submittedAt;
+          const submitted = !!m?.submittedAt || (verification && !!m);
+          const canEdit = !verification && canWrite(user);
+          const canSign = verification && r.canVerify && submitted;
+          const confirm = () =>
+            Alert.alert(
+              m?.isValidated ? "Batalkan verifikasi?" : "Sahkan laporan?",
+              `${r.label}\n${months[month - 1]} ${year}\nNilai: ${format(r[monthKeys[month - 1]])}\nTarget: ${format(r.target)}`,
+              [
+                { text: "Kembali", style: "cancel" },
+                {
+                  text: "Konfirmasi",
+                  onPress: () =>
+                    mutation.mutate({ r, validated: !m?.isValidated, bulan: month }),
+                },
+              ],
+            );
           return (
-            <View style={{ marginBottom: 8 }}>
-              <Card>
-                <Text style={styles.badge}>{r.faskes.namaFaskes}</Text>
-                <Text style={styles.h2}>{r.label}</Text>
-                <Badge text={m?.isValidated ? "Terverifikasi" : submitted ? "Menunggu verifikasi" : "Belum dikirim"} tone={m?.isValidated ? "success" : submitted ? "warning" : "neutral"} />
-                <Text style={styles.h2}>
-                  {months[month - 1]}:{" "}
-                  {submitted
-                    ? format(r[monthKeys[month - 1]])
-                    : "Belum diinput"}
-                  {kind === "keuangan" ? " Rp" : ""}
-                </Text>
-                <Text style={styles.muted}>
-                  Target tahunan: {format(r.target)} •{" "}
-                  {m?.isValidated
-                    ? "Terverifikasi"
-                    : submitted
-                      ? "Menunggu verifikasi"
-                      : "Belum dikirim"}
-                </Text>
-                {m?.verifiedBy && (
-                  <Message text={`Diperiksa oleh ${m.verifiedBy.name}`} />
-                )}
-                {verification && r.canVerify && submitted ? (
-                  <Button
-                    title={
-                      m?.isValidated
-                        ? "Batalkan verifikasi"
-                        : "Verifikasi bulan ini"
-                    }
-                    disabled={mutation.isPending || query.isFetching}
-                    onPress={() =>
-                      Alert.alert(
-                        m?.isValidated
-                          ? "Batalkan verifikasi?"
-                          : "Sahkan laporan?",
-                        `${r.label}\n${months[month - 1]} ${year}\nNilai: ${format(r[monthKeys[month - 1]])}\nTarget: ${format(r.target)}`,
-                        [
-                          { text: "Kembali", style: "cancel" },
-                          {
-                            text: "Konfirmasi",
-                            onPress: () =>
-                              mutation.mutate({
-                                r,
-                                validated: !m?.isValidated,
-                              }),
-                          },
-                        ],
-                      )
-                    }
-                  />
-                ) : (
-                  !verification &&
-                  canWrite(user) && (
-                    <Button
-                      secondary
-                      title="Buka / koreksi"
-                      onPress={() => edit(r)}
-                    />
-                  )
-                )}
-              </Card>
-            </View>
+            <Pressable
+              accessibilityRole="button"
+              disabled={!canEdit}
+              onPress={() => edit(r)}
+              style={({ pressed }) => [
+                styles.card,
+                { marginBottom: 8, padding: 10, gap: 6 },
+                pressed && { opacity: 0.7 },
+              ]}
+            >
+              <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 8 }}>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text style={{ color: c.teal, fontSize: 11, fontWeight: "700" }} numberOfLines={1}>
+                    {r.faskes.namaFaskes}
+                  </Text>
+                  <Text style={[styles.h2, { fontSize: 13, lineHeight: 18 }]} numberOfLines={2}>
+                    {r.label}
+                  </Text>
+                </View>
+                <Badge
+                  text={m?.isValidated ? "Terverifikasi" : submitted ? "Menunggu" : "Belum dikirim"}
+                  tone={m?.isValidated ? "success" : submitted ? "warning" : "neutral"}
+                />
+              </View>
+              <View style={{ flexDirection: "row", gap: 16, alignItems: "flex-end" }}>
+                <View>
+                  <Text style={styles.muted}>{months[month - 1]}</Text>
+                  <Text style={[styles.h2, { fontSize: 15 }]}>
+                    {submitted ? format(r[monthKeys[month - 1]]) : "—"}
+                    {submitted && kind === "keuangan" ? " Rp" : ""}
+                  </Text>
+                </View>
+                <View>
+                  <Text style={styles.muted}>Target tahunan</Text>
+                  <Text style={[styles.text, { fontWeight: "600" }]}>{format(r.target)}</Text>
+                </View>
+              </View>
+              {m?.verifiedBy && (
+                <Text style={[styles.muted, { fontSize: 11 }]}>Diperiksa oleh {m.verifiedBy.name}</Text>
+              )}
+              {canSign ? (
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={mutation.isPending || query.isFetching}
+                  onPress={confirm}
+                  style={{ alignSelf: "flex-start", paddingHorizontal: 12, paddingVertical: 7, borderRadius: 8, backgroundColor: m?.isValidated ? c.mint : c.primary }}
+                >
+                  <Text style={{ fontSize: 12, fontWeight: "700", color: m?.isValidated ? c.primary : c.white }}>
+                    {m?.isValidated ? "Batalkan verifikasi" : "Verifikasi"}
+                  </Text>
+                </Pressable>
+              ) : (
+                canEdit && (
+                  <Text style={{ color: c.teal, fontSize: 12, fontWeight: "700" }}>Buka / koreksi ›</Text>
+                )
+              )}
+            </Pressable>
           );
         }}
       />
