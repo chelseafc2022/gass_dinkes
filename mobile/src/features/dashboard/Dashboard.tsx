@@ -35,6 +35,9 @@ type DashboardData = {
     id: string;
     nama: string;
     kategori: string;
+    satuan?: string;
+    target: number;
+    realisasi: number;
     persentase: number;
     status: string;
     tercapai: number;
@@ -42,6 +45,8 @@ type DashboardData = {
     ranking: {
       faskesId: string;
       namaFaskes: string;
+      target: number;
+      realisasi: number;
       persentase: number;
       reported: boolean;
     }[];
@@ -54,15 +59,16 @@ export default function Dashboard() {
   const [year, setYear] = useState(now.year);
   const [month, setMonth] = useState(now.month);
   const [facility, setFacility] = useState("");
+  const [quarter, setQuarter] = useState("");
   const [category, setCategory] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [expanded, setExpanded] = useState<string | null>(null);
   const options = useOptions();
   const query = useQuery({
-    queryKey: ["dashboard", user?.id, year, month, facility, category],
+    queryKey: ["dashboard", user?.id, year, quarter ? `q${quarter}` : month, facility, category],
     queryFn: ({ signal }) =>
       api<DashboardData>(
-        `/dashboard?tahun=${year}&bulan=${month}${facility ? `&faskesId=${encodeURIComponent(facility)}` : ""}${category ? `&kategori=${category}` : ""}`,
+        `/dashboard?tahun=${year}&${quarter ? `triwulan=${quarter}` : `bulan=${month}`}${facility ? `&faskesId=${encodeURIComponent(facility)}` : ""}${category ? `&kategori=${category}` : ""}`,
         { signal },
       ),
     enabled: !!user && allowed(user, "dashboard"),
@@ -92,7 +98,7 @@ export default function Dashboard() {
             </View>
             <Pressable accessibilityRole="button" accessibilityState={{ expanded: showFilters }} onPress={() => setShowFilters(!showFilters)} style={({ pressed }) => [compact.filter, pressed && { opacity: 0.7 }]}>
               <SlidersHorizontal size={16} color={colors.teal} />
-              <View style={{ flex: 1 }}><Text style={compact.label}>{months[month - 1]} {year}</Text><Text style={compact.caption}>{facility ? options.data?.faskes.find((f) => f.id === facility)?.namaFaskes ?? "Faskes terpilih" : user.faskes?.namaFaskes ?? "Semua faskes"} · {category ? category.replaceAll("_", " ") : "Semua kategori"}</Text></View>
+              <View style={{ flex: 1 }}><Text style={compact.label}>{quarter ? `Triwulan ${quarter}` : months[month - 1]} {year}</Text><Text style={compact.caption}>{facility ? options.data?.faskes.find((f) => f.id === facility)?.namaFaskes ?? "Faskes terpilih" : user.faskes?.namaFaskes ?? "Semua faskes"} · {category ? category.replaceAll("_", " ") : "Semua kategori"}</Text></View>
               {showFilters ? <ChevronUp size={18} color={colors.muted} /> : <ChevronDown size={18} color={colors.muted} />}
             </Pressable>
             {showFilters && <Card>
@@ -110,6 +116,17 @@ export default function Dashboard() {
                 />
               </View>
               <View style={{ flex: 1, minWidth: 150 }}>
+                <Select
+                  label="Triwulan"
+                  value={quarter}
+                  onChange={setQuarter}
+                  items={[
+                    { label: "Per bulan", value: "" },
+                    ...[1, 2, 3, 4].map((n) => ({ label: `Triwulan ${n}`, value: String(n) })),
+                  ]}
+                />
+              </View>
+              <View style={{ flex: 1, minWidth: 150, opacity: quarter ? 0.4 : 1 }} pointerEvents={quarter ? "none" : "auto"}>
                 <Select
                   label="Sampai bulan"
                   value={String(month)}
@@ -214,6 +231,11 @@ export default function Dashboard() {
                 <Text style={compact.caption}>{i.tercapai} / {i.totalFaskes} faskes mencapai target</Text>
                 <Text style={compact.percent}>{format(i.persentase)}%</Text>
               </View>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginVertical: 2 }}>
+                <Text style={compact.caption}>
+                  Realisasi: <Text style={{ fontWeight: "700", color: colors.text }}>{format(i.realisasi)}</Text> / Target: <Text style={{ fontWeight: "700", color: colors.text }}>{format(i.target)}</Text> {i.satuan ?? ""}
+                </Text>
+              </View>
               <Progress value={i.persentase} />
               <Pressable accessibilityRole="button" accessibilityState={{ expanded: expanded === i.id }} accessibilityLabel={`${expanded === i.id ? "Tutup" : "Lihat"} rincian ${i.nama}`} onPress={() => setExpanded(expanded === i.id ? null : i.id)} style={({ pressed }) => [compact.details, pressed && { opacity: 0.6 }]}>
                 <ChartNoAxesCombined size={16} color={colors.teal} />
@@ -233,7 +255,7 @@ export default function Dashboard() {
                   {i.ranking.slice(0, 5).map((r, index) => (
                     <Message
                       key={r.faskesId ?? index}
-                      text={`${r.namaFaskes}: ${r.reported ? `${format(r.persentase)}%` : "Belum melaporkan"}`}
+                      text={`${r.namaFaskes}: ${r.reported ? `Realisasi ${format(r.realisasi)} / Target ${format(r.target)} (${format(r.persentase)}%)` : "Belum melaporkan"}`}
                     />
                   ))}
                 </>
