@@ -69,3 +69,29 @@ test("revoked sessions notify the session owner", async () => {
     globalThis.fetch = original;
   }
 });
+
+test("login rejection reports credential mismatch without refreshing or expiring a session", async () => {
+  const original = globalThis.fetch;
+  let calls = 0;
+  let expired = false;
+  const stop = onSessionExpired(() => { expired = true; });
+  globalThis.fetch = async () => {
+    calls++;
+    return Response.json({ message: "internal detail must stay private" }, { status: 401 });
+  };
+  try {
+    await assert.rejects(api("/auth/login", { method: "POST", body: "{}" }), (e) => e instanceof ApiError && e.status === 401 && e.message.includes("spasi") && !e.message.includes("Sesi berakhir") && !e.message.includes("internal"));
+    assert.equal(calls, 1);
+    assert.equal(expired, false);
+  } finally { stop(); globalThis.fetch = original; }
+});
+
+test("login distinguishes unavailable identity service and missing access", async () => {
+  const original = globalThis.fetch;
+  try {
+    for (const [status, expected] of [[403, "akses GASS"], [503, "eGov/Simpeg"]] as const) {
+      globalThis.fetch = async () => Response.json({}, { status });
+      await assert.rejects(api("/auth/login", { method: "POST" }), (e) => e instanceof ApiError && e.message.includes(expected));
+    }
+  } finally { globalThis.fetch = original; }
+});

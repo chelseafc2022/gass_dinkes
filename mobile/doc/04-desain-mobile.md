@@ -20,3 +20,9 @@ Proteksi tangkapan layar tetap aktif. Pemeriksaan visual halaman yang memerlukan
 ## Kepadatan dashboard dan profil
 
 Dashboard memakai judul 22, angka KPI 26, teks isi 12–14, kartu dengan padding 14 dan radius 16. Empat KPI menggunakan dua kolom dan dapat membungkus pada layar sempit. Detail indikator dan filter dibuka sesuai kebutuhan; nilai keuangan lengkap tetap tersedia. Profil menggunakan avatar 48, identitas horizontal, baris informasi dengan ikon Lucide, serta rincian privasi yang dapat dilipat. Ukuran sentuh kontrol tetap minimal 44–48 dan pembesaran teks sistem tetap aktif.
+
+## Revisi login satu layar dan kartu ringkas
+
+Login tidak menggunakan ScrollView: logo GASS terpusat dan diperbesar di bagian header, foto kantor sebagai latar samar, kartu login dengan kolom input dan aksi visibilitas kata sandi, serta logo Kemenkes dan informasi versi aplikasi di bagian footer. Saat keyboard terbuka, identitas atas dan footer disembunyikan otomatis agar form login tetap terpusat dan terjangkau tanpa terpotong. Komponen kartu bersama memakai padding 12, radius 14, dan jarak isi 8; judul halaman 20. Filter laporan/verifikasi dilipat secara default.
+
+Kolom kata sandi menonaktifkan kapitalisasi dan koreksi otomatis. Spasi di awal/akhir diberi peringatan dengan aksi eksplisit untuk menghapusnya; password tidak diubah diam-diam. Error login dibedakan dari sesi kedaluwarsa dan gangguan layanan identitas.

@@ -75,10 +75,10 @@ export default function Account() {
   );
 }
 const s = StyleSheet.create({
-  page: { padding: 16, paddingBottom: 28, gap: 14, width: "100%", maxWidth: 600, alignSelf: "center" },
-  title: { fontSize: 22, lineHeight: 28, fontWeight: "700", color: c.text, letterSpacing: -0.5 },
+  page: { padding: 14, paddingBottom: 24, gap: 10, width: "100%", maxWidth: 600, alignSelf: "center" },
+  title: { fontSize: 20, lineHeight: 26, fontWeight: "700", color: c.text, letterSpacing: -0.5 },
   detail: { fontSize: 12, lineHeight: 18, color: c.muted },
-  card: { padding: 16, gap: 14, borderRadius: 16, backgroundColor: c.white, borderWidth: 1, borderColor: c.border },
+  card: { padding: 12, gap: 10, borderRadius: 14, backgroundColor: c.white, borderWidth: 1, borderColor: c.border },
   identity: { flexDirection: "row", alignItems: "center", gap: 12 },
   avatar: { width: 48, height: 48, borderRadius: 16, alignItems: "center", justifyContent: "center", backgroundColor: c.mint },
   initials: { fontSize: 18, fontWeight: "700", color: c.primary },

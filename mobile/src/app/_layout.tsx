@@ -8,18 +8,29 @@ import {
   onlineManager,
 } from "@tanstack/react-query";
 import * as Network from "expo-network";
-import { usePreventScreenCapture } from "expo-screen-capture";
+import { preventScreenCaptureAsync, allowScreenCaptureAsync } from "expo-screen-capture";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { Image } from "expo-image";
 import { queryClient } from "../core/query";
 import { SessionProvider, useSession } from "../core/session";
-import { Loading } from "../components/ui";
+import { AnimatedSplashScreen } from "../components/AnimatedSplashScreen";
 import { colors } from "../core/theme";
 export { ErrorBoundary } from "expo-router";
 function Routes() {
   const { user, loading } = useSession();
   const [active, setActive] = useState(AppState.currentState === "active");
   const [online, setOnline] = useState(true);
-  usePreventScreenCapture();
+
+  useEffect(() => {
+    if (!__DEV__) {
+      void preventScreenCaptureAsync().catch(() => {});
+      return () => {
+        void allowScreenCaptureAsync().catch(() => {});
+      };
+    } else {
+      void allowScreenCaptureAsync().catch(() => {});
+    }
+  }, []);
   useEffect(() => {
     const app = AppState.addEventListener("change", (s) => {
       setActive(s === "active");
@@ -50,7 +61,18 @@ function Routes() {
       network.remove();
     };
   }, []);
-  if (loading) return <Loading />;
+  const [splashVisible, setSplashVisible] = useState(true);
+
+  useEffect(() => {
+    if (!loading) {
+      const timer = setTimeout(() => {
+        setSplashVisible(false);
+      }, 1100);
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
+
+  if (loading || splashVisible) return <AnimatedSplashScreen />;
   return (
     <View style={{ flex: 1 }}>
       {!online && (
@@ -85,16 +107,23 @@ function Routes() {
           style={[
             StyleSheet.absoluteFill,
             {
-              backgroundColor: colors.background,
+              backgroundColor: colors.primary,
               alignItems: "center",
               justifyContent: "center",
+              gap: 12,
             },
           ]}
         >
+          <Image
+            source={require("../../assets/logo-gass.webp")}
+            style={{ width: 150, height: 135 }}
+            contentFit="contain"
+            accessibilityLabel="GASS"
+          />
           <Text
-            style={{ color: colors.primary, fontSize: 32, fontWeight: "800" }}
+            style={{ color: colors.mint, fontSize: 13, fontWeight: "700", letterSpacing: 1.5 }}
           >
-            GASS
+            GERAK AKSI SEHAT SETARA
           </Text>
         </View>
       )}

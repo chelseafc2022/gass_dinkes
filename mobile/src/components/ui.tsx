@@ -1,5 +1,5 @@
 import { House, FileText, Check, FilePenLine, UserRound, ShieldCheck, ArrowRight, SlidersHorizontal, Eye, EyeOff } from "lucide-react-native";
-import { useState, type PropsWithChildren, type ReactNode } from "react";
+import { forwardRef, useState, type PropsWithChildren, type ReactNode } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -16,26 +16,26 @@ import { colors as c } from "../core/theme";
 export const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: c.background },
   content: {
-    padding: 20,
-    paddingBottom: 36,
-    gap: 20,
+    padding: 14,
+    paddingBottom: 24,
+    gap: 12,
     width: "100%",
     maxWidth: 800,
     alignSelf: "center",
   },
   card: {
     backgroundColor: c.white,
-    borderRadius: 24,
-    padding: 20,
-    gap: 12,
+    borderRadius: 14,
+    padding: 12,
+    gap: 8,
     borderWidth: 1,
     borderColor: c.border,
     shadowColor: c.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.04, shadowRadius: 12,
   },
-  title: { fontSize: 28, lineHeight: 35, letterSpacing: -0.8, fontWeight: "800", color: c.text },
-  h2: { fontSize: 18, lineHeight: 25, fontWeight: "700", color: c.text },
-  text: { fontSize: 15, lineHeight: 22, color: c.text },
-  muted: { fontSize: 13, lineHeight: 20, color: c.muted },
+  title: { fontSize: 20, lineHeight: 26, letterSpacing: -0.8, fontWeight: "800", color: c.text },
+  h2: { fontSize: 14, lineHeight: 20, fontWeight: "700", color: c.text },
+  text: { fontSize: 13, lineHeight: 19, color: c.text },
+  muted: { fontSize: 12, lineHeight: 18, color: c.muted },
   row: {
     flexDirection: "row",
     alignItems: "center",
@@ -45,38 +45,44 @@ export const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: c.border,
-    borderRadius: 16,
-    padding: 14,
-    minHeight: 50,
+    borderRadius: 10,
+    padding: 10,
+    minHeight: 44,
     color: c.text,
     backgroundColor: c.white,
-    fontSize: 16,
+    fontSize: 14,
   },
   badge: { color: c.teal, fontSize: 12, fontWeight: "700", letterSpacing: 1 },
-  error: { color: c.danger, fontSize: 14, lineHeight: 21 },
+  error: { color: c.danger, fontSize: 12, lineHeight: 18 },
   button: {
-    minHeight: 52,
-    padding: 14,
-    borderRadius: 16,
+    minHeight: 44,
+    padding: 10,
+    borderRadius: 10,
     backgroundColor: c.primary,
     alignItems: "center",
     justifyContent: "center",
   },
-  buttonText: { color: c.white, fontSize: 15, fontWeight: "700" },
+  buttonText: { color: c.white, fontSize: 13, fontWeight: "700" },
 });
-export function Page({ children }: PropsWithChildren) {
+export const Page = forwardRef<
+  React.ElementRef<typeof ScrollView>,
+  PropsWithChildren & React.ComponentProps<typeof ScrollView>
+>(function Page({ children, ...props }, ref) {
   return (
     <ScrollView
+      ref={ref}
       style={styles.page}
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
       keyboardDismissMode="on-drag"
       showsVerticalScrollIndicator={false}
+      automaticallyAdjustKeyboardInsets={true}
+      {...props}
     >
       {children}
     </ScrollView>
   );
-}
+});
 export function Card({ children }: PropsWithChildren) {
   return <View style={styles.card}>{children}</View>;
 }
@@ -127,7 +133,7 @@ export function Button({
 export function Field({ label, style, rightAccessory, ...props }: TextInputProps & { label: string; rightAccessory?: ReactNode }) {
   const [focused, setFocused] = useState(false);
   return (
-    <View style={{ gap: 8 }}>
+    <View style={{ gap: 5 }}>
       <Text style={{ color: c.text, fontSize: 13, fontWeight: "700" }}>{label}</Text>
       <View style={{ position: "relative", justifyContent: "center" }}>
         <TextInput
@@ -140,7 +146,19 @@ export function Field({ label, style, rightAccessory, ...props }: TextInputProps
           style={[styles.input, focused && { borderColor: c.teal, backgroundColor: c.soft }, rightAccessory ? { paddingRight: 48 } : undefined, style]}
         />
         {rightAccessory && (
-          <View style={{ position: "absolute", right: 12, height: "100%", justifyContent: "center", alignItems: "center" }}>
+          <View
+            style={{
+              position: "absolute",
+              right: 0,
+              top: 0,
+              bottom: 0,
+              width: 54,
+              justifyContent: "center",
+              alignItems: "center",
+              zIndex: 20,
+              elevation: 20,
+            }}
+          >
             {rightAccessory}
           </View>
         )}
@@ -253,7 +271,7 @@ export function Badge({ text, tone = "success" }: { text: string; tone?: "succes
   return <View style={{ alignSelf: "flex-start", borderRadius: 20, paddingHorizontal: 11, paddingVertical: 6, backgroundColor: palette[0] }}><Text style={{ color: palette[1], fontSize: 11, fontWeight: "700" }}>{text}</Text></View>;
 }
 export function EmptyState({ title, description, icon = "report" }: { title: string; description: string; icon?: keyof typeof icons }) {
-  return <View style={[styles.card, { alignItems: "center", paddingVertical: 32 }]}>
+  return <View style={[styles.card, { alignItems: "center", paddingVertical: 20 }]}>
     <View style={{ backgroundColor: c.mint, padding: 16, borderRadius: 24 }}><Icon name={icon} size={28} /></View>
     <Text style={[styles.h2, { textAlign: "center" }]}>{title}</Text>
     <Text style={[styles.muted, { textAlign: "center", maxWidth: 280 }]}>{description}</Text>

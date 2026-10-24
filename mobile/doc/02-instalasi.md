@@ -203,3 +203,7 @@ Jangan menaruh `.env`, password, token, file signing, atau credential database d
 ### Setelah penambahan ikon Lucide
 
 Dependensi `lucide-react-native` dan `react-native-svg` sudah tercatat di package.json. Jalankan `npm ci`, lalu bangun ulang development client dengan `npm run android`; Fast Refresh saja tidak menambahkan modul native SVG ke APK lama.
+
+### Login ditolak padahal kata sandi benar
+
+Periksa spasi di awal/akhir isian. Mobile menampilkan tombol **Hapus spasi tambahan** ketika terdeteksi; tekan hanya bila spasi tersebut tidak merupakan bagian kata sandi. Username/NIP dipangkas otomatis, sedangkan kata sandi dikirim persis sesuai input. Status 401 menunjukkan kredensial ditolak, 403 menunjukkan akses/penugasan GASS belum tersedia, dan 503 menunjukkan layanan identitas tidak tersedia.

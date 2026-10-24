@@ -43,6 +43,7 @@ export default function ReportList({
   const [kind, setKind] = useState<Kind>(
     user && allowed(user, "capaian_kinerja") ? "kinerja" : "keuangan",
   );
+  const [showFilters, setShowFilters] = useState(false);
   const [search, setSearch] = useState("");
   const [facility, setFacility] = useState("");
   const query = useReports(kind, year, facility);
@@ -99,7 +100,7 @@ export default function ReportList({
       },
     });
   const header = (
-    <View style={{ gap: 16, paddingBottom: 16 }}>
+    <View style={{ gap: 10, paddingBottom: 12 }}>
       <Heading
         title={verification ? "Tinjau & verifikasi" : "Laporan bulanan"}
         subtitle={
@@ -108,7 +109,8 @@ export default function ReportList({
             : "Input capaian kinerja dan realisasi keuangan."
         }
       />
-      <Card>
+      <Button secondary title={`${kind === "kinerja" ? "Kinerja" : "Keuangan"} · ${months[month - 1]} ${year} · ${showFilters ? "Tutup" : "Filter"}`} onPress={() => setShowFilters(!showFilters)} />
+      {showFilters && <Card>
       <Section title="Filter laporan" />
       <Select
         label="Jenis laporan"
@@ -156,13 +158,13 @@ export default function ReportList({
           ]}
         />
       )}
+      </Card>}
       <Field
         label="Cari laporan"
         value={search}
         onChangeText={setSearch}
         placeholder="Indikator atau nama faskes"
       />
-      </Card>
       {!verification && canWrite(user) && (
         <Button title="+ Input laporan" onPress={() => edit()} />
       )}
@@ -188,7 +190,7 @@ export default function ReportList({
       <FlashList
         data={rows}
         keyExtractor={(r) => r.id}
-        contentContainerStyle={{ padding: 20 }}
+        contentContainerStyle={{ padding: 14 }}
         ListHeaderComponent={header}
         refreshing={query.isRefetching}
         onRefresh={() => void query.refetch()}
@@ -203,12 +205,12 @@ export default function ReportList({
           const m = r.verifikasiBulanan.find((x) => x.bulan === month);
           const submitted = !!m?.submittedAt;
           return (
-            <View style={{ marginBottom: 12 }}>
+            <View style={{ marginBottom: 8 }}>
               <Card>
                 <Text style={styles.badge}>{r.faskes.namaFaskes}</Text>
                 <Text style={styles.h2}>{r.label}</Text>
                 <Badge text={m?.isValidated ? "Terverifikasi" : submitted ? "Menunggu verifikasi" : "Belum dikirim"} tone={m?.isValidated ? "success" : submitted ? "warning" : "neutral"} />
-                <Text style={styles.title}>
+                <Text style={styles.h2}>
                   {months[month - 1]}:{" "}
                   {submitted
                     ? format(r[monthKeys[month - 1]])

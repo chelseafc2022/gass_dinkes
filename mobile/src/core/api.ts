@@ -5,8 +5,11 @@ export class ApiError extends Error {
     this.status = status;
   }
 }
-const configured = process.env.EXPO_PUBLIC_API_URL?.replace(/\/$/, "");
 export function apiBase() {
+  const configured = (
+    process.env.EXPO_PUBLIC_API_URL ||
+    (__DEV__ ? "http://127.0.0.1:3001/api" : "")
+  )?.replace(/\/$/, "");
   if (!configured)
     throw new Error(
       "Isi EXPO_PUBLIC_API_URL di mobile/.env sebelum menjalankan aplikasi.",
@@ -85,6 +88,16 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
       409: "Laporan berubah sejak dibuka. Muat ulang sebelum menyimpan.",
       429: "Terlalu banyak permintaan. Tunggu satu menit.",
     };
+    if (path === "/auth/login") {
+      const loginMessages: Record<number, string> = {
+        401: "Username/NIP atau kata sandi tidak cocok. Periksa huruf besar dan spasi tambahan.",
+        403: "Akun belum mendapat akses GASS atau penugasannya belum lengkap. Hubungi Admin Dinkes.",
+        503: "Layanan eGov/Simpeg sedang tidak tersedia. Coba lagi nanti.",
+      };
+      if (loginMessages[response.status]) {
+        throw new ApiError(response.status, loginMessages[response.status]);
+      }
+    }
     throw new ApiError(
       response.status,
       messages[response.status] ?? "Layanan belum tersedia. Silakan coba lagi.",

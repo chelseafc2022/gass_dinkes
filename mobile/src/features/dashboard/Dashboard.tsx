@@ -77,7 +77,7 @@ export default function Dashboard() {
       <FlashList
         data={query.data?.indicators ?? []}
         keyExtractor={(i) => i.id}
-        contentContainerStyle={{ padding: 16, paddingBottom: 28 }}
+        contentContainerStyle={{ padding: 14, paddingBottom: 24 }}
         refreshing={query.isRefetching}
         onRefresh={() => void query.refetch()}
         ListHeaderComponent={
@@ -247,20 +247,20 @@ export default function Dashboard() {
 
 const compact = StyleSheet.create({
   header: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 4 },
-  title: { fontSize: 22, lineHeight: 28, fontWeight: "700", letterSpacing: -0.5, color: colors.text },
+  title: { fontSize: 20, lineHeight: 26, fontWeight: "700", letterSpacing: -0.5, color: colors.text },
   caption: { fontSize: 12, lineHeight: 18, color: colors.muted },
   label: { fontSize: 12, lineHeight: 18, fontWeight: "600", color: colors.text },
   mark: { width: 42, height: 42, borderRadius: 14, backgroundColor: colors.mint, alignItems: "center", justifyContent: "center" },
   filter: { flexDirection: "row", alignItems: "center", gap: 10, padding: 12, minHeight: 48, borderWidth: 1, borderColor: colors.border, borderRadius: 12, backgroundColor: colors.white },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  metric: { flexGrow: 1, flexBasis: "46%", minWidth: 140, padding: 14, gap: 8, borderWidth: 1, borderColor: colors.border, borderRadius: 16, backgroundColor: colors.white },
+  metric: { flexGrow: 1, flexBasis: "46%", minWidth: 120, padding: 10, gap: 5, borderWidth: 1, borderColor: colors.border, borderRadius: 16, backgroundColor: colors.white },
   metricTop: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 6 },
-  value: { fontSize: 26, lineHeight: 32, fontWeight: "700", letterSpacing: -0.5, color: colors.text, fontVariant: ["tabular-nums"] },
+  value: { fontSize: 22, lineHeight: 28, fontWeight: "700", letterSpacing: -0.5, color: colors.text, fontVariant: ["tabular-nums"] },
   finance: { borderWidth: 1, borderColor: colors.border, borderRadius: 14, padding: 14, gap: 8, backgroundColor: colors.white },
   spread: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 },
   amount: { fontSize: 12, lineHeight: 18, fontWeight: "600", color: colors.text, fontVariant: ["tabular-nums"] },
   sectionTitle: { fontSize: 16, fontWeight: "700", color: colors.text },
-  indicator: { marginBottom: 10, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, borderRadius: 16, padding: 14, gap: 10 },
+  indicator: { marginBottom: 10, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 10, gap: 6 },
   eyebrow: { fontSize: 10, letterSpacing: 0.6, fontWeight: "700", color: colors.teal },
   indicatorTitle: { fontSize: 14, lineHeight: 21, fontWeight: "600", color: colors.text },
   percent: { fontSize: 18, fontWeight: "700", color: colors.primary, fontVariant: ["tabular-nums"] },

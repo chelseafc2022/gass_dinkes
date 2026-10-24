@@ -41,9 +41,9 @@ export default function Drafts() {
           query.data?.filter((d) => allowed(user, `capaian_${d.kind}`)) ?? []
         }
         keyExtractor={(d) => String(d.slot)}
-        contentContainerStyle={{ padding: 20 }}
+        contentContainerStyle={{ padding: 14 }}
         ListHeaderComponent={
-          <View style={{ gap: 12, paddingBottom: 20 }}>
+          <View style={{ gap: 10, paddingBottom: 12 }}>
             <Heading
               title="Draf lapangan"
               subtitle="Tersimpan di perangkat • belum dikirim"
@@ -60,7 +60,7 @@ export default function Drafts() {
           )
         }
         renderItem={({ item: d }) => (
-          <View style={{ marginBottom: 12 }}>
+          <View style={{ marginBottom: 8 }}>
             <Card>
               <Text style={styles.badge}>
                 {d.kind.toUpperCase()} • {months[d.input.bulan - 1]}{" "}
