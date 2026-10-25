@@ -8,12 +8,15 @@ export class ApiError extends Error {
 }
 let refresh: Promise<boolean> | null = null;
 let authGeneration = 0;
+const apiUrl = (
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api"
+).replace(/\/$/, "");
 export async function api<T = any>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
   const run = () =>
-    fetch(`/api${path}`, {
+    fetch(`${apiUrl}${path}`, {
       ...options,
       credentials: "include",
       headers: {
@@ -31,7 +34,7 @@ export async function api<T = any>(
     if (requestGeneration !== authGeneration) {
       response = await run();
     } else {
-      refresh ??= fetch("/api/auth/refresh", {
+      refresh ??= fetch(`${apiUrl}/auth/refresh`, {
         method: "POST",
         credentials: "include",
         headers: { "X-Gass-Client": "web" },

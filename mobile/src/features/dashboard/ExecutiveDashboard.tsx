@@ -3,7 +3,8 @@ import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "r
 import { useQuery } from "@tanstack/react-query";
 // AI Agent ditunda. Aktifkan kembali import ini bersama tombol Tanya AI.
 // import { router } from "expo-router";
-import { ChevronDown, ChevronUp, Wallet, CircleCheck } from "lucide-react-native";
+import { ChevronDown, ChevronUp, Wallet } from "lucide-react-native";
+
 import { useSession } from "../../core/session";
 import { api, errorText } from "../../core/api";
 import { currentPeriod, format, months } from "../../core/domain";

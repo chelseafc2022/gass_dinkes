@@ -2,9 +2,8 @@ import { Tabs } from "expo-router";
 import { View } from "react-native";
 import { BrandHeader, Icon } from "../../components/ui";
 import { useSession } from "../../core/session";
-import { allowed, canWrite, canVerify } from "../../core/domain";
+import { allowed, canWrite, canVerify, currentPeriod } from "../../core/domain";
 import { colors } from "../../core/theme";
-import { currentPeriod, type Kind } from "../../core/domain";
 import { useReports } from "../../features/reports/hooks";
 function usePendingCount() {
   const { user } = useSession();

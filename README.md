@@ -149,6 +149,18 @@ Tes UI ada di `frontend/tests/gass.spec.ts` dengan Chrome lokal (`npx playwright
 
 Gunakan database GASS tersendiri, backup PostgreSQL, origin eksplisit, secret acak, dan HTTPS di reverse proxy. Set `NODE_ENV=production` agar cookie memakai `Secure`. API mendengarkan localhost; gunakan reverse proxy lokal atau sesuaikan binding sesuai infrastruktur deployment. Swagger dinonaktifkan pada production.
 
+Untuk server production dengan Nginx pada host yang sama, isi environment backend:
+
+```dotenv
+NODE_ENV=production
+PORT=5095
+HOST=127.0.0.1
+```
+
+Backend membaca `HOST` dan `PORT` dari environment; default development adalah `127.0.0.1:3001`. Arahkan upstream Nginx ke `http://127.0.0.1:5095` dengan tetap mempertahankan prefix `/api`. Jika proxy Next.js digunakan, set `API_INTERNAL_URL=http://127.0.0.1:5095` di environment frontend sebelum build. Alamat loopback ini berlaku jika proses proxy dan backend berjalan di host/network namespace yang sama.
+
+Pengaturan tersebut hanya mengubah mode dan alamat HTTP backend, bukan koneksi database. Isi `DATABASE_URL` dengan koneksi PostgreSQL production dan `FRONTEND_URL` dengan origin HTTPS frontend yang sebenarnya. Jalankan `npm run start:prod` dari direktori `backend` setelah build, lalu periksa endpoint lokal `http://127.0.0.1:5095/api/health`. File `.env` diabaikan Git dan perlu disediakan secara terpisah di server.
+
 Jalankan migrasi dengan `npm run db:migrate` sebelum menyalakan rilis. Tidak ada perubahan, migrasi, atau sinkronisasi tulis ke database eGov/Simpeg. Browser memerlukan header `X-Gass-Client: web` untuk mutasi; wrapper frontend sudah memasangnya dan server memvalidasi origin.
 
 ## Referensi
