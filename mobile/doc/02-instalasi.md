@@ -156,6 +156,45 @@ Untuk iOS, ganti platform dengan `ios` dan ikuti persyaratan Apple/signing; dist
 
 Sebelum distribusi, konfirmasikan package identifier `id.go.konselkab.gass`, ikon launcher resmi, URL API lingkungan tujuan, dan kepemilikan akun signing.
 
+### Build APK lokal dan alasan ukuran file
+
+APK internal dapat dibuat tanpa EAS jika Android SDK/JDK sudah tersedia:
+
+```sh
+cd mobile/android
+./gradlew assembleRelease
+```
+
+Hasilnya berada di `android/app/build/outputs/apk/release/app-release.apk`. Build lokal project saat ini masih memakai **debug keystore** pada varian release, sehingga hanya untuk instalasi dan pengujian internal. Jangan mengunggah APK tersebut ke Play Store atau menganggapnya sebagai signing resmi instansi.
+
+Build 25 Oktober 2026 menghasilkan APK universal sekitar **103 MB**. Ukuran ini terutama berasal dari library native untuk empat arsitektur yang digabung ke satu APK:
+
+| Isi APK universal | Ukuran tidak terkompresi sekitar |
+| --- | ---: |
+| `arm64-v8a` | 24,1 MB |
+| `armeabi-v7a` | 16,7 MB |
+| `x86_64` | 25,6 MB |
+| `x86` | 25,5 MB |
+| Bundle/aset aplikasi | 4,4 MB |
+| Resource dan bagian lain | 9,7 MB |
+
+Empat arsitektur diperlukan agar satu APK bisa dipasang pada banyak jenis HP dan emulator. Sebagian besar perangkat hanya memakai satu arsitektur; tiga salinan library native lainnya tidak digunakan pada perangkat tersebut. Library React Native, Hermes, Expo Modules, Reanimated, dan Worklets menyumbang bagian terbesar. R8/minify sudah aktif, jadi ukuran besar bukan terutama karena gambar atau kode layar GASS.
+
+Untuk APK uji yang lebih kecil khusus HP Android modern 64-bit, bangun hanya `arm64-v8a`:
+
+```sh
+cd mobile/android
+./gradlew assembleRelease -PreactNativeArchitectures=arm64-v8a
+```
+
+APK `arm64-v8a` tidak dapat dipasang pada HP 32-bit atau emulator `x86/x86_64`. Pertahankan APK universal jika arsitektur perangkat sasaran belum diketahui.
+
+Hasil build GASS saat ini: APK khusus `arm64-v8a` sekitar **35 MB**, sedangkan APK universal sekitar **103 MB**. Gunakan APK `arm64-v8a` sebagai pilihan utama untuk HP Android modern dan simpan APK universal sebagai cadangan kompatibilitas.
+
+Untuk distribusi Google Play, gunakan **AAB** dengan signing resmi. Google Play mengambil AAB dan mengirim hanya library yang cocok dengan perangkat, sehingga ukuran unduhan pengguna lebih kecil. Profil `production` EAS secara default menghasilkan AAB, sedangkan profil `preview` pada `eas.json` sengaja menghasilkan APK untuk instalasi langsung.
+
+Nilai `EXPO_PUBLIC_API_URL` ditanam saat bundling. Pastikan `.env` berisi URL production sebelum menjalankan Gradle, lalu verifikasi ulang aplikasi dengan login, restart, refresh sesi, dan logout pada perangkat fisik.
+
 ## 7. Pemeriksaan setelah instalasi
 
 ```sh

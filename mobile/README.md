@@ -27,7 +27,7 @@ Backend tetap bind ke localhost. Gunakan reverse proxy HTTPS yang sudah dikonfig
 
 ## Teknologi dan struktur
 
-- Expo 58.0.17, React Native 0.88.0, React 19.3, TypeScript strict.
+- Expo 58.0.19, React Native 0.88.0, React 19.3, TypeScript strict.
 - Expo Router: routing berbasis file dan protected routes; tab lazy.
 - TanStack Query v5: cache memori per pengguna/filter, stale time 60 detik, GC 5 menit, maksimal satu retry pembacaan sementara; mutasi tidak diulang otomatis.
 - FlashList v2: daur ulang item daftar; rincian dashboard dibuka seperlunya.
@@ -79,7 +79,9 @@ npm run export:android
 npx expo export --platform ios --output-dir dist-ios
 ```
 
-Hasil pengembangan 23 Oktober 2026: typecheck/lint lolos, Expo Doctor 20/20, ekspor bundle Android/iOS diuji (bukan APK/IPA signed). Backend: 51 tes lolos, 25 tes integrasi database dilewati tanpa `TEST_DATABASE_URL`. Tes mobile mencakup validasi, batas akses, refresh serentak, kegagalan mutasi tanpa retry, dan pencabutan sesi.
+Hasil pemeriksaan terakhir: typecheck/lint lolos, Expo Doctor 20/20, 11 tes mobile lolos, dan APK release internal berhasil dibuat. APK universal sekitar 103 MB karena memuat library native untuk `arm64-v8a`, `armeabi-v7a`, `x86`, dan `x86_64`; rincian dan cara membuat APK khusus `arm64-v8a` tersedia di [panduan instalasi](doc/02-instalasi.md#build-apk-lokal-dan-alasan-ukuran-file). APK lokal tersebut memakai debug keystore dan bukan artefak Play Store. Backend: 51 tes lolos, 25 tes integrasi database dilewati tanpa `TEST_DATABASE_URL`.
+
+APK internal yang tersedia: varian `arm64-v8a` sekitar 35 MB untuk mayoritas HP Android modern dan varian universal sekitar 103 MB sebagai cadangan untuk arsitektur lain.
 
 ## Batas kesiapan rilis
 

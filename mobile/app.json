@@ -5,21 +5,14 @@
     "scheme": "gass",
     "version": "1.0.0",
     "userInterfaceStyle": "light",
-    "platforms": ["ios", "android"],
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "icon": "./assets/icon.png",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#064E3B"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "id.go.konselkab.gass",
-      "splash": {
-        "image": "./assets/splash.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#064E3B"
-      },
       "infoPlist": {
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": false
@@ -31,11 +24,6 @@
       "allowBackup": false,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#064E3B"
-      },
-      "splash": {
-        "image": "./assets/splash.png",
-        "resizeMode": "contain",
         "backgroundColor": "#064E3B"
       }
     },
@@ -50,7 +38,15 @@
           "configureAndroidBackup": true
         }
       ],
-      "expo-image"
+      "expo-image",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#064E3B"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

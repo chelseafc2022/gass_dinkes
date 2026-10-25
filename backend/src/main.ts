@@ -6,6 +6,10 @@ import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 import { ApiErrors } from "./common/errors";
 async function bootstrap() {
+  const port = Number(process.env.PORT || 3001);
+  const host = process.env.HOST?.trim() || "127.0.0.1";
+  if (!Number.isInteger(port) || port < 1 || port > 65535)
+    throw new Error("PORT harus berupa angka antara 1 dan 65535.");
   if (
     !process.env.JWT_ACCESS_SECRET ||
     process.env.JWT_ACCESS_SECRET.length < 32
@@ -36,6 +40,6 @@ async function bootstrap() {
           .build(),
       ),
     );
-  await app.listen(Number(process.env.PORT || 3001), "127.0.0.1");
+  await app.listen(port, host);
 }
 void bootstrap();
